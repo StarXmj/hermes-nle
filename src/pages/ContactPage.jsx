@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'; // 1. IMPORTER useState et u
 import { useLocation } from 'react-router-dom';
 import { FaMapMarkerAlt, FaEnvelope } from 'react-icons/fa';
 import './ContactPage.css';
-
+import { Helmet } from 'react-helmet-async'; // 1. IMPORTER HELMET
 function ContactPage() {
   const location = useLocation();
 
@@ -46,6 +46,10 @@ function ContactPage() {
 
   return (
     <main className="page-section">
+      <Helmet>
+        <title>{titre} - Hermes by NLE</title>
+        <meta name="description" content="Contactez l'association Hermes : rejoignez-nous, devenez partenaire ou posez-nous une question." />
+      </Helmet>
       <div className="section-content">
         <h1>{titre}</h1>
         <p>{sousTitre}</p>

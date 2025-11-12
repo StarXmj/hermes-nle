@@ -3,6 +3,8 @@ import React, { useState, useMemo } from 'react';
 import allActions from '../data/actions.json';
 import ActionCard from '../components/ActionCard'; // On réutilise notre carte !
 import './ActionsPage.css'; // On importe le style de la page
+import { Helmet } from 'react-helmet-async'; // 1. IMPORTER HELMET
+
 
 function ActionsPage() {
   // 1. État pour savoir quel filtre est actif
@@ -35,8 +37,12 @@ function ActionsPage() {
   }, [filter]); // Cette logique se relance si "filter" change
 
   return (
+    
     <div className="actions-page-container">
-
+ <Helmet>
+        <title> Action - Hermes by NLE</title>
+        <meta name="description" content="Action" />
+      </Helmet>
       <header className="actions-page-header">
         <h1>Nos Actions</h1>
         <p>Retrouvez l'historique de nos événements et tout ce qui arrive sur le campus.</p>

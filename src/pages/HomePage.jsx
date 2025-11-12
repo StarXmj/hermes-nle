@@ -1,7 +1,7 @@
-// src/pages/HomePage.jsx
 import React from 'react';
 import '../App.css'; 
-import { Link } from 'react-router-dom'; // 1. IMPORTER LINK
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'; // 1. IMPORTER HELMET
 
 // On importe les sections
 import SectionActions from '../sections/SectionActions';
@@ -12,33 +12,45 @@ import SectionNewsletter from '../sections/SectionNewsletter';
 function HomePage() {
   return (
     <main>
+      <Helmet>
+        <title>Hermes by NLE</title>
+        {/* Bonus : Vous pouvez aussi ajouter la méta-description pour le SEO */}
+        <meta name="description" content="L'association étudiante qui t'accompagne, t'informe et te défend au quotidien sur le campus de Pau." />
+      </Helmet>
       {/* Section 1 : Bienvenue */}
       <section className="hero-section">
         
         <div className="collage-photo photo-1"></div>
         <div className="collage-photo photo-2"></div>
 
-        <h1>UN RELAIS POUR TOUS, UNE PAROLE POUR CHACUN.</h1>
+        <h1>Un relais pour tous, une parole pour chacun.</h1>
         <p className="hero-subtitle">
           L'association étudiante qui t'accompagne, t'informe et te défend au quotidien.
         </p>
         
-        {/* 2. NOUVEAU CONTENEUR POUR LES BOUTONS */}
-        <div className="-buttons-containeheror">
-          {/* Bouton 1 : Lien interne */}
-          <Link to="/actions" className="cta-button">
-            Découvrir nos actions
-          </Link>
+        {/* Le conteneur vertical pour les deux boutons/groupes */}
+        <div className="hero-buttons-container">
           
-          {/* Bouton 2 : Lien externe */}
-          <a 
-            href="https://www.instagram.com/[VOTRE_COMPTE_INSTA]" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="cta-button secondary"
-          >
-            Abonne-toi à notre Instagram
-          </a>
+          
+          
+          {/* NOUVEAU : Groupe pour le bouton Insta + incitation */}
+          <div className="instagram-cta-group">
+            <a 
+              href="https://www.instagram.com/[VOTRE_COMPTE_INSTA]" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="cta-button"
+            >
+
+
+              
+              Abonne-toi à notre Instagram
+            </a>
+            {/* L'incitation que vous avez demandée */}
+            <p className="hero-incitation">
+              Jeux concours, infos de dernière minute... tout se passe là-bas !
+            </p>
+          </div>
         </div>
 
       </section>

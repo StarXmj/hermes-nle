@@ -30,7 +30,7 @@ function Footer() {
           <HashLink to="/#newsletter">S'abonner à la newsletter</HashLink>
         </div>
       </div>
-      <hr></hr>
+      
       {/* 2. Le copyright (partie grise) */}
       <div className="footer-copyright">
         <p>© 2025 Hermes by NLE - Tous droits réservés.</p>

@@ -93,3 +93,28 @@
   text-decoration: underline;
   color: #0056b3;
 }
+
+@media (max-width: 600px) {
+  .partner-card {
+    /* On empile (photo en haut, texte en bas) */
+    flex-direction: column;
+    text-align: center; /* On centre le texte */
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .partner-logo-container {
+    /* On centre le logo */
+    margin: 0 auto;
+  }
+  
+  .partner-content {
+    /* On s'assure que le contenu texte est centré */
+    align-items: center;
+  }
+  
+  .partner-links-visible {
+    /* On centre les deux liens */
+    justify-content: center;
+  }
+}

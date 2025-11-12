@@ -1,0 +1,46 @@
+/* src/components/TestModeModal.css */
+
+/* L'arrière-plan noir */
+.modal-overlay {
+  position: fixed; /* Reste en place même si on scrolle */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7); /* Noir semi-transparent */
+  z-index: 2000; /* Au-dessus de tout (même la navbar) */
+  
+  /* Pour centrer le contenu */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Le pop-up (le "gros popous") */
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px; /* Largeur max */
+  z-index: 2001; /* Au-dessus de l'overlay */
+  text-align: center;
+}
+
+.modal-content h2 {
+  color: #003366;
+  margin-top: 0;
+}
+
+.modal-content p {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* On s'assure que le bouton prend toute la largeur */
+.modal-content .cta-button {
+  width: 100%;
+  margin-top: 1rem;
+}

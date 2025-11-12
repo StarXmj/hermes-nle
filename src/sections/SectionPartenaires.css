@@ -39,3 +39,21 @@
   margin-top: 2rem;
   text-align: center;
 }
+@media (max-width: 900px) {
+  .partenaires-grid {
+    /* On passe à 3 colonnes */
+    grid-template-columns: repeat(3, auto);
+    
+    /* On désactive le scroll et on affiche tout */
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+/* Pour les téléphones (ex: < 600px) */
+@media (max-width: 600px) {
+  .partenaires-grid {
+    /* On passe à 2 colonnes pour garder l'esprit "grille" */
+    grid-template-columns: repeat(2, auto);
+  }
+}

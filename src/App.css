@@ -60,7 +60,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 }
 
 .hero-section h1 {
-  font-size: 3.5rem; /* Un peu plus gros */
+  font-size: 2.75rem; /* Un peu plus gros */
   margin-bottom: 1rem;
 }
 
@@ -73,23 +73,37 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 
 .hero-section p {
   font-size: 1.25rem;
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
 }
+.hero-section .cta-button  {
+ margin: 10px;
+}
+
+
 
 .cta-button {
   background-color: #0056b3;
   color: white;
   border: none;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: bold;
+  padding: 14px 28px; 
+  font-size: 0.9rem;
+  font-weight: 700; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
   border-radius: 5px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; 
+  box-shadow: 0 4px 15px rgba(0, 86, 179, 0.2);
 }
 .cta-button:hover {
-  transform: scale(1.05);
+  background-color: #0056b3; /* Fond plein au survol */
+  color: white; /* Texte blanc au survol */
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 86, 179, 0.4);
 }
+
+/* Bouton secondaire (style "outline") */
+
 
 
 /* 2. STYLES COMMUNS POUR LES NOUVELLES SECTIONS */
@@ -183,32 +197,35 @@ background-repeat: no-repeat;
   height: 420px
 }
 
-.hero-buttons-container {
-  display: flex;
-  gap: 1rem; /* Espace entre les boutons */
-  z-index: 2; /* Pour être au-dessus du collage */
-  position: relative; /* Pour que z-index fonctionne */
-  
-  /* Gestion du passage à la ligne sur mobile */
-  flex-wrap: wrap; 
-  justify-content: center; /* Centre les boutons si wrap */
-}
+
 
 /* VÉRIFICATION : Assurez-vous que ce style est bien dans App.css */
 /* S'il existe déjà, pas besoin de le recopier */
-.cta-button.secondary {
-  background-color: transparent;
-  color: #0056b3;
-  border: 2px solid #0056b3;
-}
-.cta-button.secondary:hover {
-  background-color: #e6f0ff;
-  transform: scale(1.05);
-}
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .collage-photo {
     display: none;
   }
+}
+
+@media (max-width: 600px) {
+  
+ .hero-section h1 {
+  font-size: 1.5rem; /* Un peu plus gros */
+  margin-bottom: 1rem;
+}
+
+.cta-button {
+ 
+  font-size: 0.65rem;
+  
+}
+.hero-section {
+ 
+  
+padding: 2rem 2rem 6rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
+
+ 
+}
 }
 

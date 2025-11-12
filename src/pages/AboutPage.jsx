@@ -4,6 +4,8 @@ import membresData from '../data/membres.json';
 import faqData from '../data/faq.json';
 import MemberCard from '../components/MemberCard';
 import FaqItem from '../components/FaqItem';
+import { Helmet } from 'react-helmet-async'; // 1. IMPORTER HELMET
+
 
 // On garde les mêmes icônes
 import { 
@@ -16,7 +18,10 @@ import './AboutPage.css';
 function AboutPage() {
   return (
     <main className="about-page">
-      
+      <Helmet>
+              <title> A propos - Hermes by NLE</title>
+              <meta name="description" content="A propos" />
+            </Helmet>
       {/* 1. Section "Qui sommes-nous ?" (Ne change pas) */}
       <section className="page-section hero-about">
         <div className="section-content">

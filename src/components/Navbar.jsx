@@ -34,7 +34,7 @@ function Navbar() {
           <li><Link to="/about">C'est quoi ?</Link></li>
           <li><Link to="/actions">Actions</Link></li> 
           <li><HashLink to="/#actualites">Actualités</HashLink></li>          
-          <li><Link to="/partenaires">Partenaire</Link></li>
+          <li><Link to="/partenaires">Partenaires</Link></li>
           <li><Link to="/contact">Contact</Link></li>
         </ul>
 
@@ -81,7 +81,7 @@ function Navbar() {
           <li><Link to="/about" onClick={toggleDrawer}>C'est quoi ?</Link></li>
           <li><Link to="/actions" onClick={toggleDrawer}>Actions</Link></li>
           <li><HashLink to="/#actualites">Actualités</HashLink></li>
-          <li><Link to="/partenaires" onClick={toggleDrawer}>Partenaire</Link></li>
+          <li><Link to="/partenaires" onClick={toggleDrawer}>Partenaires</Link></li>
           <li><Link to="/contact" onClick={toggleDrawer}>Contact</Link></li>
         </ul>
 

@@ -54,3 +54,23 @@
   line-height: 1.5;
   margin: 0; /* On enlève la marge du p */
 }
+
+@media (max-width: 600px) {
+  .member-card {
+    /* On empile (photo en haut, texte en bas) */
+    flex-direction: column;
+    text-align: center; /* On centre le texte */
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .member-photo-container {
+    /* On centre la photo */
+    margin: 0 auto;
+  }
+  
+  .member-info {
+    /* On s'assure que le contenu texte est centré */
+    align-items: center;
+  }
+}
