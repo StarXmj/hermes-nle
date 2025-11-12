@@ -26,6 +26,9 @@ function TestModeModal({ isOpen, onClose }) {
 
         {/* On utilise une liste pour plus de clarté */}
         <ul className="modal-list">
+            <li>
+            Les <strong>Partenaires</strong>, <strong>Actions</strong> et <strong>Actualités</strong> sont des exemples factices pour se projeter.
+          </li>
           <li>De <strong>nombreux bugs</strong> peuvent être présents.</li>
           <li>La <strong>page Contact</strong> et la Newsletter ne sont <strong>pas encore fonctionnelles</strong>.</li>
           <li>Certains <strong>liens du menu</strong> n'ont pas encore de page de destination.</li>
