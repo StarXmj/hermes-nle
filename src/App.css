@@ -174,7 +174,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 /* 2. Style de la Photo 1 */
 .photo-1 {
   
-  background-image: url('./images/equipes/equipe.jpg');
+  background-image: url('../public/images/equipes/equipe.jpg');
   top: 10%; /* 15% du haut */
   left: 4%; /* 10% de la gauche */
   transform: rotate(-8deg); /* Inclinaison */
@@ -186,7 +186,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 
 /* 3. Style de la Photo 2 */
 .photo-2 {
-  background-image: url('./images/equipes/IMG-20251028-WA0007.jpg');
+  background-image: url('./public/images/equipes/IMG-20251028-WA0007.jpg');
   background-size: 360px 420px;
  
 background-repeat: no-repeat;
