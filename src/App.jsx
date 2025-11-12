@@ -9,7 +9,7 @@ import { appRoutes } from './routeConfig.jsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import TestModeModal from './components/TestModeModal'; // 2. IMPORTER LE MODAL
-
+import { Analytics } from '@vercel/analytics/react';
 // On importe les CSS
 import './App.css'; 
 // On importe le CSS des pages légales (car il n'est plus importé par elles)
@@ -44,6 +44,7 @@ function App() {
       </Routes>
 
       <Footer />
+      <Analytics />
     </div>
   );
 }
