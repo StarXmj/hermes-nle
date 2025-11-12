@@ -1,0 +1,73 @@
+/* src/components/ActuCard.css */
+
+/* 1. Style de la carte sans image */
+.actu-card.no-image {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  
+  /* On ajoute une bordure pour la structure */
+  border: 2px solid #f0f0f0;
+}
+
+.actu-card.no-image:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  /* On colore la bordure au survol */
+  border-color: #0056b3; 
+}
+
+/* 2. ON SUPPRIME .actu-card-image-container et .actu-card-image */
+
+
+/* 3. Style de la catégorie (plus en 'absolute') */
+.actu-card.no-image .actu-card-category {
+  display: inline-block; /* Devient un élément de texte */
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem; /* Espace sous l'étiquette */
+}
+
+.actu-card-category.fac { background-color: #0056b3; }
+.actu-card-category.pau { background-color: #1a936f; }
+
+/* 4. Contenu de la carte (plus de padding) */
+.actu-card.no-image .actu-card-content {
+  padding: 1.5rem; /* On remet un padding plus grand */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.actu-card.no-image .actu-card-date {
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 0.25rem;
+}
+
+.actu-card.no-image .actu-card-content h3 {
+  font-size: 1.2rem; /* Un peu plus grand */
+  color: #003366;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0; /* Empêche le titre de rétrécir */
+}
+
+.actu-card.no-image .actu-card-content p {
+  font-size: 0.9rem; /* Un peu plus grand */
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 0;
+  flex-grow: 1; /* Pousse le contenu en bas */
+}

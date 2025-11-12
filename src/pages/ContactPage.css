@@ -1,0 +1,100 @@
+/* src/pages/ContactPage.css */
+
+/* 1. Section Info (Adresse / Email) */
+.contact-info-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 3rem 0;
+  flex-wrap: wrap; /* Pour les mobiles */
+}
+
+.contact-info-item {
+  flex-basis: 250px; /* Largeur de base */
+  text-align: center;
+}
+
+.contact-icon {
+  color: #0056b3; /* Bleu Hermes */
+  margin-bottom: 0.5rem;
+}
+
+.contact-info-item h3 {
+  margin: 0.5rem 0;
+  color: #003366;
+}
+
+.contact-info-item p {
+  margin: 0;
+  color: #555;
+}
+
+/* 2. Le Formulaire */
+.contact-form {
+  max-width: 700px; /* On centre le formulaire */
+  margin: 0 auto;
+  text-align: left; /* On aligne les labels à gauche */
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; /* Espace entre chaque groupe */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 3. La rangée (Nom / Prénom) */
+.form-row {
+  display: flex;
+  gap: 1.25rem;
+}
+.form-row .form-group {
+  flex: 1; /* Chaque groupe prend 50% */
+}
+
+/* 4. Style des champs */
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box; /* Important pour le padding */
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0, 86, 179, 0.3);
+}
+
+.form-group textarea {
+  resize: vertical; /* Permet de redimensionner verticalement */
+  min-height: 120px;
+}
+
+/* 5. Le bouton */
+.contact-form .cta-button {
+  width: 100%; /* Le bouton prend toute la largeur */
+  height: 50px;
+  font-size: 1.1rem;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column; /* Nom et Prénom l'un sur l'autre */
+    gap: 1.25rem; /* Même espace que les autres */
+  }
+}

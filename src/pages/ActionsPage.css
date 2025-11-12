@@ -1,0 +1,131 @@
+/* src/pages/ActionsPage.css */
+
+.actions-page-container {
+  /* FIX FOOTER : On dit au conteneur de la page de grandir
+     pour remplir l'espace vide (il hérite du flex:1 du <main>) */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.actions-page-header {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+  background-color: #f9f9f9;
+}
+
+.actions-page-header h1 {
+  font-size: 3rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  color: #555;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn.active {
+  background-color: #0056b3;
+  color: white;
+  border-color: #0056b3;
+}
+
+/* --- La Timeline Verticale (MODIFIÉE) --- */
+.timeline {
+  /* FIX FOOTER : On dit à la timeline de grandir aussi */
+  flex: 1;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  /* On ajoute 50px de padding à gauche pour la ligne */
+  padding: 4rem 1rem 4rem 50px;
+  max-width: 900px; /* On l'élargit un peu */
+  margin: 0 auto;
+  position: relative;
+}
+
+/* La ligne verticale (MODIFIÉE : à gauche) */
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  /* On la place dans le padding de gauche */
+  left: 20px; 
+  /* On enlève le transform */
+  width: 4px;
+  height: 100%;
+  background-color: #0056b3;
+  z-index: 1;
+}
+
+.timeline-item {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.timeline-item .action-card {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Le point sur la timeline (MODIFIÉ : à gauche) */
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  top: 1.5rem;
+  
+  /* * LA CORRECTION EST ICI :
+   * La ligne est à left: 20px.
+   * Le conteneur .timeline a un padding-left: 50px.
+   * L'item (la carte) commence donc à 50px.
+   * Pour ramener le point à 20px, on fait 20px - 50px = -30px
+  */
+  left: -30px; 
+  
+  transform: translateX(-50%); /* On le centre sur sa position */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #0056b3;
+  border: 4px solid #fff;
+  z-index: 3;
+}
+
+/* NOUVEAU : Message "Aucune action" */
+.timeline-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #777;
+  z-index: 2; /* Pour être au-dessus de la ligne de la timeline */
+}
+
+/* Sur mobile, on réinitialise le padding de gauche */
+@media (max-width: 600px) {
+  .timeline {
+    padding: 2rem 1rem; /* Padding simple */
+  }
+
+  .timeline::before,
+  .timeline-item::after {
+    display: none;
+  }
+}

@@ -1,0 +1,183 @@
+/* src/components/Navbar.css */
+
+.navbar {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  position: relative;
+  z-index: 999;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); 
+}
+
+.navbar-logo {
+  /* MODIFIÉ : 1ère colonne (part de base) */
+  flex: 1; 
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.navbar-logo .logo-image {
+  height: 105px; 
+  width: auto;
+}
+
+.navbar-links {
+  /* MODIFIÉ : 2ème colonne (prend 2x plus de place) */
+  flex: 2; 
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+.navbar-links li {
+  margin: 0 1.5rem;
+  /* MODIFIÉ : On interdit au lien de se couper */
+  white-space: nowrap; 
+}
+.navbar-links a {
+  color: #0056b3;
+  text-decoration: none;
+  font-size: 1.2rem; /* On garde 1rem pour que ça rentre */
+  font-weight: 700; 
+}
+
+.navbar-actions {
+  /* MODIFIÉ : 3ème colonne (part de base) */
+  flex: 1; 
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* --- Boutons (plus petits) --- */
+.btn {
+  padding: 8px 12px; 
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1rem; 
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.btn.btn-primary {
+  background-color: #0056b3;
+  color: white;
+}
+.btn.btn-primary:hover {
+  background-color: #003366;
+}
+.btn.btn-secondary {
+  background-color: transparent;
+  color: #0056b3;
+  border: 2px solid #0056b3;
+}
+.btn.btn-secondary:hover {
+  background-color: #e6f0ff;
+}
+
+
+/* --- Styles Mobiles (Burger / Drawer) - NE CHANGENT PAS --- */
+/* ... (Tout le reste de votre code CSS pour le mobile est bon) ... */
+.burger-icon {
+  display: none;
+  background: none;
+  border: none;
+  color: #003366;
+  font-size: 1.8rem;
+  cursor: pointer;
+  z-index: 1002;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.side-drawer {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  height: 100vh;
+  background-color: white;
+  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  transition: right 0.3s ease-in-out;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.side-drawer.open {
+  right: 0;
+}
+
+.close-icon {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #555;
+  cursor: pointer;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.drawer-links {
+  list-style: none;
+  padding: 0;
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.drawer-links a {
+  text-decoration: none;
+  color: #003366;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.drawer-actions {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.drawer-actions .btn {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+
+
+/* --- LA MEDIA QUERY (ne change pas) --- */
+@media (max-width: 1200px) {
+  .navbar-links,
+  .navbar-actions {
+    display: none;
+  }
+  .burger-icon {
+    display: block;
+  }
+  .navbar {
+    justify-content: space-between;
+  }
+  .navbar-logo {
+    flex: 0; 
+  }
+}

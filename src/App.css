@@ -1,0 +1,214 @@
+/* src/App.css */
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* On change <main> pour qu'il ne soit qu'un conteneur */
+main {
+  flex: 1;
+  /* On enlève le display:flex, les sections s'empilent naturellement */
+}
+
+/* 1. STYLE DE LA SECTION BIENVENUE (ancien .page-content) */
+.hero-section {
+  color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content:center;
+  align-items: center;
+  text-align: center;
+  min-height: calc(100vh - 87px);
+  /* On enlève le padding fixe en haut/bas */
+  
+padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
+
+  /* --- LA MAGIE EST ICI --- */
+  /* * On prend 100% de la hauteur (vh)
+   * MOINS la hauteur de votre Navbar (Logo 55px + Padding 1rem*2 = 87px)
+  */
+
+  /* On garde l'arrière-plan montagnes */
+  background-image: url('./assets/vecteezy_alps-mountain-range-with-pine-tree-forest-and-river_13924610.svg');
+  background-size: cover;
+  background-position: center ;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+/* Le calque de la section Bienvenue */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%);
+  z-index: 1;
+}
+
+/* Texte et bouton de la section Bienvenue */
+.hero-section h1,
+.hero-section p,
+.hero-section .cta-button {
+  z-index: 2;
+  position: relative;
+  color: #003366;
+}
+
+.hero-section h1 {
+  font-size: 3.5rem; /* Un peu plus gros */
+  margin-bottom: 1rem;
+}
+
+/* Style pour votre "petit text" */
+.hero-section .hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: rem;
+  max-width: 600px; /* Pour qu'il ne soit pas trop large */
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.cta-button {
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.cta-button:hover {
+  transform: scale(1.05);
+}
+
+
+/* 2. STYLES COMMUNS POUR LES NOUVELLES SECTIONS */
+.page-section {
+  padding: 4rem 2rem; /* Espace intérieur pour chaque section */
+}
+
+.page-section .section-content {
+  margin: 0 auto; /* Centre le contenu */
+  text-align: center;
+}
+
+.page-section h2 {
+  font-size: 2.5rem;
+  color: #003366; /* Bleu foncé pour les titres */
+  margin-bottom: 1rem;
+}
+
+.page-section p {
+  font-size: 1.15rem;
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+/* 3. STYLE POUR ALTERNER LES FONDS (blanc / gris clair) */
+.page-section.alternate-bg {
+  background-color: #f9f9f9; /* Gris très clair */
+}
+
+/* src/App.css */
+
+/* ... (tout votre code existant) ... */
+
+
+/* --- STYLES DE BOUTONS ADDITIONNELS --- */
+
+
+/* Bouton secondaire (style "outline") */
+
+
+
+
+.collage-photo {
+  position: absolute; /* Positionné par rapport au .hero-section */
+  z-index: 1; /* Derrière le texte (z-index: 2), devant le fond */
+  
+  /* Look "Polaroid" */
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  
+  /* Style de l'image */
+  background-size: cover;
+  background-position: center;
+  
+  /* Dimensions (ajustez si besoin) */
+  ;
+  
+  transition: transform 0.3s ease-out;
+}
+.collage-photo:hover {
+  transform: rotate(5turn) scale(0.1);
+  z-index: 3; /* Passe devant le texte au survol */
+  transition: 5s;
+  border-radius: 50%;
+  
+}
+
+/* 2. Style de la Photo 1 */
+.photo-1 {
+  
+  background-image: url('./images/equipes/equipe.jpg');
+  top: 10%; /* 15% du haut */
+  left: 4%; /* 10% de la gauche */
+  transform: rotate(-8deg); /* Inclinaison */
+ 
+  width: 250px;
+  height: 300px;
+  
+}
+
+/* 3. Style de la Photo 2 */
+.photo-2 {
+  background-image: url('./images/equipes/IMG-20251028-WA0007.jpg');
+  background-size: 360px 420px;
+ 
+background-repeat: no-repeat;
+  bottom: 10%; /* 10% du bas */
+  right: 8%; /* 12% de la droite */
+  transform: rotate(5deg); /* Inclinaison */
+  width: 360px;
+  height: 420px
+}
+
+.hero-buttons-container {
+  display: flex;
+  gap: 1rem; /* Espace entre les boutons */
+  z-index: 2; /* Pour être au-dessus du collage */
+  position: relative; /* Pour que z-index fonctionne */
+  
+  /* Gestion du passage à la ligne sur mobile */
+  flex-wrap: wrap; 
+  justify-content: center; /* Centre les boutons si wrap */
+}
+
+/* VÉRIFICATION : Assurez-vous que ce style est bien dans App.css */
+/* S'il existe déjà, pas besoin de le recopier */
+.cta-button.secondary {
+  background-color: transparent;
+  color: #0056b3;
+  border: 2px solid #0056b3;
+}
+.cta-button.secondary:hover {
+  background-color: #e6f0ff;
+  transform: scale(1.05);
+}
+
+@media (max-width: 900px) {
+  .collage-photo {
+    display: none;
+  }
+}
+

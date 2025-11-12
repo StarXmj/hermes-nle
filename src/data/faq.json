@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "question": "Comment puis-je rejoindre l'association ?",
+    "reponse": "C'est très simple ! Il vous suffit de venir nous voir à notre local (Maison de l'Étudiant, bureau 102) ou de nous contacter via le formulaire de la page Contact en sélectionnant 'Rejoindre l'association'."
+  },
+  {
+    "id": 2,
+    "question": "Combien coûte l'adhésion ?",
+    "reponse": "L'adhésion est fixée à [Montant, ex: 5€] pour l'année universitaire. Cela vous donne accès à toutes nos réductions partenaires et à nos événements."
+  },
+  {
+    "id": 3,
+    "question": "Je suis une entreprise, comment devenir partenaire ?",
+    "reponse": "Nous sommes toujours à la recherche de nouveaux partenaires pour enrichir la vie étudiante. Rendez-vous sur la page Contact et sélectionnez 'Devenir partenaire' pour que nous puissions discuter."
+  }
+]

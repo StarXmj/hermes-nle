@@ -1,0 +1,154 @@
+/* src/sections/SectionActions.css */
+
+.actions-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* S'assure que ça passe à la ligne sur mobile */
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+/* * LA CORRECTION EST ICI :
+ * On dit : "Toute .action-card QUI SE TROUVE DANS .actions-grid"
+ * doit avoir une largeur de base (flex-basis).
+ *
+ * Cela n'affectera JAMAIS la carte dans votre .timeline
+*/
+.actions-grid .action-card {
+  flex-basis: 370px;  /* Largeur de base de la carte */
+  flex-grow: 0;      /* Ne grandit pas pour remplir l'espace */
+  flex-shrink: 0;    /* Ne rétrécit pas */
+}
+
+.action-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  
+  /* Pour que le lien du programme se positionne bien */
+  display: flex;
+  flex-direction: column;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  border-color:#0056b3 ;
+}
+
+.action-card h3 {
+  color: #0056b3;
+  font-size: 1.4rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* NOUVEAU : Conteneur pour date et lieu */
+.action-details {
+  margin-bottom: 1rem;
+}
+
+/* NOUVEAU : Ligne pour icône + texte */
+.action-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Espace entre icône et texte */
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem; /* Espace entre la date et le lieu */
+}
+
+/* NOUVEAU : Style de l'icône */
+.action-icon {
+  color: #0056b3; /* Icône en bleu */
+  font-size: 0.8rem;
+}
+
+/* On change l'ancien style .action-info */
+.action-desc {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+  
+  /* Permet à la description de grandir et pousser le lien en bas */
+  flex: 1; 
+}
+
+/* NOUVEAU : Lien vers le programme */
+.action-program-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem; /* Espace au-dessus du lien */
+  color: #0056b3;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.action-program-link:hover {
+  text-decoration: underline;
+}
+
+
+/* --- Liens "Toutes les actions" --- */
+.actions-links {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 900px) {
+  .actions-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+action-detail-item.location-link {
+  text-decoration: none; /* On enlève le soulignement par défaut */
+  transition: color 0.2s;
+}
+
+.action-detail-item.location-link:hover {
+  color: #0056b3; /* Le lieu devient bleu au survol */
+  text-decoration: underline; /* On souligne au survol */
+}
+
+.actions-grid {
+  /* On remplace 'display: grid' par 'display: flex' */
+  display: flex;
+  
+  /* LA MAGIE EST ICI : */
+  justify-content: center; /* Centre les cartes horizontalement */
+  
+  flex-wrap: wrap; /* Permet aux cartes de passer à la ligne */
+  gap: 2rem; /* Garde l'espace entre les cartes */
+  margin-top: 3rem;
+}
+
+/* On a supprimé :
+  - grid-template-columns: repeat(3, 1fr);
+  - Les @media queries (Flexbox s'en charge)
+*/
+
+/* Les liens "Toutes les actions" (ne change pas) */
+.actions-links {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}

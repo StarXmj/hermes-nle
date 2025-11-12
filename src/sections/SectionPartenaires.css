@@ -1,0 +1,41 @@
+/* src/sections/SectionPartenaires.css */
+
+.partenaires-grid {
+  display: grid;
+  /* 5 colonnes qui s'adaptent au contenu */
+  grid-template-columns: repeat(5, auto); 
+
+  gap: 5px; /* Espace très serré */
+  max-height: 980px; 
+  overflow-y: auto; /* Scroll */
+
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  padding: 5px;
+  margin-top: 3rem;
+  
+  /* Le centrage de la grille */
+  justify-content: center;
+}
+
+/* On dit à la carte (PartnerCardGrid) comment se comporter DANS la grille */
+.partenaires-grid .partner-card-grid {
+  box-shadow: none;
+  border-radius: 0; 
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* L'effet de zoom dans la grille */
+.partenaires-grid .partner-card-grid:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  z-index: 10;
+  position: relative;
+}
+
+/* Le lien "Voir tout" */
+.partenaires-links {
+  margin-top: 2rem;
+  text-align: center;
+}

@@ -1,0 +1,63 @@
+[
+  {
+    "id": 1,
+    "titre": "Dates des examens du Semestre 1 annoncées",
+    "dateISO": "2026-11-10",
+    "categorie": "Fac",
+    "description": "L'administration a publié le calendrier officiel des examens de fin de semestre. Consultez-le dès maintenant.",
+    "image": "/images/actus/campus-exam.jpg",
+    "lien": "http://googleusercontent.com/search?q=UPPA",
+    "isPinned": true
+  },
+  {
+    "id": 2,
+    "titre": "Le 'Zénith' de Pau annonce 3 nouveaux concerts",
+    "dateISO": "2026-11-09",
+    "categorie": "Pau",
+    "description": "La programmation s'enrichit avec des artistes nationaux. Découvrez qui vient enflammer la scène paloise ce printemps.",
+    "image": "/images/actus/zenith-pau.jpg",
+    "lien": "http://googleusercontent.com/search?q=Zénith+Pau",
+    "isPinned": false
+  },
+  {
+    "id": 3,
+    "titre": "Ouverture de la nouvelle cafétéria au Bât. Lettres",
+    "dateISO": "2026-12-08",
+    "categorie": "Fac",
+    "description": "Plus saine, plus rapide et avec des options véganes, la nouvelle cafétéria ouvre ses portes lundi.",
+    "image": "/images/actus/cafeteria.jpg",
+    "lien": "http://googleusercontent.com/search?q=UPPA+CROUS",
+    "isPinned": false
+  },
+  {
+    "id": 4,
+    "titre": "Festival du film étudiant : inscriptions ouvertes",
+    "dateISO": "2026-11-07",
+    "categorie": "Fac",
+    "description": "Vous avez jusqu'au 30 novembre pour soumettre votre court-métrage et tenter de gagner le prix du jury.",
+    "image": "/images/actus/cinema.jpg",
+    "lien": "http://googleusercontent.com/search?q=Festival+film+étudiant+Pau",
+    "isPinned": false
+  },
+  {
+    "id": 4,
+    "titre": "Festival du film étudiant : inscriptions ouvertes",
+    "dateISO": "2026-11-07",
+    "categorie": "Fac",
+    "description": "Vous avez jusqu'au 30 novembre pour soumettre votre court-métrage et tenter de gagner le prix du jury.",
+    "image": "/images/actus/cinema.jpg",
+    "lien": "http://googleusercontent.com/search?q=Festival+film+étudiant+Pau",
+    "isPinned": false
+  },
+  {
+    "id": 4,
+    "titre": "Festival du film étudiant : inscriptions ouvertes",
+    "dateISO": "2026-11-07",
+    "categorie": "Fac",
+    "description": "Vous avez jusqu'au 30 novembre pour soumettre votre court-métrage et tenter de gagner le prix du jury.",
+    "image": "/images/actus/cinema.jpg",
+    "lien": "http://googleusercontent.com/search?q=Festival+film+étudiant+Pau",
+    "isPinned": false
+  }
+  
+]

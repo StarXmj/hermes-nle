@@ -1,0 +1,54 @@
+.action-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* PAS DE 'width' FIXE ICI */
+  max-width: 100%; 
+}
+
+/* NOUVEAU : Style pour le badge "À venir" */
+.upcoming-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #0056b3;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 4; /* Au-dessus de tout */
+}
+
+/* NOUVEAU : Style pour griser les actions passées */
+.action-card.past-action {
+  background-color: #f9f9f9; /* Fond gris comme demandé */
+  opacity: 0.8; /* On atténue l'ensemble */
+}
+
+.action-card.past-action h3 {
+  color: #777; /* Titre en gris */
+}
+
+.action-card.past-action .action-icon {
+  color: #777; /* Icônes en gris */
+}
+
+.action-card.past-action .action-detail-item,
+.action-card.past-action .action-desc {
+  color: #555; /* Texte en gris foncé */
+}
+
+.action-card.past-action .action-program-link {
+  color: #888;
+}

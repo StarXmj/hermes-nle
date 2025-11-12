@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "titre": "Soirée d'Intégration",
+    "infoPratique": "Jeudi 20 Novembre 2025",
+    "dateISO": "2025-11-20",
+    "lieu": "Bar 'Le Campus', Centre-ville",
+    "lienLieu": "https://www.google.com/maps",
+    "description": "Rejoignez-nous pour la plus grosse soirée de l'année et rencontrer les nouveaux !",
+    "lienProgramme": "/images/programme-soiree.png"
+  },
+  {
+    "id": 2,
+    "titre": "Collecte Alimentaire",
+    "infoPratique": "Du 25 au 27 Novembre 2025",
+    "dateISO": "2025-11-25",
+    "lieu": "Hall Bâtiment Droit-Lettres",
+    "lienLieu": "https://www.google.com/maps",
+    "description": "Nous collectons des denrées non périssables pour la banque alimentaire.",
+    "lienProgramme": "/images/programme-collecte.png"
+  },
+  {
+    "id": 3,
+    "titre": "Tournoi E-Sport HERMES",
+    "infoPratique": "Samedi 6 Décembre 2025",
+    "dateISO": "2025-11-06",
+    "lieu": "Salle Informatique, Bât. Droit",
+    "lienLieu": "https://www.google.com/maps",
+    "description": "Compétition sur FIFA & LoL. De nombreux lots de nos partenaires à gagner.",
+    "lienProgramme": "/images/programme-esport.png"
+  },
+  {
+    "id": 4,
+    "titre": "Tournoi E-Sport HERMES",
+    "infoPratique": "Samedi 6 Décembre 2025",
+    "dateISO": "2025-12-06",
+    "lieu": "Salle Informatique, Bât. Droit",
+    "lienLieu": "https://www.google.com/maps",
+    "description": "Compétition sur FIFA & LoL. De nombreux lots de nos partenaires à gagner.",
+    "lienProgramme": "/images/programme-esport.png"
+  }
+]

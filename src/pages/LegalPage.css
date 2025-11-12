@@ -1,0 +1,27 @@
+/* src/pages/LegalPage.css */
+
+.legal-page .section-content {
+  text-align: left; /* Plus lisible pour du texte légal */
+  max-width: 800px; /* On réduit la largeur */
+}
+
+.legal-page article {
+  margin-top: 2.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1.5rem;
+}
+
+.legal-page h2 {
+  font-size: 1.8rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.legal-page ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.legal-page ul li {
+  line-height: 1.6;
+}

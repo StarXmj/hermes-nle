@@ -1,0 +1,50 @@
+/* src/sections/SectionActus.css */
+
+/* 1. On s'assure que le conteneur du carrousel 
+   peut positionner les flèches par rapport à lui */
+.actus-carousel {
+  position: relative;
+  
+  /* On redonne un padding normal (pas de magie négative) */
+  padding: 1rem 0 3rem 0;
+}
+
+.actus-carousel .swiper-slide {
+  height: auto;
+  display: flex;
+}
+
+.actus-carousel .actu-card {
+  width: 100%;
+}
+
+/* 2. On personnalise les flèches */
+.actus-carousel .swiper-button-next,
+.actus-carousel .swiper-button-prev {
+  color: #0056b3; /* Votre couleur bleue */
+  
+  /* On ajoute un petit fond semi-transparent 
+     pour qu'elles ressortent sur les images */
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 40px;  /* On leur donne une taille fixe */
+  height: 40px;
+  
+  /* On ajuste la taille de l'icône flèche elle-même */
+  transform: scale(0.6); 
+}
+
+/* 3. On ajuste la position (à l'intérieur) */
+.actus-carousel .swiper-button-prev {
+  left: 10px; /* 10px du bord gauche */
+}
+.actus-carousel .swiper-button-next {
+  right: 10px; /* 10px du bord droit */
+}
+
+
+/* 4. On personnalise les points de pagination */
+.actus-carousel .swiper-pagination-bullet-active {
+  background-color: #0056b3;
+}
+

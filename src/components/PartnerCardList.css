@@ -1,0 +1,87 @@
+/* src/components/PartnerCard.css */
+
+/* 1. On remplace tout l'ancien style */
+.partner-card {
+  display: flex; /* Photo à gauche, texte à droite */
+  align-items: center; /* Aligne verticalement */
+  gap: 2rem; /* Espace entre logo et texte */
+  
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  
+  /* On ajoute un léger hover */
+  transition: transform 0.2s ease-in-out;
+}
+.partner-card:hover {
+  transform: translateY(-5px);
+}
+
+/* 2. Colonne de gauche (Logo) */
+.partner-logo-container {
+  flex-shrink: 0; /* Empêche le logo de rétrécir */
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  border-radius: 8px; /* On le met carré */
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.partner-logo {
+  max-width: 100%;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+/* 3. Colonne de droite (Texte) */
+.partner-content {
+  flex-grow: 1; /* Prend la place restante */
+  display: flex;
+  flex-direction: column;
+}
+
+.partner-content h3 {
+  font-size: 1.5rem; /* Titre plus gros */
+  color: #003366;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.partner-content p {
+  font-size: 1rem; /* Description plus grosse */
+  color: #555;
+  line-height: 1.6;
+  flex-grow: 1; /* Pousse les liens en bas */
+  margin-bottom: 1rem;
+}
+
+/* 4. Les liens (visibles) */
+.partner-links-visible {
+  display: flex;
+  flex-wrap: wrap; /* Pour les mobiles */
+  gap: 1.5rem; /* Espace entre les deux liens */
+}
+
+.partner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #0056b3;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.partner-link:hover {
+  text-decoration: underline;
+}
+
+/* On enlève tous les anciens styles de hover-reveal */
