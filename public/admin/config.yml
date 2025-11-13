@@ -1,30 +1,26 @@
 # Fichier de configuration de Decap CMS
+# ATTENTION : L'INDENTATION EST TRÈS IMPORTANTE.
+# N'UTILISEZ PAS DE TABULATIONS ( touche "Tab" ),
+# UTILISEZ SEULEMENT DES ESPACES ( 2 espaces ).
 
 # 1. Backend (Où est le code ?)
 backend:
-  name: git-gateway # On utilise le service de Vercel/Netlify
-  branch: main # Le nom de votre branche principale
+  name: git-gateway
+  branch: main
 
-# 2. Média (Où stocker les images si on en ajoute via le CMS)
-media_folder: "public/images/uploads" # Stocke les images ici
-public_folder: "/images/uploads" # Comment y accéder sur le site
+# 2. Média (Où stocker les images)
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
 
 # 3. Collections (CE SONT VOS FICHIERS JSON)
 collections:
   # Première collection : Les Actions
-  - name: "actions" # Nom interne
-    label: "Actions" # Nom affiché dans l'interface
-    folder: "src/data/actions" # OÙ SONT LES FICHIERS ?
-    create: true # Autoriser la création de nouvelles actions
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}" # Nom du fichier (pas très utile pour JSON)
-    
-    # IMPORTANT : On dit qu'on édite UN SEUL fichier
+  - name: "actions"
+    label: "Actions"
     files:
       - label: "Toutes les Actions"
         name: "actions"
-        file: "src/data/actions.json" # CHEMIN VERS VOTRE JSON
-        
-        # Ce sont les champs du formulaire
+        file: "src/data/actions.json"
         fields:
           - {label: "Titre", name: "titre", widget: "string"}
           - {label: "Date (Texte)", name: "infoPratique", widget: "string"}
@@ -33,7 +29,7 @@ collections:
           - {label: "Lien Google Maps", name: "lienLieu", widget: "string"}
           - {label: "Description", name: "description", widget: "text"}
           - {label: "Lien Programme", name: "lienProgramme", widget: "string"}
-  
+
   # Deuxième collection : Les Partenaires
   - name: "partenaires"
     label: "Partenaires"
@@ -47,7 +43,7 @@ collections:
           - {label: "Description", name: "description", widget: "text"}
           - {label: "Lien Google Maps", name: "lienAdresse", widget: "string"}
           - {label: "Lien Site Web", name: "lienSite", widget: "string"}
-          
+
   # Troisième collection : Les Actualités
   - name: "actus"
     label: "Actualités"
