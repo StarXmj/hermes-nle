@@ -1,20 +1,14 @@
 # Fichier de configuration de Decap CMS
-# ATTENTION : L'INDENTATION EST TRÈS IMPORTANTE.
-# N'UTILISEZ PAS DE TABULATIONS ( touche "Tab" ),
-# UTILISEZ SEULEMENT DES ESPACES ( 2 espaces ).
+# UTILISEZ UNIQUEMENT DES ESPACES (2 par niveau)
 
-# 1. Backend (Où est le code ?)
 backend:
   name: git-gateway
   branch: main
 
-# 2. Média (Où stocker les images)
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
 
-# 3. Collections (CE SONT VOS FICHIERS JSON)
 collections:
-  # Première collection : Les Actions
   - name: "actions"
     label: "Actions"
     files:
@@ -30,7 +24,6 @@ collections:
           - {label: "Description", name: "description", widget: "text"}
           - {label: "Lien Programme", name: "lienProgramme", widget: "string"}
 
-  # Deuxième collection : Les Partenaires
   - name: "partenaires"
     label: "Partenaires"
     files:
@@ -44,7 +37,6 @@ collections:
           - {label: "Lien Google Maps", name: "lienAdresse", widget: "string"}
           - {label: "Lien Site Web", name: "lienSite", widget: "string"}
 
-  # Troisième collection : Les Actualités
   - name: "actus"
     label: "Actualités"
     files:

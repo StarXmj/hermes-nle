@@ -1,11 +1,16 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-g"/>
+  <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Administration | Hermes by NLE</title>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  
+  <!-- On charge la configuration dans la tête -->
+  <!-- CORRECTION : On utilise un chemin absolu (commençant par /) -->
+  <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url">
 </head>
 <body>
-  </body>
+  <!-- On charge le script À LA FIN du body -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+</body>
 </html>
