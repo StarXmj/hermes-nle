@@ -1,0 +1,19 @@
+# Fichier de configuration principal de Netlify
+
+[build]
+  # Commande pour construire votre site Vite
+  command = "npm run build"
+  # Dossier où se trouve le site construit
+  publish = "dist"
+
+# Règle pour l'admin (laisse /admin tranquille)
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/:splat"
+  status = 200
+
+# Règle pour React (redirige tout le reste)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
