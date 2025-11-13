@@ -6,6 +6,8 @@ export const config = {
     name: "github", // <-- Changé de 'git-gateway' à 'github'
     repo: "StarXmj/hermes-nle", // <-- Le nom de votre dépôt
     branch: "main", // <-- Votre branche principale
+    auth_type: "implicit",
+    app_id: "Ov23lioltwZwh28yA4eT",
   },
   
   // 2. Les médias (ne changent pas)
