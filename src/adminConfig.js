@@ -3,13 +3,11 @@
 export const config = {
   // 1. LA CORRECTION : On utilise le backend 'github'
   backend: {
-    name: "github", // <-- Changé de 'git-gateway' à 'github'
-    repo: "StarXmj/hermes-nle", // <-- Le nom de votre dépôt
-    branch: "main", // <-- Votre branche principale
-    auth_type: "implicit",
-    app_id: "Ov23lioltwZwh28yA4eT",
+    name: "github",
+    repo: "StarXmj/hermes-nle", // Votre dépôt
+    branch: "main"             // Votre branche
+    // On ne met RIEN d'autre (pas de app_id, pas de auth_type)
   },
-  
   // 2. Les médias (ne changent pas)
   media_folder: "public/images/uploads",
   public_folder: "/images/uploads",
