@@ -1,12 +1,18 @@
 // src/adminConfig.js
 
 export const config = {
+  // 1. LA CORRECTION : On utilise le backend 'github'
   backend: {
-    name: "git-gateway",
-    branch: "main"
+    name: "github", // <-- Changé de 'git-gateway' à 'github'
+    repo: "StarXmj/hermes-nle", // <-- Le nom de votre dépôt
+    branch: "main", // <-- Votre branche principale
   },
+  
+  // 2. Les médias (ne changent pas)
   media_folder: "public/images/uploads",
   public_folder: "/images/uploads",
+  
+  // 3. Les collections (ne changent pas)
   collections: [
     {
       name: "actions",
