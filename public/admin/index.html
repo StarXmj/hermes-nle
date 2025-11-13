@@ -4,13 +4,13 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Administration | Hermes by NLE</title>
+  
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </head>
 <body>
   
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  
   <script>
-    window.CMS_CONFIG = {
+    var CMS_CONFIG = {
       backend: {
         name: "git-gateway",
         branch: "main"
@@ -79,8 +79,10 @@
       ]
     };
 
-    // On dit à Decap de s'initialiser avec cette config
-    CMS.init({ config: window.CMS_CONFIG });
+    // 3. On attend que le script soit chargé, PUIS on l'initialise
+    window.addEventListener('load', function () {
+      CMS.init({ config: CMS_CONFIG });
+    });
   </script>
 </body>
 </html>
