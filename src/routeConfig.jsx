@@ -11,6 +11,7 @@ import CreditsPage from './pages/CreditsPage';
 import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage'; // <-- IMPORTER ICI
 import PartenairesPage from './pages/PartenairesPage'; // <-- IMPORTER
+import AdminPage from './pages/AdminPage'; // 1. IMPORTER LA PAGE ADMIN
 // 2. On crée la liste "maîtresse" de toutes les routes
 export const appRoutes = [
   // --- Catégorie "main" (pour la navigation) ---
@@ -47,6 +48,12 @@ export const appRoutes = [
     element: <ContactPage />,
     name: 'Contact (Nous rejoindre / Devenir partenaire)',
     category: 'main',
+  },
+  {
+    path: '/admin',
+    element: <AdminPage />,
+    name: 'Administration',
+    category: 'admin' // On met une catégorie 'admin' pour la cacher du plan de site
   },
   
   // --- Catégorie "legal" (pour le footer) ---
