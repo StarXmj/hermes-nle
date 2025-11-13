@@ -1,0 +1,7 @@
+# Fichier _redirects pour Netlify
+
+# Laisse l'admin CMS tranquille
+/admin/* /admin/:splat  200
+
+# Redirige tout le reste vers React (pour que vos routes /actions, /contact, etc. fonctionnent)
+/* /index.html   200
