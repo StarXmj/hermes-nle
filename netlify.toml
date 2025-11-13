@@ -1,9 +1,7 @@
-# Fichier de configuration principal de Netlify
+# Fichier netlify.toml
 
 [build]
-  # Commande pour construire votre site Vite
   command = "npm run build"
-  # Dossier où se trouve le site construit
   publish = "dist"
 
 # Règle pour l'admin (laisse /admin tranquille)
