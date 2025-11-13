@@ -1,0 +1,65 @@
+# Fichier de configuration de Decap CMS
+
+# 1. Backend (Où est le code ?)
+backend:
+  name: git-gateway # On utilise le service de Vercel/Netlify
+  branch: main # Le nom de votre branche principale
+
+# 2. Média (Où stocker les images si on en ajoute via le CMS)
+media_folder: "public/images/uploads" # Stocke les images ici
+public_folder: "/images/uploads" # Comment y accéder sur le site
+
+# 3. Collections (CE SONT VOS FICHIERS JSON)
+collections:
+  # Première collection : Les Actions
+  - name: "actions" # Nom interne
+    label: "Actions" # Nom affiché dans l'interface
+    folder: "src/data/actions" # OÙ SONT LES FICHIERS ?
+    create: true # Autoriser la création de nouvelles actions
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}" # Nom du fichier (pas très utile pour JSON)
+    
+    # IMPORTANT : On dit qu'on édite UN SEUL fichier
+    files:
+      - label: "Toutes les Actions"
+        name: "actions"
+        file: "src/data/actions.json" # CHEMIN VERS VOTRE JSON
+        
+        # Ce sont les champs du formulaire
+        fields:
+          - {label: "Titre", name: "titre", widget: "string"}
+          - {label: "Date (Texte)", name: "infoPratique", widget: "string"}
+          - {label: "Date (ISO)", name: "dateISO", widget: "date"}
+          - {label: "Lieu", name: "lieu", widget: "string"}
+          - {label: "Lien Google Maps", name: "lienLieu", widget: "string"}
+          - {label: "Description", name: "description", widget: "text"}
+          - {label: "Lien Programme", name: "lienProgramme", widget: "string"}
+  
+  # Deuxième collection : Les Partenaires
+  - name: "partenaires"
+    label: "Partenaires"
+    files:
+      - label: "Tous les Partenaires"
+        name: "partenaires"
+        file: "src/data/partenaires.json"
+        fields:
+          - {label: "Nom", name: "nom", widget: "string"}
+          - {label: "Logo (chemin)", name: "logo", widget: "string"}
+          - {label: "Description", name: "description", widget: "text"}
+          - {label: "Lien Google Maps", name: "lienAdresse", widget: "string"}
+          - {label: "Lien Site Web", name: "lienSite", widget: "string"}
+          
+  # Troisième collection : Les Actualités
+  - name: "actus"
+    label: "Actualités"
+    files:
+      - label: "Toutes les Actualités"
+        name: "actus"
+        file: "src/data/actus.json"
+        fields:
+          - {label: "Titre", name: "titre", widget: "string"}
+          - {label: "Date (ISO)", name: "dateISO", widget: "date"}
+          - {label: "Catégorie", name: "categorie", widget: "select", options: ["Fac", "Pau"]}
+          - {label: "Description", name: "description", widget: "text"}
+          - {label: "Image (chemin)", name: "image", widget: "string"}
+          - {label: "Lien Externe", name: "lien", widget: "string"}
+          - {label: "Épinglé ?", name: "isPinned", widget: "boolean", default: false}
