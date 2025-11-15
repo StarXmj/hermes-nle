@@ -26,7 +26,7 @@ function ActionCard({ action, status, isUpcoming }) {
         {/* ... (le reste de la carte ne change pas) ... */}
         <div className="action-detail-item">
           <FaCalendarAlt className="action-icon" /> 
-          <span>{action.infoPratique}</span>
+          <span>{action.infoDate}</span>
         </div>
         
         <a 

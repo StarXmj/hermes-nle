@@ -1,29 +1,47 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react'; // <-- MODIFIÉ ICI
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-
-// 1. On importe la liste des routes
 import { appRoutes } from './routeConfig.jsx'; 
-
-// On importe le layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import TestModeModal from './components/TestModeModal'; // 2. IMPORTER LE MODAL
+import TestModeModal from './components/TestModeModal';
 import { Analytics } from '@vercel/analytics/react';
-// On importe les CSS
 import './App.css'; 
-// On importe le CSS des pages légales (car il n'est plus importé par elles)
 import './pages/LegalPage.css';
 
+// --- NOUVEAU : Fonction pour créer les routes ---
+// Cette fonction sait lire les routes "enfants" (children)
+const createRoutes = (routes) => {
+  return routes.map((route, index) => {
+    if (route.children) {
+      // C'est une route "parente" (comme ProtectedRoute)
+      return (
+        <Route key={index} element={route.element}>
+          {/* On crée les routes enfants récursivement */}
+          {createRoutes(route.children)} 
+        </Route>
+      );
+    }
+    // C'est une route simple
+    return (
+      <Route 
+        key={index} 
+        path={route.path} 
+        element={route.element} 
+      />
+    );
+  });
+};
+// --- FIN DE LA NOUVELLE FONCTION ---
+
 function App() {
-  // 3. Logique pour gérer l'ouverture du modal
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 4. Ce hook se lance UNE SEULE FOIS au chargement
   useEffect(() => {
-    // On l'ouvre au démarrage
     setIsModalOpen(true);
-  }, []); // Le tableau vide [] signifie "ne s'exécute qu'une fois"
+  }, []);
+
   return (
     <div className="App">
       <TestModeModal 
@@ -33,14 +51,8 @@ function App() {
       <Navbar />
 
       <Routes>
-        {/* 2. On génère les routes automatiquement ! */}
-        {appRoutes.map((route, index) => (
-          <Route 
-            key={index} 
-            path={route.path} 
-            element={route.element} 
-          />
-        ))}
+        {/* On utilise notre nouvelle fonction pour créer les routes */}
+        {createRoutes(appRoutes)}
       </Routes>
 
       <Footer />

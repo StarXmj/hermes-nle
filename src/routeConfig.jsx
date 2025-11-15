@@ -1,4 +1,4 @@
-// src/routeConfig.js
+// src/routeConfig.jsx
 import React from 'react';
 
 // 1. On importe tous les composants de page
@@ -9,11 +9,13 @@ import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import PolitiqueConfidentialitePage from './pages/PolitiqueConfidentialitePage';
 import CreditsPage from './pages/CreditsPage';
 import SitemapPage from './pages/SitemapPage';
-import AboutPage from './pages/AboutPage'; // <-- IMPORTER ICI
-import PartenairesPage from './pages/PartenairesPage'; // <-- IMPORTER
+import AboutPage from './pages/AboutPage';
+import PartenairesPage from './pages/PartenairesPage';
 import LoginPage from './pages/LoginPage';
-import AdminPage from './pages/AdminPage';
+// L'alias est confus, mais c'est ce que vous avez dans votre fichier
+import AdminPage from './pages/AdminDashboard'; 
 import ProtectedRoute from './components/ProtectedRoute';
+
 // 2. On crée la liste "maîtresse" de toutes les routes
 export const appRoutes = [
   {
@@ -60,10 +62,6 @@ export const appRoutes = [
     name: 'Nos Partenaires',
     category: 'main',
   },
-  
-  
-  // 2. AJOUTER LA ROUTE POUR LES ACTUS
-  
   {
     path: '/contact',
     element: <ContactPage />,
@@ -71,7 +69,6 @@ export const appRoutes = [
     category: 'main',
   },
  
-  
   // --- Catégorie "legal" (pour le footer) ---
   {
     path: '/mentions-legales',
@@ -98,3 +95,4 @@ export const appRoutes = [
     category: 'legal',
   },
 ];
+// J'ai supprimé l'accolade '}' en trop qui était ici.

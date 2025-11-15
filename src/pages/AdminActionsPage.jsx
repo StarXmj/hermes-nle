@@ -1,28 +1,26 @@
-// src/pages/AdminPage.jsx
+// src/pages/AdminActionsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // On importe Link
 import { Helmet } from 'react-helmet-async';
 import { FaTrash, FaArrowUp, FaArrowDown, FaEdit, FaPlusCircle } from 'react-icons/fa';
-import ActionForm from '../components/ActionForm'; // Le formulaire d'édition
-import './ActionsPage.css'; // Le style pour cette page
+import ActionForm from '../components/ActionForm'; 
+import './AdminActionsPage.css'; // CSS Renommé
 
-function AdminPage() {
+function AdminActionsPage() { // Nom de fonction changé
   const navigate = useNavigate();
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // 1. Gérer le formulaire : 'null' = fermé, 'objet' = édition, 'new' = création
   const [editingAction, setEditingAction] = useState(null); 
 
-  // 2. Fonction pour charger TOUTES les actions (publiées ou non)
   async function fetchActions() {
+    // ... (toute la logique de fetchActions, handleDelete, handleStatusToggle... reste la même)
     setLoading(true);
     const { data, error } = await supabase
       .from('actions')
       .select('*')
-      .order('dateISO', { ascending: false }); // On trie par date (plus récent en haut)
+      .order('dateISO', { ascending: false }); 
 
     if (error) {
       setError(error.message);
@@ -32,14 +30,11 @@ function AdminPage() {
     setLoading(false);
   }
 
-  // 3. Charger les actions au démarrage
   useEffect(() => {
     fetchActions();
   }, []);
 
-  // 4. Fonction pour le bouton SUPPRIMER (Delete)
   const handleDelete = async (actionId) => {
-    // Demande de confirmation
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette action ?")) {
       const { error } = await supabase
         .from('actions')
@@ -49,12 +44,11 @@ function AdminPage() {
       if (error) {
         setError(error.message);
       } else {
-        await fetchActions(); // On rafraîchit la liste
+        await fetchActions(); 
       }
     }
   };
 
-  // 5. Fonction pour le SWITCH (Update)
   const handleStatusToggle = async (action) => {
     const newStatus = action.status === 'publié' ? 'brouillon' : 'publié';
     
@@ -66,24 +60,17 @@ function AdminPage() {
     if (error) {
       setError(error.message);
     } else {
-      await fetchActions(); // On rafraîchit la liste
+      await fetchActions(); 
     }
   };
 
-  // 6. Fonction pour sauvegarder (Create / Update)
   const handleSave = async () => {
-    await fetchActions(); // On rafraîchit la liste
-    setEditingAction(null); // On ferme le formulaire
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
+    await fetchActions(); 
+    setEditingAction(null); 
   };
 
   // ---------------- RENDU ----------------
   
-  // Si le formulaire est ouvert, on n'affiche que ça
   if (editingAction) {
     return (
       <main className="page-section">
@@ -99,7 +86,6 @@ function AdminPage() {
     );
   }
 
-  // Sinon, on affiche la liste
   return (
     <main className="page-section">
       <Helmet>
@@ -107,18 +93,16 @@ function AdminPage() {
       </Helmet>
       
       <div className="admin-header">
-        <h1>Gestion des Actions</h1>
-        <div>
-          <button 
-            className="cta-button" 
-            onClick={() => setEditingAction('new')} // Ouvre le formulaire pour une NOUVELLE action
-          >
-            <FaPlusCircle /> Ajouter une action
-          </button>
-          <button onClick={handleLogout} className="cta-button secondary">
-            Déconnexion
-          </button>
-        </div>
+        {/* On ajoute un lien de retour vers le tableau de bord */}
+        <Link to="/admin" className="admin-back-link">
+          &larr; Retour au Tableau de bord
+        </Link>
+        <button 
+          className="cta-button" 
+          onClick={() => setEditingAction('new')} 
+        >
+          <FaPlusCircle /> Ajouter une action
+        </button>
       </div>
       
       {loading && <p>Chargement...</p>}
@@ -132,7 +116,6 @@ function AdminPage() {
               <span className="admin-row-date">{new Date(action.dateISO).toLocaleDateString('fr-FR')}</span>
             </div>
             <div className="admin-row-controls">
-              {/* Le Switch de statut */}
               <label className="switch">
                 <input 
                   type="checkbox" 
@@ -141,18 +124,15 @@ function AdminPage() {
                 />
                 <span className="slider round"></span>
               </label>
-              {/* Les flèches (Pas encore fonctionnelles) */}
               <button className="admin-btn icon-btn" title="Monter"><FaArrowUp /></button>
               <button className="admin-btn icon-btn" title="Descendre"><FaArrowDown /></button>
-              {/* Modifier */}
               <button 
                 className="admin-btn icon-btn" 
                 title="Modifier"
-                onClick={() => setEditingAction(action)} // Ouvre le formulaire pour CETTE action
+                onClick={() => setEditingAction(action)}
               >
                 <FaEdit />
               </button>
-              {/* Supprimer */}
               <button 
                 className="admin-btn icon-btn danger" 
                 title="Supprimer"
@@ -168,4 +148,4 @@ function AdminPage() {
   );
 }
 
-export default AdminPage;
+export default AdminActionsPage; // Nom de fonction changé
