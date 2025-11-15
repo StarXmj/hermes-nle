@@ -22,7 +22,7 @@ function SectionActions() {
       const { data, error } = await supabase
         .from('actions')          // Depuis la table 'actions'
         .select('*')              // Prends toutes les colonnes
-        .eq('status', 'public')   // OÙ le statut est 'publié'
+        .eq('status', 'publié')   // OÙ le statut est 'publié'
         .gte('dateISO', today)    // ET OÙ la date est >= aujourd'hui
         .order('dateISO', { ascending: true }) // Trié par date
         .limit(3);                // On ne prend que les 3 premiers

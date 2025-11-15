@@ -40,6 +40,7 @@ function Footer() {
         <a href="/politique-de-confidentialite">Politique de confidentialité</a>
         <a href="/credits">Crédits</a>
         <a href="/plan-du-site">Plan du site</a>
+        <a href="/admin">Administration</a>
       </div>
     </footer>
   );

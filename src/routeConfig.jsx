@@ -3,7 +3,7 @@ import React from 'react';
 
 // 1. On importe tous les composants de page
 import HomePage from './pages/HomePage';
-import ActionsPage from './pages/ActionsPage';
+// import ActionsPage from './pages/ActionsPage'; // <-- PROBLÈME : C'est un composant Admin
 import ContactPage from './pages/ContactPage';
 import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import PolitiqueConfidentialitePage from './pages/PolitiqueConfidentialitePage';
@@ -12,9 +12,24 @@ import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage';
 import PartenairesPage from './pages/PartenairesPage';
 import LoginPage from './pages/LoginPage';
-// L'alias est confus, mais c'est ce que vous avez dans votre fichier
-import AdminPage from './pages/AdminDashboard'; 
+import AdminDashboard from './pages/AdminDashboard'; // Renommé pour plus de clarté
 import ProtectedRoute from './components/ProtectedRoute';
+
+// --- CORRECTION : Importer le BON composant admin ---
+import AdminActionsPage from './pages/AdminActionsPage'; 
+
+// --- CORRECTION : Importer le VRAI composant public ---
+// Pour l'instant, c'est un placeholder. Remplacez-le par votre vrai composant de page publique.
+const PublicActionsPage = () => (
+  <main className="page-section">
+    <div className="section-content">
+      <h1>Nos Actions</h1>
+      <p>Contenu de la page publique des actions (timeline, filtres, etc.) à venir.</p>
+      <p><i>(Vous devez remplacer le contenu du fichier src/pages/ActionsPage.jsx par ce code)</i></p>
+    </div>
+  </main>
+);
+
 
 // 2. On crée la liste "maîtresse" de toutes les routes
 export const appRoutes = [
@@ -31,9 +46,16 @@ export const appRoutes = [
     children: [
       {
         path: '/admin',
-        element: <AdminPage />,
+        element: <AdminDashboard />, // Utilise le bon import
         name: 'Admin',
         category: 'admin' // Hors du plan de site
+      },
+      // --- CORRECTION : Ajout de la route admin manquante ---
+      {
+        path: '/admin/actions',
+        element: <AdminActionsPage />, // Utilise le VRAI composant admin
+        name: 'Admin Actions',
+        category: 'admin'
       }
     ]
   },
@@ -51,8 +73,9 @@ export const appRoutes = [
     category: 'main',
   },
   {
+    // --- CORRECTION : Utilise le placeholder pour la page publique ---
     path: '/actions',
-    element: <ActionsPage />,
+    element: <PublicActionsPage />, 
     name: 'Nos Actions',
     category: 'main',
   },
@@ -95,4 +118,3 @@ export const appRoutes = [
     category: 'legal',
   },
 ];
-// J'ai supprimé l'accolade '}' en trop qui était ici.

@@ -49,18 +49,41 @@ function AdminActionsPage() { // Nom de fonction changé
     }
   };
 
-  const handleStatusToggle = async (action) => {
-    const newStatus = action.status === 'publié' ? 'brouillon' : 'publié';
-    
+  const handleStatusToggle = async (actionToToggle) => {
+    const newStatus = actionToToggle.status === 'publié' ? 'brouillon' : 'publié';
+    const originalStatus = actionToToggle.status; // On garde l'ancien statut en cas d'erreur
+
+    // 1. Mise à jour optimiste : On met à jour l'état local IMMÉDIATEMENT
+    // L'interface va se re-dessiner avec le nouveau statut avant même la fin de l'appel.
+    setActions(currentActions =>
+      currentActions.map(action =>
+        action.id === actionToToggle.id
+          ? { ...action, status: newStatus } // On change le statut de l'action concernée
+          : action
+      )
+    );
+
+    // 2. On envoie la requête à Supabase en arrière-plan
     const { error } = await supabase
       .from('actions')
       .update({ status: newStatus })
-      .eq('id', action.id);
+      .eq('id', actionToToggle.id);
 
+    // 3. Rollback (Annulation) en cas d'erreur
     if (error) {
-      setError(error.message);
+      setError(`Erreur lors de la mise à jour : ${error.message}`);
+      
+      // On annule le changement dans l'UI en remettant l'ancien statut
+      setActions(currentActions =>
+        currentActions.map(action =>
+          action.id === actionToToggle.id
+            ? { ...action, status: originalStatus } // On remet l'ancien statut
+            : action
+        )
+      );
     } else {
-      await fetchActions(); 
+      // Succès ! L'UI est déjà à jour. Pas besoin de re-fetch.
+      setError(null); // On nettoie les éventuelles erreurs précédentes
     }
   };
 

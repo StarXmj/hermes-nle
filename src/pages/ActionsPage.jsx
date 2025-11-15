@@ -1,171 +1,176 @@
-// src/pages/AdminPage.jsx
+// src/pages/ActionsPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import ActionCard from '../components/ActionCard';
 import { Helmet } from 'react-helmet-async';
-import { FaTrash, FaArrowUp, FaArrowDown, FaEdit, FaPlusCircle } from 'react-icons/fa';
-import ActionForm from '../components/ActionForm'; // Le formulaire d'édition
-import './ActionsPage.css'; // Le style pour cette page
+import './ActionsPage.css'; // On utilise le CSS de la timeline
 
-function AdminPage() {
-  const navigate = useNavigate();
-  const [actions, setActions] = useState([]);
+function ActionsPage() {
+  const [allActions, setAllActions] = useState([]);
+  const [filteredActions, setFilteredActions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // 1. Gérer le formulaire : 'null' = fermé, 'objet' = édition, 'new' = création
-  const [editingAction, setEditingAction] = useState(null); 
+  const [filter, setFilter] = useState('all'); // 'all', 'future', 'past'
+  const [upcomingActionId, setUpcomingActionId] = useState(null);
 
-  // 2. Fonction pour charger TOUTES les actions (publiées ou non)
-  async function fetchActions() {
-    setLoading(true);
+  // Fonction pour charger les données
+  async function loadActions() {
+    // Note : On ne met pas setLoading(true) pour éviter le flash
     const { data, error } = await supabase
       .from('actions')
       .select('*')
+      .eq('status', 'publié') // On ne prend que les actions publiées
       .order('dateISO', { ascending: false }); // On trie par date (plus récent en haut)
 
     if (error) {
-      setError(error.message);
+      console.error('Erreur de chargement des actions:', error);
     } else {
-      setActions(data);
+      setAllActions(data);
+
+      // Calculer l'ID de la prochaine action "À venir"
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const futureActionsAsc = data
+        .filter(a => new Date(a.dateISO) >= today)
+        .sort((a, b) => new Date(a.dateISO) - new Date(b.dateISO)); // Tri ascendant
+        
+      if (futureActionsAsc.length > 0) {
+        setUpcomingActionId(futureActionsAsc[0].id);
+      } else {
+        setUpcomingActionId(null);
+      }
     }
     setLoading(false);
   }
 
-  // 3. Charger les actions au démarrage
+  // 1. Premier effet : Chargement initial et abonnement Realtime
   useEffect(() => {
-    fetchActions();
-  }, []);
+    loadActions(); // Chargement initial
 
-  // 4. Fonction pour le bouton SUPPRIMER (Delete)
-  const handleDelete = async (actionId) => {
-    // Demande de confirmation
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette action ?")) {
-      const { error } = await supabase
-        .from('actions')
-        .delete()
-        .eq('id', actionId);
+    // Abonnement Realtime
+    const channel = supabase
+      .channel('actions-public-page-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'actions' },
+        (payload) => {
+          console.log('Changement détecté sur la page Actions !', payload);
+          loadActions(); // Recharge les données
+        }
+      )
+      .subscribe();
 
-      if (error) {
-        setError(error.message);
-      } else {
-        await fetchActions(); // On rafraîchit la liste
-      }
-    }
-  };
+    // Nettoyage de l'abonnement
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []); // Ne s'exécute qu'une fois au montage
 
-  // 5. Fonction pour le SWITCH (Update)
-  const handleStatusToggle = async (action) => {
-    const newStatus = action.status === 'publié' ? 'brouillon' : 'publié';
+  // 2. Deuxième effet : Filtrage (se lance quand 'allActions' ou 'filter' changent)
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Important pour la comparaison de date
     
-    const { error } = await supabase
-      .from('actions')
-      .update({ status: newStatus })
-      .eq('id', action.id);
+    let actionsToShow = [];
 
-    if (error) {
-      setError(error.message);
-    } else {
-      await fetchActions(); // On rafraîchit la liste
+    if (filter === 'all') {
+      actionsToShow = allActions; // Déjà trié du plus récent au plus ancien
+    } 
+    else if (filter === 'future') {
+      actionsToShow = allActions
+        .filter(a => new Date(a.dateISO) >= today)
+        .sort((a, b) => new Date(a.dateISO) - new Date(b.dateISO)); // Tri ascendant (le plus proche en premier)
+    } 
+    else if (filter === 'past') {
+      actionsToShow = allActions
+        .filter(a => new Date(a.dateISO) < today); // Déjà trié desc par défaut
     }
-  };
+    
+    setFilteredActions(actionsToShow);
 
-  // 6. Fonction pour sauvegarder (Create / Update)
-  const handleSave = async () => {
-    await fetchActions(); // On rafraîchit la liste
-    setEditingAction(null); // On ferme le formulaire
-  };
+  }, [allActions, filter]); // Dépend de la liste complète ET du filtre
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
-
-  // ---------------- RENDU ----------------
-  
-  // Si le formulaire est ouvert, on n'affiche que ça
-  if (editingAction) {
-    return (
-      <main className="page-section">
-        <Helmet>
-          <title>Édition - Admin Hermes</title>
-        </Helmet>
-        <ActionForm 
-          action={editingAction === 'new' ? {} : editingAction} 
-          onSave={handleSave}
-          onCancel={() => setEditingAction(null)}
-        />
-      </main>
-    );
-  }
-
-  // Sinon, on affiche la liste
   return (
-    <main className="page-section">
+    <main className="page-section actions-page-container">
       <Helmet>
-        <title>Admin - Actions - Hermes by NLE</title>
+        <title>Nos Actions - Hermes by NLE</title>
+        <meta name="description" content="Découvrez toutes les actions passées et à venir de l'association Hermes." />
       </Helmet>
       
-      <div className="admin-header">
-        <h1>Gestion des Actions</h1>
-        <div>
+      <header className="actions-page-header">
+        <h1>Nos Actions</h1>
+        <p>Toutes nos animations, événements et interventions.</p>
+        
+        <div className="filter-buttons">
           <button 
-            className="cta-button" 
-            onClick={() => setEditingAction('new')} // Ouvre le formulaire pour une NOUVELLE action
+            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
           >
-            <FaPlusCircle /> Ajouter une action
+            Toutes
           </button>
-          <button onClick={handleLogout} className="cta-button secondary">
-            Déconnexion
+          <button 
+            className={`filter-btn ${filter === 'future' ? 'active' : ''}`}
+            onClick={() => setFilter('future')}
+          >
+            À venir
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'past' ? 'active' : ''}`}
+            onClick={() => setFilter('past')}
+          >
+            Passées
           </button>
         </div>
-      </div>
-      
-      {loading && <p>Chargement...</p>}
-      {error && <p className="error-message">{error}</p>}
-      
-      <div className="admin-list">
-        {actions.map(action => (
-          <div className="admin-row" key={action.id}>
-            <div className="admin-row-info">
-              <span className="admin-row-title">{action.titre}</span>
-              <span className="admin-row-date">{new Date(action.dateISO).toLocaleDateString('fr-FR')}</span>
+      </header>
+
+      {loading ? (
+        <div className="timeline-empty">
+          <p>Chargement des actions...</p>
+        </div>
+      ) : (
+        <div className="timeline">
+          {filteredActions.length > 0 ? (
+            filteredActions.map(action => {
+              
+              // Logique pour définir le statut de la carte
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const actionDate = new Date(action.dateISO);
+              const status = actionDate < today ? 'past' : 'future';
+              
+              // Correction du bug "infoDate"
+              const formattedDate = actionDate.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              });
+              
+              const actionForCard = {
+                ...action,
+                // On crée le champ 'infoDate' attendu par ActionCard.jsx
+                infoDate: `${formattedDate} - ${action.infoPratique}` 
+              };
+
+              return (
+                <div key={action.id} className="timeline-item">
+                  <ActionCard 
+                    action={actionForCard} 
+                    status={status}
+                    isUpcoming={action.id === upcomingActionId}
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <div className="timeline-empty">
+              <p>Aucune action à afficher pour le filtre "{filter}".</p>
             </div>
-            <div className="admin-row-controls">
-              {/* Le Switch de statut */}
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={action.status === 'publié'} 
-                  onChange={() => handleStatusToggle(action)}
-                />
-                <span className="slider round"></span>
-              </label>
-              {/* Les flèches (Pas encore fonctionnelles) */}
-              <button className="admin-btn icon-btn" title="Monter"><FaArrowUp /></button>
-              <button className="admin-btn icon-btn" title="Descendre"><FaArrowDown /></button>
-              {/* Modifier */}
-              <button 
-                className="admin-btn icon-btn" 
-                title="Modifier"
-                onClick={() => setEditingAction(action)} // Ouvre le formulaire pour CETTE action
-              >
-                <FaEdit />
-              </button>
-              {/* Supprimer */}
-              <button 
-                className="admin-btn icon-btn danger" 
-                title="Supprimer"
-                onClick={() => handleDelete(action.id)}
-              >
-                <FaTrash />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }
 
-export default AdminPage;
+export default ActionsPage;
