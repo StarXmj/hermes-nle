@@ -11,8 +11,30 @@ import CreditsPage from './pages/CreditsPage';
 import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage'; // <-- IMPORTER ICI
 import PartenairesPage from './pages/PartenairesPage'; // <-- IMPORTER
+import LoginPage from './pages/LoginPage';
+import AdminPage from './pages/AdminPage';
+import ProtectedRoute from './components/ProtectedRoute';
 // 2. On crée la liste "maîtresse" de toutes les routes
 export const appRoutes = [
+  {
+    path: '/login',
+    element: <LoginPage />,
+    name: 'Connexion',
+    category: 'auth' // Hors du plan de site
+  },
+  {
+    // C'est le "Gardien"
+    element: <ProtectedRoute />, 
+    // Toutes les routes "enfants" (children) seront protégées
+    children: [
+      {
+        path: '/admin',
+        element: <AdminPage />,
+        name: 'Admin',
+        category: 'admin' // Hors du plan de site
+      }
+    ]
+  },
   // --- Catégorie "main" (pour la navigation) ---
   {
     path: '/',

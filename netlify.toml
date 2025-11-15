@@ -1,0 +1,13 @@
+# Fichier de configuration principal de Netlify
+
+[build]
+  # Commande pour construire votre site Vite
+  command = "npm run build"
+  # Dossier où se trouve le site construit
+  publish = "dist"
+
+# Règle pour React (redirige tout le reste)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,68 @@
+/* src/pages/LoginPage.css */
+
+.login-page {
+  background-color: #f9f9f9;
+  min-height: 80vh;
+}
+
+.login-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.login-container h2 {
+  color: #003366;
+  margin-top: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input {
+  padding: 12px;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #0056b3;
+}
+
+.error-message {
+  color: #D32F2F; /* Rouge pour les erreurs */
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.forgot-password-link {
+  display: block;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  text-decoration: none;
+}
+.forgot-password-link:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
