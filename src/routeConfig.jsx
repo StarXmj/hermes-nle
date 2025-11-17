@@ -3,7 +3,8 @@ import React from 'react';
 
 // 1. On importe tous les composants de page
 import HomePage from './pages/HomePage';
-// import ActionsPage from './pages/ActionsPage'; // <-- PROBLÈME : C'est un composant Admin
+// --- CORRECTION : On importe le VRAI fichier de la page publique ---
+import ActionsPage from './pages/ActionsPage'; 
 import ContactPage from './pages/ContactPage';
 import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import PolitiqueConfidentialitePage from './pages/PolitiqueConfidentialitePage';
@@ -12,25 +13,18 @@ import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage';
 import PartenairesPage from './pages/PartenairesPage';
 import LoginPage from './pages/LoginPage';
-import AdminDashboard from './pages/AdminDashboard'; // Renommé pour plus de clarté
+import AdminDashboard from './pages/AdminDashboard'; 
 import ProtectedRoute from './components/ProtectedRoute';
-
-// --- CORRECTION : Importer le BON composant admin ---
+import AdminActusPage from './pages/AdminActusPage';
+// --- CORRECTION : On importe le BON composant admin ---
 import AdminActionsPage from './pages/AdminActionsPage'; 
-
-// --- CORRECTION : Importer le VRAI composant public ---
-// Pour l'instant, c'est un placeholder. Remplacez-le par votre vrai composant de page publique.
-const PublicActionsPage = () => (
-  <main className="page-section">
-    <div className="section-content">
-      <h1>Nos Actions</h1>
-      <p>Contenu de la page publique des actions (timeline, filtres, etc.) à venir.</p>
-      <p><i>(Vous devez remplacer le contenu du fichier src/pages/ActionsPage.jsx par ce code)</i></p>
-    </div>
-  </main>
-);
-
-
+import AdminPartenairesPage from './pages/AdminPartenairesPage';
+// --- CORRECTION : On SUPPRIME le composant "PublicActionsPage" temporaire ---
+// const PublicActionsPage = () => ( ... ); // <- Supprimé
+import AdminMembersPage from './pages/AdminMembersPage';
+import AdminFaqPage from './pages/AdminFaqPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import UpdatePasswordPage from './pages/UpdatePasswordPage';
 // 2. On crée la liste "maîtresse" de toutes les routes
 export const appRoutes = [
   {
@@ -38,6 +32,17 @@ export const appRoutes = [
     element: <LoginPage />,
     name: 'Connexion',
     category: 'auth' // Hors du plan de site
+  },{
+    path: '/mot-de-passe-oublie',
+    element: <ForgotPasswordPage />,
+    name: 'Mot de passe oublié',
+    category: 'auth'
+  },
+  {
+    path: '/update-password',
+    element: <UpdatePasswordPage />,
+    name: 'Mise à jour mot de passe',
+    category: 'auth'
   },
   {
     // C'est le "Gardien"
@@ -46,17 +51,36 @@ export const appRoutes = [
     children: [
       {
         path: '/admin',
-        element: <AdminDashboard />, // Utilise le bon import
+        element: <AdminDashboard />,
         name: 'Admin',
         category: 'admin' // Hors du plan de site
       },
-      // --- CORRECTION : Ajout de la route admin manquante ---
       {
         path: '/admin/actions',
         element: <AdminActionsPage />, // Utilise le VRAI composant admin
         name: 'Admin Actions',
         category: 'admin'
-      }
+      },{
+  path: '/admin/actus',
+  element: <AdminActusPage />,
+  name: 'Admin Actus',
+  category: 'admin'
+},{
+  path: '/admin/partenaires',
+  element: <AdminPartenairesPage />,
+  name: 'Admin Partenaires',
+  category: 'admin'
+},{
+  path: '/admin/membres',
+  element: <AdminMembersPage />,
+  name: 'Admin Membres',
+  category: 'admin'
+},{
+  path: '/admin/faq',
+  element: <AdminFaqPage />,
+  name: 'Admin FAQ',
+  category: 'admin'
+}
     ]
   },
   // --- Catégorie "main" (pour la navigation) ---
@@ -73,9 +97,9 @@ export const appRoutes = [
     category: 'main',
   },
   {
-    // --- CORRECTION : Utilise le placeholder pour la page publique ---
+    // --- CORRECTION : Utilise le VRAI composant importé ---
     path: '/actions',
-    element: <PublicActionsPage />, 
+    element: <ActionsPage />, 
     name: 'Nos Actions',
     category: 'main',
   },

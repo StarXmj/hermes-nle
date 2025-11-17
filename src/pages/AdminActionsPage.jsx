@@ -1,13 +1,28 @@
 // src/pages/AdminActionsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNavigate, Link } from 'react-router-dom'; // On importe Link
+import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FaTrash, FaArrowUp, FaArrowDown, FaEdit, FaPlusCircle } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaPlusCircle } from 'react-icons/fa'; // J'ai retiré les flèches des imports
 import ActionForm from '../components/ActionForm'; 
-import './AdminActionsPage.css'; // CSS Renommé
+import './AdminActionsPage.css';
 
-function AdminActionsPage() { // Nom de fonction changé
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const BUCKET_NAME = 'programmes';
+
+// Fonction pour formater les dates
+const formatFullDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleString('fr-FR', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+function AdminActionsPage() {
   const navigate = useNavigate();
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,11 +30,14 @@ function AdminActionsPage() { // Nom de fonction changé
   const [editingAction, setEditingAction] = useState(null); 
 
   async function fetchActions() {
-    // ... (toute la logique de fetchActions, handleDelete, handleStatusToggle... reste la même)
     setLoading(true);
     const { data, error } = await supabase
       .from('actions')
-      .select('*')
+      .select(`
+        *, 
+        created_by_profile:created_by(username), 
+        modif_by_profile:modif_by(username)
+      `)
       .order('dateISO', { ascending: false }); 
 
     if (error) {
@@ -34,15 +52,29 @@ function AdminActionsPage() { // Nom de fonction changé
     fetchActions();
   }, []);
 
-  const handleDelete = async (actionId) => {
+  const handleDelete = async (actionToDelete) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette action ?")) {
-      const { error } = await supabase
+      setError(null);
+      try {
+        const lien = actionToDelete.lienProgramme;
+        if (lien && lien.startsWith(SUPABASE_URL) && lien.includes(`/${BUCKET_NAME}/`)) {
+          const urlParts = lien.split(`/${BUCKET_NAME}/`);
+          if (urlParts.length > 1) {
+            const filePath = decodeURIComponent(urlParts[1]);
+            await supabase.storage.from(BUCKET_NAME).remove([filePath]);
+          }
+        }
+      } catch (storageException) {
+        console.warn("Erreur suppression storage:", storageException);
+      }
+      
+      const { error: dbError } = await supabase
         .from('actions')
         .delete()
-        .eq('id', actionId);
+        .eq('id', actionToDelete.id); 
 
-      if (error) {
-        setError(error.message);
+      if (dbError) {
+        setError(dbError.message);
       } else {
         await fetchActions(); 
       }
@@ -51,39 +83,33 @@ function AdminActionsPage() { // Nom de fonction changé
 
   const handleStatusToggle = async (actionToToggle) => {
     const newStatus = actionToToggle.status === 'publié' ? 'brouillon' : 'publié';
-    const originalStatus = actionToToggle.status; // On garde l'ancien statut en cas d'erreur
+    const originalStatus = actionToToggle.status; 
 
-    // 1. Mise à jour optimiste : On met à jour l'état local IMMÉDIATEMENT
-    // L'interface va se re-dessiner avec le nouveau statut avant même la fin de l'appel.
     setActions(currentActions =>
       currentActions.map(action =>
         action.id === actionToToggle.id
-          ? { ...action, status: newStatus } // On change le statut de l'action concernée
+          ? { ...action, status: newStatus }
           : action
       )
     );
 
-    // 2. On envoie la requête à Supabase en arrière-plan
     const { error } = await supabase
       .from('actions')
       .update({ status: newStatus })
       .eq('id', actionToToggle.id);
 
-    // 3. Rollback (Annulation) en cas d'erreur
     if (error) {
       setError(`Erreur lors de la mise à jour : ${error.message}`);
-      
-      // On annule le changement dans l'UI en remettant l'ancien statut
       setActions(currentActions =>
         currentActions.map(action =>
           action.id === actionToToggle.id
-            ? { ...action, status: originalStatus } // On remet l'ancien statut
+            ? { ...action, status: originalStatus } 
             : action
         )
       );
     } else {
-      // Succès ! L'UI est déjà à jour. Pas besoin de re-fetch.
-      setError(null); // On nettoie les éventuelles erreurs précédentes
+      setError(null);
+      await fetchActions();
     }
   };
 
@@ -91,8 +117,6 @@ function AdminActionsPage() { // Nom de fonction changé
     await fetchActions(); 
     setEditingAction(null); 
   };
-
-  // ---------------- RENDU ----------------
   
   if (editingAction) {
     return (
@@ -116,7 +140,6 @@ function AdminActionsPage() { // Nom de fonction changé
       </Helmet>
       
       <div className="admin-header">
-        {/* On ajoute un lien de retour vers le tableau de bord */}
         <Link to="/admin" className="admin-back-link">
           &larr; Retour au Tableau de bord
         </Link>
@@ -134,11 +157,37 @@ function AdminActionsPage() { // Nom de fonction changé
       <div className="admin-list">
         {actions.map(action => (
           <div className="admin-row" key={action.id}>
+            
             <div className="admin-row-info">
               <span className="admin-row-title">{action.titre}</span>
-              <span className="admin-row-date">{new Date(action.dateISO).toLocaleDateString('fr-FR')}</span>
+              <span className="admin-row-date">
+                {new Date(action.dateISO).toLocaleDateString('fr-FR')}
+              </span>
+              
+              <div className="admin-row-metadata">
+                <span>
+                  Créé le: {formatFullDate(action.date_creat)} 
+                  <br/>
+                  {/* Affiche l'email (username) */}
+                  par: <strong>{action.created_by_profile?.username || 'Inconnu'}</strong>
+                </span>
+                
+                {action.modif_by && (
+                  <span>
+                    <br/>
+                    Modifié le: {formatFullDate(action.last_modif)} 
+                    <br/>
+                    par: <strong>{action.modif_by_profile?.username || 'Inconnu'}</strong>
+                  </span>
+                )}
+              </div>
             </div>
+
             <div className="admin-row-controls">
+
+               <span style={{fontSize:'0.8rem', color: action.status === 'publié' ? 'green' : '#777', marginRight:'10px', fontWeight: 'bold'}}>
+                {action.status === 'publié' ? 'PUBLIÉ' : 'BROUILLON'}
+              </span>
               <label className="switch">
                 <input 
                   type="checkbox" 
@@ -147,19 +196,20 @@ function AdminActionsPage() { // Nom de fonction changé
                 />
                 <span className="slider round"></span>
               </label>
-              <button className="admin-btn icon-btn" title="Monter"><FaArrowUp /></button>
-              <button className="admin-btn icon-btn" title="Descendre"><FaArrowDown /></button>
+              
+              {/* FLÈCHES SUPPRIMÉES ICI */}
+              
               <button 
                 className="admin-btn icon-btn" 
                 title="Modifier"
-                onClick={() => setEditingAction(action)}
+                onClick={() => setEditingAction(action)} 
               >
                 <FaEdit />
               </button>
               <button 
                 className="admin-btn icon-btn danger" 
                 title="Supprimer"
-                onClick={() => handleDelete(action.id)}
+                onClick={() => handleDelete(action)}
               >
                 <FaTrash />
               </button>
@@ -171,4 +221,4 @@ function AdminActionsPage() { // Nom de fonction changé
   );
 }
 
-export default AdminActionsPage; // Nom de fonction changé
+export default AdminActionsPage;

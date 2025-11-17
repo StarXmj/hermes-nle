@@ -39,9 +39,48 @@
   margin-bottom: 0.75rem; /* Espace sous l'étiquette */
 }
 
-.actu-card-category.fac { background-color: #0056b3; }
-.actu-card-category.pau { background-color: #1a936f; }
+/* 1. Vie du Campus (Bleu Hermes) */
+.actu-card-category[class*="campus"] {
+  background-color: #0056b3;
+}
 
+/* 2. Vie de l'Asso (Cyan / Bleu Canard) */
+.actu-card-category[class*="asso"] {
+  background-color: #17a2b8;
+}
+
+/* 3. Soirée / Event (Rose / Violet festif) */
+.actu-card-category[class*="soirée"],
+.actu-card-category[class*="event"] {
+  background-color: #e83e8c;
+}
+
+/* 4. Info Scolaire (Orange alertant) */
+.actu-card-category[class*="scolaire"] {
+  background-color: #fd7e14;
+}
+
+/* 5. Culture & Sport (Vert) */
+.actu-card-category[class*="culture"],
+.actu-card-category[class*="sport"] {
+  background-color: #28a745;
+}
+
+/* 6. Bon Plan (Jaune/Or - Texte sombre pour lisibilité) */
+.actu-card-category[class*="plan"] {
+  background-color: #ffc107;
+  color: #343a40 !important; /* On force le texte en gris foncé */
+}
+
+/* 7. Partenaires (Gris bleuté / Sérieux) */
+.actu-card-category[class*="partenaires"] {
+  background-color: #34495e;
+}
+
+/* 8. Autre (Gris neutre) */
+.actu-card-category[class*="autre"] {
+  background-color: #6c757d;
+}
 /* 4. Contenu de la carte (plus de padding) */
 .actu-card.no-image .actu-card-content {
   padding: 1.5rem; /* On remet un padding plus grand */

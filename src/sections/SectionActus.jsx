@@ -1,6 +1,6 @@
 // src/sections/SectionActus.jsx
-import React from 'react';
-import allActus from '../data/actus.json';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import ActuCard from '../components/ActuCard';
 
 // Imports Swiper
@@ -13,63 +13,95 @@ import 'swiper/css/pagination';
 // Notre style
 import './SectionActus.css';
 
-// 4. LOGIQUE CORRIGÉE : "LES 5 PROCHAINS ÉVÉNEMENTS À VENIR"
-function getActusAVenir() {
-  // A) Définir "aujourd'hui"
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // à 00:00:00
-
-  // B) Filtrer les actus
-  const actusFutures = allActus.filter(actu => {
-    const actuDate = new Date(actu.dateISO);
-    
-    // L'actu doit être >= à "aujourd'hui"
-    return actuDate >= today;
-  });
-
-  // C) "ranger par ordre du temps" (chronologique, du plus tôt au plus tard)
-  const sortedActus = actusFutures.sort((a, b) => new Date(a.dateISO) - new Date(b.dateISO));
-  
-  // D) On prend les 5 premiers de la liste "à venir"
-  return sortedActus.slice(0, 5);
-}
-
-const actusAffiches = getActusAVenir();
-
 function SectionActus() {
+  const [actusAffiches, setActusAffiches] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fonction pour charger les actualités
+  async function loadActus() {
+    // On définit "aujourd'hui" à minuit pour inclure les événements de la journée
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    const { data, error } = await supabase
+      .from('actus')
+      .select('*')
+      .eq('status', 'publié') // Seulement les publiées
+      .gte('dateISO', todayISO) // Seulement les futures (ou aujourd'hui)
+      // TRI : D'abord les épinglées (true > false), ensuite par date la plus proche
+      .order('isPinned', { ascending: false }) 
+      .order('dateISO', { ascending: true })
+      .limit(10); // On peut en charger un peu plus que 5 pour le carrousel
+
+    if (error) {
+      console.error('Erreur de chargement des actus:', error);
+    } else {
+      setActusAffiches(data);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    // 1. Chargement initial
+    loadActus();
+
+    // 2. Abonnement Realtime (Mise à jour en direct)
+    const channel = supabase
+      .channel('actus-public-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'actus' },
+        (payload) => {
+          console.log('Changement détecté dans les actus !', payload);
+          loadActus(); // On recharge la liste
+        }
+      )
+      .subscribe();
+
+    // Nettoyage
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <section id="actualites" className="page-section">
       <div className="section-content">
         <h2>Actu & Événements Fac</h2>
-        {/* On remet le texte générique */}
         <p>Restez informés de ce qu'il se passe sur le campus.</p>
 
-        {actusAffiches.length > 0 ? (
+        {loading ? (
+          <p>Chargement des actualités...</p>
+        ) : actusAffiches.length > 0 ? (
 
           <Swiper
-          modules={[Navigation, Pagination]}
-          spaceBetween={20}
-          slidesPerView={2} // Base pour mobile
-          
-          navigation={true} // <-- Doit être ici pour mobile
-          pagination={{ clickable: true }}
-          
-          breakpoints={{
-            // Pour 768px et plus
-            768: { 
-              slidesPerView: 3,
-              navigation: true, // <-- Doit être répété ici
-              pagination: { clickable: true },
-            },
-            // Pour 1200px et plus
-            1200: { 
-              slidesPerView: 5,
-              navigation: true, // <-- Doit être répété ici
-              pagination: { clickable: true },
-            },
-          }}
-          className="actus-carousel"
-        >
+            modules={[Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1} // 1 carte par défaut (mobile très petit)
+            
+            navigation={true}
+            pagination={{ clickable: true }}
+            
+            breakpoints={{
+              // Mobile standard (landscape)
+              600: { 
+                slidesPerView: 2,
+                spaceBetween: 20,
+              },
+              // Tablette
+              900: { 
+                slidesPerView: 3,
+                spaceBetween: 30,
+              },
+              // Bureau
+              1200: { 
+                slidesPerView: 4, // On peut en afficher 4 si l'écran est large
+                spaceBetween: 30,
+              },
+            }}
+            className="actus-carousel"
+          >
             {actusAffiches.map(article => (
               <SwiperSlide key={article.id}>
                 <ActuCard article={article} />
@@ -78,15 +110,13 @@ function SectionActus() {
           </Swiper>
 
         ) : (
-          
-          // 6. Message si pas d'actu
           <p className="actus-empty-message">
             Aucune actualité à venir pour le moment.
           </p>
-
         )}
       </div>
     </section>
   );
 }
+
 export default SectionActus;

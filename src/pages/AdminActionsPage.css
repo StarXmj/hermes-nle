@@ -145,3 +145,80 @@ input:checked + .slider:before {
   border-top: 1px solid #eee;
   padding-top: 1.5rem;
 }
+
+/* AJOUTEZ CECI À LA FIN DE src/pages/AdminActionsPage.css */
+
+/* Style pour le fichier existant dans le formulaire */
+.form-group-existing-file {
+  background-color: #f4f4f4;
+  border-radius: 5px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem; /* Se colle un peu au champ "OU" */
+  margin-bottom: 1.25rem; /* Espace avant le champ d'upload */
+}
+.form-group-existing-file p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #333;
+}
+
+.admin-row-info {
+  flex-grow: 1; 
+  min-width: 0; /* Permet au flex de réduire le texte */
+}
+.admin-row-metadata {
+  display: flex;
+  flex-direction: column; /* Empile "Créé" et "Modifié" */
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 0.5rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+.admin-row-metadata span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Styles pour les métadonnées dans le FORMULAIRE */
+.form-metadata {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 0.75rem 1rem;
+  margin-top: 1.5rem;
+}
+.form-metadata p {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+.form-metadata p strong {
+  color: #003366;
+  margin-right: 0.5rem;
+}
+
+/* (Copie du style pour le fichier existant, au cas où) */
+.form-group-existing-file {
+  background-color: #f4f4f4;
+  border-radius: 5px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem; 
+  margin-bottom: 1.25rem; 
+}
+.form-group-existing-file p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #333;
+}
