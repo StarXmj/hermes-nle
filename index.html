@@ -2,16 +2,21 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    
     <link rel="icon" type="image/svg+xml" href="/src/assets/logo-hermes.png" />
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
     <title>Hermes by NLE</title>
   </head>
   <body>
     <div id="root"></div>
-    
+
+    <form name="contact" data-netlify="true" hidden>
+      <input type="text" name="role" />
+      <input type="text" name="sujet" />
+      <input type="text" name="prenom" />
+      <input type="text" name="nom" />
+      <input type="email" name="email" />
+      <textarea name="message"></textarea>
+    </form>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

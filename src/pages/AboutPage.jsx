@@ -4,72 +4,52 @@ import { supabase } from '../supabaseClient';
 import MemberCard from '../components/MemberCard';
 import FaqItem from '../components/FaqItem';
 import { Helmet } from 'react-helmet-async';
+// J'ai ajouté des icônes spécifiques pour vos 3 pôles
 import { 
-  FaUsers, FaDice, FaShieldAlt, FaInfoCircle, FaLifeRing, FaDoorOpen, 
-  FaCalendarCheck, FaHandshake, FaHeart 
+  FaBullhorn, FaPenNib, FaCalendarAlt, 
+  FaUsers 
 } from 'react-icons/fa';
 import './AboutPage.css';
 
 function AboutPage() {
-  // États pour les données
+  // États pour les données dynamiques
   const [membres, setMembres] = useState([]);
   const [faqItems, setFaqItems] = useState([]);
-  
-  // États pour les chargements distincts
   const [loadingMembres, setLoadingMembres] = useState(true);
   const [loadingFaq, setLoadingFaq] = useState(true);
 
-  // --- 1. Chargement des MEMBRES ---
+  // --- 1. Chargement des MEMBRES (Supabase) ---
   useEffect(() => {
     async function loadMembres() {
       const { data, error } = await supabase
         .from('membres')
         .select('*')
-        .eq('status', 'publié') // Seulement les membres publiés
-        .order('nom', { ascending: true }); // Tri alphabétique
+        .eq('status', 'publié')
+        .order('nom', { ascending: true });
 
-      if (error) {
-        console.error('Erreur chargement membres:', error);
-      } else {
-        setMembres(data);
-      }
+      if (error) console.error('Erreur chargement membres:', error);
+      else setMembres(data);
       setLoadingMembres(false);
     }
-
     loadMembres();
-
-    // Realtime pour les membres
-    const channel = supabase.channel('membres-public-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'membres' }, loadMembres)
-      .subscribe();
-
+    const channel = supabase.channel('membres-public').on('postgres_changes', { event: '*', schema: 'public', table: 'membres' }, loadMembres).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // --- 2. Chargement de la FAQ ---
+  // --- 2. Chargement de la FAQ (Supabase) ---
   useEffect(() => {
     async function loadFaq() {
       const { data, error } = await supabase
-        .from('faq') // Table 'faq' (singulier)
+        .from('faq')
         .select('*')
-        .eq('status', 'publié') // Seulement les questions publiées
-        .order('date_creat', { ascending: true }); // Ordre de création (ou utilisez un champ 'ordre' si vous en ajoutez un)
-
-      if (error) {
-        console.error('Erreur chargement FAQ:', error);
-      } else {
-        setFaqItems(data);
-      }
+        .eq('status', 'publié')
+        .order('date_creat', { ascending: true });
+      if (error) console.error('Erreur chargement FAQ:', error);
+      else setFaqItems(data);
       setLoadingFaq(false);
     }
-
     loadFaq();
-
-    // Realtime pour la FAQ
-    const channel = supabase.channel('faq-public-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'faq' }, loadFaq)
-      .subscribe();
-
+    const channel = supabase.channel('faq-public').on('postgres_changes', { event: '*', schema: 'public', table: 'faq' }, loadFaq).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
 
@@ -77,93 +57,83 @@ function AboutPage() {
     <main className="about-page">
       <Helmet>
         <title>A propos - Hermes by NLE</title>
-        <meta name="description" content="Découvrez l'équipe de l'association et les réponses à vos questions." />
+        <meta name="description" content="Découvrez la mission, l'histoire et l'équipe d'Hermes by NLE." />
       </Helmet>
 
-      {/* 1. Section "Qui sommes-nous ?" */}
+      {/* 1. LE BUT (Hero Section) */}
       <section className="page-section hero-about">
         <div className="section-content">
-          <h1>Qui sommes-nous ?</h1>
+          <h1>Le But</h1>
           <p className="hero-subtitle">
-            Hermes by NLE est une association loi 1901, gérée entièrement par 
-            des étudiants bénévoles, pour les étudiants.
+            Hermes by NLE, c'est servir de relais auprès des étudiants de l'Université de Pau et des Pays de l'Adour.
           </p>
           <p className="hero-text">
-            Nés de l'envie de transformer les années universitaires en une expérience 
-            mémorable, nous agissons comme le principal relais d'information, 
-            d'animation et de solidarité sur le campus de Pau.
+            Elle vise à accompagner les étudiants dans leur vie universitaire en facilitant leur intégration, 
+            leur orientation et leur accès aux différents services proposés par l'Université, 
+            les associations étudiantes et les structures partenaires.
           </p>
         </div>
       </section>
 
-      {/* 2. Section Missions */}
+      {/* 2. LE NOM (Section Texte) */}
       <section className="page-section">
-        <div className="section-content">
-          <h2>Notre Mission : Votre Expérience Étudiante</h2>
-          <p>Notre action repose sur 6 piliers. 6 promesses que nous vous faisons.</p>
-          
-          <div className="missions-grid">
-            <div className="mission-item">
-              <FaUsers className="mission-icon" size={30} />
-              <h3>Fédérer & Créer du Lien</h3>
-              <p>Nous sommes là pour connecter les gens, peu importe leur filière.</p>
-            </div>
-            <div className="mission-item">
-              <FaDice className="mission-icon" size={30} />
-              <h3>Animer & Faire Vibrer</h3>
-              <p>Des événements pour sortir des cours : soirées, tournois, conférences.</p>
-            </div>
-            <div className="mission-item">
-              <FaShieldAlt className="mission-icon" size={30} />
-              <h3>Représenter & Défendre</h3>
-              <p>Nous portons votre voix dans les conseils et défendons vos droits.</p>
-            </div>
-            <div className="mission-item">
-              <FaInfoCircle className="mission-icon" size={30} />
-              <h3>Informer & Clarifier</h3>
-              <p>Nous filtrons l'info pour vous transmettre l'essentiel clairement.</p>
-            </div>
-            <div className="mission-item">
-              <FaLifeRing className="mission-icon" size={30} />
-              <h3>Soutenir & Accompagner</h3>
-              <p>Un filet de sécurité contre les galères financières ou morales.</p>
-            </div>
-            <div className="mission-item">
-              <FaDoorOpen className="mission-icon" size={30} />
-              <h3>Intégrer & Accueillir</h3>
-              <p>Pour que l'aventure universitaire commence de la meilleure façon.</p>
-            </div>
+        <div className="section-content" style={{maxWidth: '800px'}}>
+          <h2>Le Nom</h2>
+          <div style={{textAlign: 'left', fontSize: '1.1rem', lineHeight: '1.8', color: '#444'}}>
+            <p>
+              Dans la mythologie grecque, <strong>Hermès</strong> est le messager des dieux, un dieu-relais qui fait 
+              circuler la parole et relie les mondes. Protecteur des voyageurs et des orateurs, il incarne la communication, 
+              la transmission et la médiation.
+            </p>
+            <p>
+              Comme lui, notre asso veut servir de relais entre les étudiants, les enseignants et les institutions : 
+              transmettre les infos, créer du lien, accompagner les parcours.
+            </p>
+            <p style={{fontWeight: 'bold', color: '#003366', marginTop: '1.5rem', textAlign: 'center', fontSize: '1.3rem'}}>
+              « Hermès, c'est plus qu'un nom : c'est une mission. »
+            </p>
           </div>
         </div>
       </section>
       
-      {/* 3. Section Engagements */}
+      {/* 3. LES ACTIONS (3 Pôles) */}
       <section className="page-section alternate-bg">
         <div className="section-content">
-          <h2>Nos Engagements Concrets</h2>
-          <p>La mission, c'est le "pourquoi". Les engagements, c'est le "comment".</p>
+          <h2>Nos Actions</h2>
+          <p style={{marginBottom: '3rem'}}>3 équipes pour vous accompagner au mieux.</p>
           
-          <div className="engagements-grid">
-            <div className="engagement-item">
-              <FaCalendarCheck className="engagement-icon" size={30} />
-              <h3>Des Événements qui ont du Sens</h3>
-              <p>Chaque événement est pensé pour apporter réseau, fun ou compétences.</p>
+          <div className="missions-grid"> {/* On réutilise la classe de grille existante */}
+            
+            <div className="mission-item">
+              <FaBullhorn className="mission-icon" size={30} />
+              <h3>Communication</h3>
+              <p>Pour faire circuler l'information et valoriser vos projets.</p>
             </div>
-            <div className="engagement-item">
-              <FaHandshake className="engagement-icon" size={30} />
-              <h3>Des Partenariats Utiles</h3>
-              <p>Des réductions réelles sur ce qui pèse sur votre budget.</p>
+            
+            <div className="mission-item">
+              <FaPenNib className="mission-icon" size={30} />
+              <h3>Rédaction</h3>
+              <p>Pour créer <strong>le Mensuel Hermès</strong>, une newsletter qui regroupe toutes les infos du mois à venir.</p>
             </div>
-            <div className="engagement-item">
-              <FaHeart className="engagement-icon" size={30} />
-              <h3>Solidarité de Proximité</h3>
-              <p>Relais d'info fiable, collectes alimentaires et présence physique.</p>
+            
+            <div className="mission-item">
+              <FaCalendarAlt className="mission-icon" size={30} />
+              <h3>Événementiel</h3>
+              <p>Pour organiser des rencontres et des moments d'échange tout au long de l'année.</p>
             </div>
+            
           </div>
+
+          <div style={{marginTop: '4rem', maxWidth: '700px', marginLeft: 'auto', marginRight: 'auto'}}>
+            <p style={{fontStyle: 'italic', fontSize: '1.15rem', color: '#555'}}>
+              Et derrière tout ça, notre <strong>Bureau</strong>, qui imagine et coordonne de nombreux projets à découvrir au fil de l'année.
+            </p>
+          </div>
+
         </div>
       </section>
 
-      {/* 4. Section Membres DYNAMIQUE */}
+      {/* 4. NOTRE ÉQUIPE (Dynamique Supabase) */}
       <section className="page-section">
         <div className="section-content">
           <h2>Notre Équipe</h2>
@@ -182,7 +152,7 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* 5. Section FAQ DYNAMIQUE */}
+      {/* 5. FAQ (Dynamique Supabase) */}
       <section className="page-section alternate-bg">
         <div className="section-content faq-section">
           <h2>Foire aux Questions (FAQ)</h2>
