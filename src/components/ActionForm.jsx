@@ -205,17 +205,17 @@ function ActionForm({ action, onSave, onCancel }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="dateISO">Date</label>
+            <label htmlFor="dateISO">Date ( pour classement ordre chronologique)</label>
             <input type="date" name="dateISO" value={formData.dateISO} onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label htmlFor="infoDate">Info Pratique (ex: 18h00)</label>
+            <label htmlFor="infoDate">Info Pratique (ex: Jeudi 20 Novembre 2025)</label>
             <input type="text" name="infoDate" value={formData.infoDate} onChange={handleChange} />
           </div>
         </div>
         
         <div className="form-group">
-          <label htmlFor="lieu">Lieu</label>
+          <label htmlFor="lieu">Lieu (ex: Bar 'Le Campus', Centre-ville)</label>
           <input type="text" name="lieu" value={formData.lieu} onChange={handleChange} />
         </div>
         

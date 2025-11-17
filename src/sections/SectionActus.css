@@ -12,10 +12,14 @@
 .actus-carousel .swiper-slide {
   height: auto;
   display: flex;
+  /* AJOUT : Centre la carte dans son emplacement Swiper */
+  justify-content: center; 
 }
 
 .actus-carousel .actu-card {
   width: 100%;
+  /* Optionnel : limiter la largeur max d'une carte pour qu'elle ne soit pas trop étirée sur grand écran */
+  max-width: 400px; 
 }
 
 /* 2. On personnalise les flèches */
@@ -42,9 +46,7 @@
   right: 10px; /* 10px du bord droit */
 }
 
-
 /* 4. On personnalise les points de pagination */
 .actus-carousel .swiper-pagination-bullet-active {
   background-color: #0056b3;
 }
-

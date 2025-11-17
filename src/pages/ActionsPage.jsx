@@ -10,7 +10,7 @@ function ActionsPage() {
   const [allActions, setAllActions] = useState([]);
   const [filteredActions, setFilteredActions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // 'all', 'future', 'past'
+  const [filter, setFilter] = useState('future'); // 'all', 'future', 'past'
   const [upcomingActionId, setUpcomingActionId] = useState(null);
 
   // Fonction pour charger les données
@@ -20,7 +20,7 @@ function ActionsPage() {
       .from('actions')
       .select('*')
       .eq('status', 'publié') // On ne prend que les actions publiées
-      .order('dateISO', { ascending: false }); // On trie par date (plus récent en haut)
+      .order('dateISO', { ascending: true }); // On trie par date (plus récent en haut)
 
     if (error) {
       console.error('Erreur de chargement des actions:', error);
@@ -103,12 +103,7 @@ function ActionsPage() {
         <p>Toutes nos animations, événements et interventions.</p>
         
         <div className="filter-buttons">
-          <button 
-            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            Toutes
-          </button>
+          
           <button 
             className={`filter-btn ${filter === 'future' ? 'active' : ''}`}
             onClick={() => setFilter('future')}

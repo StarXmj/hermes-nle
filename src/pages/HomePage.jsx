@@ -36,16 +36,17 @@ function HomePage() {
           {/* NOUVEAU : Groupe pour le bouton Insta + incitation */}
           <div className="instagram-cta-group">
             <a 
-              href="https://www.instagram.com/[VOTRE_COMPTE_INSTA]" 
+              href="https://www.instagram.com/hermes_by_nle/?igsh=MTZmaTk1amtjOTZudA%3D%3D#" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="cta-button"
+              className="cta-button-insta"
             >
 
 
               
               Abonne-toi à notre Instagram
             </a>
+
             {/* L'incitation que vous avez demandée */}
             <p className="hero-incitation">
               Jeux concours, infos de dernière minute... tout se passe là-bas !

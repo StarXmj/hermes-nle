@@ -38,7 +38,7 @@ function AdminActionsPage() {
         created_by_profile:created_by(username), 
         modif_by_profile:modif_by(username)
       `)
-      .order('dateISO', { ascending: false }); 
+      .order('dateISO', { ascending: true }); 
 
     if (error) {
       setError(error.message);

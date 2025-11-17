@@ -52,8 +52,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 
 /* Texte et bouton de la section Bienvenue */
 .hero-section h1,
-.hero-section p,
-.hero-section .cta-button {
+.hero-section p {
   z-index: 2;
   position: relative;
   color: #003366;
@@ -81,29 +80,109 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 
 
 
+/* --- BOUTON PRINCIPAL MODERNE --- */
+
 .cta-button {
-  background-color: #0056b3;
+  z-index: 2;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+
+  background: linear-gradient(135deg, #0056b3, #003f88);
   color: white;
+
   border: none;
-  padding: 14px 28px; 
-  font-size: 0.9rem;
-  font-weight: 700; 
-  text-transform: uppercase; 
-  letter-spacing: 0.5px; 
-  border-radius: 5px;
+  padding: 14px 32px;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 12px;
+
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; 
-  box-shadow: 0 4px 15px rgba(0, 86, 179, 0.2);
+  transition: transform 0.25s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 18px rgba(0, 86, 179, 0.3);
 }
+
+/* Glow + léger mouvement + dégradé animé */
 .cta-button:hover {
-  background-color: #0056b3; /* Fond plein au survol */
-  color: white; /* Texte blanc au survol */
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 86, 179, 0.4);
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 10px 28px rgba(0, 86, 179, 0.55);
 }
 
-/* Bouton secondaire (style "outline") */
+/* Dégradé animé interne (effet "shimmer") */
+.cta-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transition: all 0.6s ease;
+}
 
+.cta-button:hover::before {
+  left: 100%;
+}
+
+.cta-button-insta {  
+    z-index: 2;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  background: linear-gradient(135deg, #F58529, #DD2A7B,#515BD4);
+  color: white;
+
+  border: none;
+  padding: 14px 32px;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 18px rgba(0, 86, 179, 0.3);
+
+
+
+}
+
+.cta-button-insta:hover {
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 10px 28px rgba(0, 86, 179, 0.55);
+  
+}
+
+/* Dégradé animé interne (effet "shimmer") */
+.cta-button-insta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -25%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transition: all 0.6s ease;
+}
+
+.cta-button-insta:hover::before {
+  left: 50%;
+}
 
 
 /* 2. STYLES COMMUNS POUR LES NOUVELLES SECTIONS */
@@ -163,11 +242,12 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   
   transition: transform 0.3s ease-out;
 }
-.collage-photo:hover {
-  transform: rotate(5turn) scale(0.1);
-  z-index: 3; /* Passe devant le texte au survol */
-  transition: 5s;
-  border-radius: 50%;
+.collage-photo:hover {  
+    transform: rotate(-8deg) scale(0.95); /* Inclinaison */
+
+z-index: 3; /* Passe devant le texte au survol */
+  transition: 1s;
+ 
   
 }
 
@@ -202,10 +282,26 @@ background-repeat: no-repeat;
 /* VÉRIFICATION : Assurez-vous que ce style est bien dans App.css */
 /* S'il existe déjà, pas besoin de le recopier */
 
-@media (max-width: 1200px) {
-  .collage-photo {
-    display: none;
-  }
+@media (max-width: 1400px) {
+ 
+
+  .photo-1 {
+  
+ 
+ 
+   top: 78%; left: 50%; /* à 50%/50% du parent référent */
+  transform: translate(-50%, -50%); /* décalage de 50% de sa propre taille */
+ 
+  width: 230px;
+  height: 280px;
+  
+}
+
+.photo-2 {
+  
+  display: none;
+}
+
 }
 
 @media (max-width: 600px) {
@@ -220,12 +316,23 @@ background-repeat: no-repeat;
   font-size: 0.65rem;
   
 }
+.cta-button-insta {
+ 
+  font-size: 0.65rem;
+  
+}
 .hero-section {
  
   
-padding: 2rem 2rem 6rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
+padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
 
  
+}
+
+.photo-1 {
+   top:90%; left: 50%; /* à 50%/50% du parent référent */
+  width: 200px;
+  height: 250px;
 }
 }
 

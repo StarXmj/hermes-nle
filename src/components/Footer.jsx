@@ -16,13 +16,10 @@ function Footer() {
         
         {/* Les icônes sociales */}
         <div className="footer-socials">
-          /*<a href="https://facebook.com" aria-label="Facebook"><FaFacebookF /></a>
-          */<a href="https://twitter.com" aria-label="X (Twitter)"><FaXTwitter /></a>
-          <a href="https://youtube.com" target="_blank" aria-label="YouTube"><FaYoutube /></a>
-          <a href="https://linkedin.com" aria-label="LinkedIn"><FaLinkedinIn /></a>
-          <a href="https://instagram.com" aria-label="Instagram"><FaInstagram /></a>
-          <a href="https://tiktok.com" aria-label="TikTok"><FaTiktok /></a> 
-          <a href="mailto:contact@hermes.com" aria-label="Email"><FaEnvelope /></a>
+          
+          <a href="https://www.instagram.com/hermes_by_nle/?igsh=MTZmaTk1amtjOTZudA%3D%3D#" target="_blank" aria-label="Instagram"><FaInstagram /></a>
+          <a href="https://www.tiktok.com/@hermes_pau?_r=1&_t=ZN-91JbleMUFk6"  target="_blank" aria-label="TikTok"><FaTiktok /></a> 
+          <a href="mailto:hermesbynle@gmail.com" target="_blank" aria-label="Email"><FaEnvelope /></a>
         </div>
         
         {/* Le lien newsletter */}

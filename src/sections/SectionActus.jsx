@@ -80,6 +80,9 @@ function SectionActus() {
             spaceBetween={20}
             slidesPerView={1} // 1 carte par défaut (mobile très petit)
             
+            // AJOUT MAGIQUE POUR LE CENTRAGE :
+            centerInsufficientSlides={true} 
+            
             navigation={true}
             pagination={{ clickable: true }}
             
