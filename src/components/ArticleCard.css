@@ -1,0 +1,67 @@
+/* src/components/ArticleCard.css */
+.article-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%; /* Pour que toutes les cartes aient la même hauteur */
+}
+
+.article-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.article-card-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #eee;
+}
+
+.article-card-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.article-meta {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 0.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.article-card h3 {
+  font-size: 1.3rem;
+  color: #003366;
+  margin: 0.5rem 0;
+  line-height: 1.3;
+}
+
+.article-card p {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1; /* Pousse le bouton vers le bas */
+}
+
+.read-more-link {
+  color: #0056b3;
+  font-weight: 600;
+  text-decoration: none;
+  align-self: flex-start;
+}
+.read-more-link:hover {
+  text-decoration: underline;
+}

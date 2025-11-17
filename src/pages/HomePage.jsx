@@ -8,6 +8,7 @@ import SectionActions from '../sections/SectionActions';
 import SectionPartenaires from '../sections/SectionPartenaires';
 import SectionActus from '../sections/SectionActus';
 import SectionNewsletter from '../sections/SectionNewsletter';
+import SectionBlog from '../sections/SectionBlog';
 
 function HomePage() {
   return (
@@ -58,6 +59,7 @@ function HomePage() {
 
       {/* Le reste de vos sections */}
       <SectionActions />
+      <SectionBlog />
       <SectionPartenaires />
       <SectionActus />
       <SectionNewsletter />

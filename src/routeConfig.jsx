@@ -1,9 +1,8 @@
 // src/routeConfig.jsx
 import React from 'react';
 
-// 1. On importe tous les composants de page
+// Pages Publiques
 import HomePage from './pages/HomePage';
-// --- CORRECTION : On importe le VRAI fichier de la page publique ---
 import ActionsPage from './pages/ActionsPage'; 
 import ContactPage from './pages/ContactPage';
 import MentionsLegalesPage from './pages/MentionsLegalesPage';
@@ -12,78 +11,118 @@ import CreditsPage from './pages/CreditsPage';
 import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage';
 import PartenairesPage from './pages/PartenairesPage';
+import BlogPage from './pages/BlogPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
+
+// Pages Auth
 import LoginPage from './pages/LoginPage';
-import AdminDashboard from './pages/AdminDashboard'; 
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminActusPage from './pages/AdminActusPage';
-// --- CORRECTION : On importe le BON composant admin ---
-import AdminActionsPage from './pages/AdminActionsPage'; 
-import AdminPartenairesPage from './pages/AdminPartenairesPage';
-// --- CORRECTION : On SUPPRIME le composant "PublicActionsPage" temporaire ---
-// const PublicActionsPage = () => ( ... ); // <- Supprimé
-import AdminMembersPage from './pages/AdminMembersPage';
-import AdminFaqPage from './pages/AdminFaqPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import UpdatePasswordPage from './pages/UpdatePasswordPage';
-// 2. On crée la liste "maîtresse" de toutes les routes
+
+// Pages Admin
+import AdminDashboard from './pages/AdminDashboard';
+import AdminActionsPage from './pages/AdminActionsPage';
+import AdminActusPage from './pages/AdminActusPage';
+import AdminPartenairesPage from './pages/AdminPartenairesPage';
+import AdminMembersPage from './pages/AdminMembersPage';
+import AdminFaqPage from './pages/AdminFaqPage';
+import AdminBlogPage from './pages/AdminBlogPage';
+import AdminNewsletterPage from './pages/AdminNewsletterPage';
+
+// Composants de sécurité
+import ProtectedRoute from './components/ProtectedRoute';
+import PermissionRoute from './components/PermissionRoute';
+
 export const appRoutes = [
+  // --- Authentification ---
   {
     path: '/login',
     element: <LoginPage />,
-    name: 'Connexion',
-    category: 'auth' // Hors du plan de site
-  },{
+    category: 'auth'
+  },
+  {
     path: '/mot-de-passe-oublie',
     element: <ForgotPasswordPage />,
-    name: 'Mot de passe oublié',
     category: 'auth'
   },
   {
     path: '/update-password',
     element: <UpdatePasswordPage />,
-    name: 'Mise à jour mot de passe',
     category: 'auth'
   },
+
+  // --- ZONE ADMIN SÉCURISÉE ---
   {
-    // C'est le "Gardien"
-    element: <ProtectedRoute />, 
-    // Toutes les routes "enfants" (children) seront protégées
+    // 1. Premier niveau : Il faut être connecté
+    element: <ProtectedRoute />,
     children: [
       {
         path: '/admin',
-        element: <AdminDashboard />,
-        name: 'Admin',
-        category: 'admin' // Hors du plan de site
-      },
-      {
-        path: '/admin/actions',
-        element: <AdminActionsPage />, // Utilise le VRAI composant admin
-        name: 'Admin Actions',
+        element: <AdminDashboard />, // Le dashboard est accessible à tous les connectés
         category: 'admin'
-      },{
-  path: '/admin/actus',
-  element: <AdminActusPage />,
-  name: 'Admin Actus',
-  category: 'admin'
-},{
-  path: '/admin/partenaires',
-  element: <AdminPartenairesPage />,
-  name: 'Admin Partenaires',
-  category: 'admin'
-},{
-  path: '/admin/membres',
-  element: <AdminMembersPage />,
-  name: 'Admin Membres',
-  category: 'admin'
-},{
-  path: '/admin/faq',
-  element: <AdminFaqPage />,
-  name: 'Admin FAQ',
-  category: 'admin'
-}
+      },
+      
+      // 2. Second niveau : Il faut la permission spécifique
+      
+      // Gestion Actions
+      {
+        element: <PermissionRoute permission="can_edit_actions" />,
+        children: [
+          { path: '/admin/actions', element: <AdminActionsPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion Actus
+      {
+        element: <PermissionRoute permission="can_edit_actus" />,
+        children: [
+          { path: '/admin/actus', element: <AdminActusPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion Partenaires
+      {
+        element: <PermissionRoute permission="can_edit_partenaires" />,
+        children: [
+          { path: '/admin/partenaires', element: <AdminPartenairesPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion Membres
+      {
+        element: <PermissionRoute permission="can_edit_membres" />,
+        children: [
+          { path: '/admin/membres', element: <AdminMembersPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion FAQ
+      {
+        element: <PermissionRoute permission="can_edit_faq" />,
+        children: [
+          { path: '/admin/faq', element: <AdminFaqPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion Blog
+      {
+        element: <PermissionRoute permission="can_edit_blog" />,
+        children: [
+          { path: '/admin/blog', element: <AdminBlogPage />, category: 'admin' }
+        ]
+      },
+
+      // Gestion Newsletter
+      {
+        element: <PermissionRoute permission="can_edit_newsletter" />,
+        children: [
+          { path: '/admin/newsletter', element: <AdminNewsletterPage />, category: 'admin' }
+        ]
+      }
     ]
   },
-  // --- Catégorie "main" (pour la navigation) ---
+
+  // --- Pages Publiques (Navigation Principale) ---
   {
     path: '/',
     element: <HomePage />,
@@ -97,11 +136,22 @@ export const appRoutes = [
     category: 'main',
   },
   {
-    // --- CORRECTION : Utilise le VRAI composant importé ---
     path: '/actions',
-    element: <ActionsPage />, 
+    element: <ActionsPage />,
     name: 'Nos Actions',
     category: 'main',
+  },
+  {
+    path: '/blog',
+    element: <BlogPage />,
+    name: 'Le Blog',
+    category: 'main',
+  },
+  {
+    path: '/blog/:id', // Route dynamique pour l'article
+    element: <ArticleDetailPage />,
+    name: 'Article',
+    category: 'hidden', 
   },
   {
     path: '/partenaires',
@@ -112,11 +162,11 @@ export const appRoutes = [
   {
     path: '/contact',
     element: <ContactPage />,
-    name: 'Contact (Nous rejoindre / Devenir partenaire)',
+    name: 'Contact',
     category: 'main',
   },
  
-  // --- Catégorie "legal" (pour le footer) ---
+  // --- Pages Légales (Footer) ---
   {
     path: '/mentions-legales',
     element: <MentionsLegalesPage />,

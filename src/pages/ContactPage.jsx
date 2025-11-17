@@ -97,7 +97,7 @@ function ContactPage() {
           <div className="contact-info-item">
             <FaEnvelope size={20} className="contact-icon" />
             <h3>Email</h3>
-            <p>contact@hermes-nle.fr</p>
+            <p>hermesbynle@gmail.com</p>
           </div>
         </div>
 

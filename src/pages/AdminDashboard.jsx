@@ -122,13 +122,21 @@ function AdminDashboard() {
             <p>Modifier, publier ou supprimer des FAQ.</p>
           </Link>
         )}
+
+        {/* Gestion Newsletter */}
+        {profile?.can_edit_newsletter && (
+          <Link to="/admin/newsletter" className="admin-nav-card">
+            <h3>Newsletter</h3>
+            <p>Voir et copier la liste des abonnés.</p>
+          </Link>
+        )}
         
         {/* Gestion du Blog */}
         {profile?.can_edit_blog && (
-          <Link to="/admin/blog" className="admin-nav-card disabled">
+          <Link to="/admin/blog" className="admin-nav-card">
             <FaBloggerB size={30} />
             <h3>Gérer le Blog</h3>
-            <p>(Bientôt disponible)</p>
+            <p>Rédiger et publier des articles.</p>
           </Link>
         )}
 

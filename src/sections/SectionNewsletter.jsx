@@ -1,21 +1,49 @@
 // src/sections/SectionNewsletter.jsx
-import React from 'react';
-import './SectionNewsletter.css'; // On importe le CSS
+import React, { useState } from 'react';
+import { supabase } from '../supabaseClient';
+import './SectionNewsletter.css';
 
 function SectionNewsletter() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    // Envoi à Supabase
+    const { error } = await supabase
+      .from('subscribers')
+      .insert([{ email: email }]);
+
+    setLoading(false);
+
+    if (error) {
+      // Code erreur 23505 = Violation d'unicité (Email déjà présent)
+      if (error.code === '23505') {
+        setMessage({ type: 'info', text: "Vous êtes déjà inscrit, merci !" });
+      } else {
+        console.error(error);
+        setMessage({ type: 'error', text: "Une erreur est survenue. Réessayez." });
+      }
+    } else {
+      setMessage({ type: 'success', text: "Merci ! Vous êtes bien inscrit à la newsletter." });
+      setEmail(''); // On vide le champ
+    }
+  };
+
   return (
-    <section id ="newsletter" className="page-section alternate-bg">
+    <section id="newsletter" className="page-section alternate-bg">
       <div className="section-content">
-        {/* 2. Colonne de gauche (Infos) */}
+        <div className="newsletter-layout">
+          
+          {/* Colonne de gauche (Infos) */}
           <div className="newsletter-info">
             <h2>S'inscrire à notre newsletter</h2>
             <p>Ne manquez aucune info importante, aucun bon plan, ni aucun événement !</p>
-        {/* 1. Le nouveau conteneur à 2 colonnes */}
-        <div className="newsletter-layout">
-          
-          
             
-            {/* La liste des "pourquoi s'inscrire" */}
             <ul className="newsletter-benefits">
               <li>✅ Recevez les <strong>offres exclusives</strong> de nos partenaires.</li>
               <li>🎉 Soyez le premier au courant de nos <strong>événements</strong>.</li>
@@ -23,36 +51,54 @@ function SectionNewsletter() {
             </ul>
           </div>
 
-          {/* 3. Colonne de droite (Formulaire) */}
+          {/* Colonne de droite (Formulaire) */}
           <div className="newsletter-form-container">
-            <form 
-              className="newsletter-form" 
-              action="[URL_DE_VOTRE_SERVICE_MAILCHIMP_OU_AUTRE]" 
-              method="POST"
-              target="_blank"
-            >
-              <label htmlFor="newsletter-email" className="newsletter-label">
-                Votre meilleur e-mail :
-              </label>
-              <input 
-                type="email" 
-                id="newsletter-email" // L'id correspond au "for" du label
-                name="EMAIL" 
-                className="newsletter-input"
-                placeholder="Votre-email@domaine.com" 
-                required 
-              />
-              <button 
-                type="submit" 
-                className="cta-button" // On réutilise le style
-              >
-                S'inscrire
-              </button>
-            </form>
+            {message && message.type === 'success' ? (
+              <div style={{ 
+                padding: '1.5rem', 
+                backgroundColor: '#d4edda', 
+                color: '#155724', 
+                borderRadius: '8px',
+                textAlign: 'center',
+                width: '100%'
+              }}>
+                <strong>{message.text}</strong>
+              </div>
+            ) : (
+              <form className="newsletter-form" onSubmit={handleSubscribe}>
+                <label htmlFor="newsletter-email" className="newsletter-label">
+                  Votre meilleur e-mail :
+                </label>
+                
+                <input 
+                  type="email" 
+                  id="newsletter-email" 
+                  className="newsletter-input"
+                  placeholder="exemple@univ-pau.fr" 
+                  required 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+
+                {message && message.type !== 'success' && (
+                  <p style={{ color: message.type === 'error' ? 'red' : '#0056b3', margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                    {message.text}
+                  </p>
+                )}
+
+                <button 
+                  type="submit" 
+                  className="cta-button" 
+                  disabled={loading}
+                >
+                  {loading ? 'Inscription...' : "S'inscrire"}
+                </button>
+              </form>
+            )}
           </div>
 
-        </div> {/* Fin de .newsletter-layout */}
-        
+        </div> 
       </div>
     </section>
   );

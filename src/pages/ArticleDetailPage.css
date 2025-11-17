@@ -1,0 +1,40 @@
+/* src/pages/ArticleDetailPage.css */
+.article-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #555;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+.back-link:hover { color: #003366; }
+
+.article-header { margin-bottom: 2rem; }
+.article-header h1 { font-size: 2.5rem; color: #003366; margin-bottom: 0.5rem; }
+.article-meta-detail { color: #777; font-size: 0.9rem; display: flex; gap: 1.5rem; }
+
+.article-cover-image img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Styles du contenu */
+.article-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+}
+/* On peut ajouter du style spécifique pour les éléments HTML générés (h2, p, ul...) ici */
+.article-content h2 { color: #003366; margin-top: 2rem; }
+.article-content img { max-width: 100%; height: auto; border-radius: 5px; margin: 1rem 0; }

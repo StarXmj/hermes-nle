@@ -8,6 +8,8 @@ import TestModeModal from './components/TestModeModal';
 import { Analytics } from '@vercel/analytics/react';
 import './App.css'; 
 import './pages/LegalPage.css';
+import AutoLogout from './components/AutoLogout'; // <--- 1. IMPORTER ICI
+import CookieConsent from './components/CookieConsent'; // <--- 1. IMPORTER
 
 // --- NOUVEAU : Fonction pour créer les routes ---
 // Cette fonction sait lire les routes "enfants" (children)
@@ -44,10 +46,8 @@ function App() {
 
   return (
     <div className="App">
-      <TestModeModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      <AutoLogout />
+     
       <Navbar />
 
       <Routes>
@@ -57,6 +57,7 @@ function App() {
 
       <Footer />
       <Analytics />
+      <CookieConsent />
     </div>
   );
 }
