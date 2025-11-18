@@ -5,7 +5,7 @@ import './MemberCard.css';
 function MemberCard({ membre }) {
   return (
     // Le rectangle principal
-    <div className="member-card">
+    <div className="member-card" data-aos="fade-left">
       
       {/* 1. Colonne de gauche (Photo) */}
       <div className="member-photo-container">

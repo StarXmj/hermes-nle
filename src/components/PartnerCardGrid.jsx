@@ -5,7 +5,7 @@ import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa';
 
 function PartnerCardGrid({ partenaire }) {
   return (
-    <div className="partner-card-grid">
+    <div className="partner-card-grid" data-aos="zoom-in">
       <div className="partner-logo-container">
         <img src={partenaire.logo} alt={partenaire.nom} className="partner-logo" />
       </div>

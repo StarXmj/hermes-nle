@@ -31,12 +31,20 @@ const createRoutes = (routes) => {
     );
   });
 };
-
+import AOS from 'aos';
+import 'aos/dist/aos.css'; // Le style des anims
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setIsModalOpen(true);
+
+    AOS.init({
+      duration: 800,   // Durée de l'animation en ms (0.8s)
+      once: true,      // L'animation ne se joue qu'une seule fois
+      easing: 'ease-out-cubic', // Type de mouvement fluide
+      offset: 50,      // Déclenche l'anim 50px avant que l'élément soit visible
+    });
   }, []);
 
   return (
@@ -45,10 +53,7 @@ function App() {
       <RouteTracker />
 
       <AutoLogout />
-      <TestModeModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      
       <Navbar />
 
       <Routes>

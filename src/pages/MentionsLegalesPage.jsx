@@ -1,6 +1,7 @@
 // src/pages/MentionsLegalesPage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom'; // On l'utilisera pour le lien vers la politique de confidentialité
+import { Helmet } from 'react-helmet-async';
 
 // On importe un peu de style pour la page
 import './LegalPage.css'; 
@@ -9,6 +10,10 @@ function MentionsLegalesPage() {
   return (
     // On réutilise les styles de App.css
     <main className="page-section legal-page">
+      <Helmet>
+                   <title>Mentions Légales - Hermes by NLE</title>
+                    <meta name="description" content="Mentions Légales" />
+            </Helmet>
       <div className="section-content">
         <h1>Mentions Légales</h1>
         

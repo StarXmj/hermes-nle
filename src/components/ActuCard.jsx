@@ -12,7 +12,7 @@ function ActuCard({ article }) {
 
   return (
     // 1. On ajoute une classe 'no-image' pour le style
-    <a href={article.lien} target="_blank" rel="noopener noreferrer" className="actu-card no-image">
+    <a href={article.lien} target="_blank" rel="noopener noreferrer" className="actu-card no-image" data-aos="fade-up">
       
       {/* 2. On a SUPPRIMÉ le <div> "actu-card-image-container" */}
 

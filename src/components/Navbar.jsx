@@ -19,7 +19,7 @@ function Navbar() {
         
         <div className="navbar-logo">
           <a href="/">
-            <img src={HermesLogo} alt="Logo Hermes by NLE" className="logo-image" />
+            <img src={HermesLogo} alt="Logo Hermes by NLE" className="logo-image" data-aos="fade-right" data-aos-delay="200" />
           </a>
         </div>
 

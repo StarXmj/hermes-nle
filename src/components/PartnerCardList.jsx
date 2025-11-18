@@ -6,7 +6,7 @@ import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa';
 function PartnerCardList({ partenaire }) {
   return (
     // On utilise un layout "photo à gauche, texte à droite"
-    <div className="partner-card">
+    <div className="partner-card" data-aos="zoom-in">
       
       {/* 1. Colonne de gauche (Logo) */}
       <div className="partner-logo-container">
@@ -17,7 +17,14 @@ function PartnerCardList({ partenaire }) {
       <div className="partner-content">
         <h3>{partenaire.nom}</h3>
         <p>{partenaire.description}</p>
-        
+        {/* NOUVEAU : L'Histoire / Détails */}
+
+        <br></br><br></br>
+        {partenaire.histoire && (
+            <p className="partner-history">
+                {partenaire.histoire}
+            </p>
+        )}<br></br>
         {/* 3. Les liens sont maintenant TOUJOURS visibles */}
         <div className="partner-links-visible">
           <a 

@@ -13,7 +13,7 @@ const formatDate = (dateString) => {
 
 function ArticleCard({ article }) {
   return (
-    <div className="article-card">
+    <div className="article-card" data-aos="fade-up">
       {/* Image (ou placeholder gris si pas d'image) */}
       <div className="article-card-image" style={{
         backgroundImage: article.image ? `url(${article.image})` : 'none',

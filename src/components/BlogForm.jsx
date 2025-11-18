@@ -99,6 +99,28 @@ function BlogForm({ article, onSave, onCancel }) {
     setLoading(true);
     setError(null);
 
+    if (article.id) {
+              // On va vérifier la version actuelle en base de données
+              const { data: currentDbVersion, error: checkError } = await supabase
+                .from('articles')
+                .select('last_modif')
+                .eq('id', article.id)
+                .single();
+        
+              if (!checkError && currentDbVersion) {
+                // On compare les timestamps (en millisecondes pour être précis)
+                const dbTime = new Date(currentDbVersion.last_modif).getTime();
+                const localTime = new Date(article.last_modif).getTime();
+        
+                // Si la date en base est plus récente que celle qu'on a chargée
+                if (dbTime > localTime) {
+                  setError("⚠️ CONFLIT DÉTECTÉ : Quelqu'un a modifié cette fiche pendant que vous l'éditiez. Vos modifications n'ont pas été enregistrées pour ne pas écraser son travail. Veuillez annuler et rafraîchir la page.");
+                  setLoading(false);
+                  return; // ON ARRÊTE TOUT ICI
+                }
+              }
+            }
+
     let finalImage = formData.image;
     let fileToDelete = null;
     const originalImage = article.image || '';

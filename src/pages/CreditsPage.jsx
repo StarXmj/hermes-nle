@@ -4,10 +4,16 @@ import { Link } from 'react-router-dom';
 
 // On réutilise le même CSS que pour les pages légales
 import './LegalPage.css'; 
+import { Helmet } from 'react-helmet-async';
 
 function CreditsPage() {
   return (
     <main className="page-section legal-page">
+
+       <Helmet>
+                   <title>Crédit - Hermes by NLE</title>
+                    <meta name="description" content="Crédit" />
+            </Helmet>
       <div className="section-content">
         <h1>Crédits</h1>
         

@@ -11,7 +11,7 @@ function ActionCard({ action, status, isUpcoming }) {
   const cardClasses = `action-card ${status === 'past' ? 'past-action' : ''}`;
 
   return (
-    <div className={cardClasses}> {/* On utilise la variable de classe */}
+    <div className={cardClasses} data-aos="fade-up"> {/* On utilise la variable de classe */}
       
       {/* 3. On affiche le badge si 'isUpcoming' est true */}
       {isUpcoming && (

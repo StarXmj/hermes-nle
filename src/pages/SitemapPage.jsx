@@ -1,6 +1,7 @@
 // src/pages/SitemapPage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 // 1. ON IMPORTE LA MÊME LISTE DE ROUTES
 import { appRoutes } from '../routeConfig.jsx';
@@ -15,6 +16,10 @@ function SitemapPage() {
 
   return (
     <main className="page-section legal-page">
+      <Helmet>
+                   <title>Site Maps - Hermes by NLE</title>
+                    <meta name="description" content="Site Maps" />
+            </Helmet>
       <div className="section-content">
         <h1>Plan du site</h1>
         

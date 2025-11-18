@@ -21,26 +21,27 @@ function HomePage() {
       {/* Section 1 : Bienvenue */}
       <section className="hero-section">
         
-        <div className="collage-photo photo-1"></div>
-        <div className="collage-photo photo-2"></div>
+        <div className="collage-photo photo-1" data-aos="fade-right" data-aos-delay="200"></div>
+        <div className="collage-photo photo-2"data-aos="fade-left" data-aos-delay="200"></div>
 
-        <h1>Un relais pour tous, une parole pour chacun.</h1>
-        <p className="hero-subtitle">
+        <h1 data-aos="fade-down">Un relais pour tous, une parole pour chacun.</h1>
+        <p className="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
           L'association étudiante qui t'accompagne, t'informe et te défend au quotidien.
         </p>
         
         {/* Le conteneur vertical pour les deux boutons/groupes */}
-        <div className="hero-buttons-container">
+        <div  className="hero-buttons-container" >
           
           
           
           {/* NOUVEAU : Groupe pour le bouton Insta + incitation */}
-          <div className="instagram-cta-group">
+          <div className="instagram-cta-group" >
             <a 
               href="https://www.instagram.com/hermes_by_nle/?igsh=MTZmaTk1amtjOTZudA%3D%3D#" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="cta-button-insta"
+              data-aos="zoom-in" data-aos-delay="400"
             >
 
 

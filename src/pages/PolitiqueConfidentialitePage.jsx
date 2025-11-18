@@ -1,6 +1,7 @@
 // src/pages/PolitiqueConfidentialitePage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 // On réutilise le même CSS que pour les mentions légales
 import './LegalPage.css'; 
@@ -8,6 +9,10 @@ import './LegalPage.css';
 function PolitiqueConfidentialitePage() {
   return (
     <main className="page-section legal-page">
+      <Helmet>
+                   <title>Politique Confidentialité - Hermes by NLE</title>
+                    <meta name="description" content="Politique Confidentialité" />
+            </Helmet>
       <div className="section-content">
         <h1>Politique de Confidentialité</h1>
         

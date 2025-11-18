@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import './LoginPage.css'; // On va créer ce CSS
+import { Helmet } from 'react-helmet-async';
+
 
 function LoginPage() {
   const [email, setEmail] = useState('');
