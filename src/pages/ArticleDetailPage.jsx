@@ -4,10 +4,11 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Helmet } from 'react-helmet-async';
 import { FaCalendarAlt, FaArrowLeft } from 'react-icons/fa';
-import './ArticleDetailPage.css'; // CSS spécifique
+import DOMPurify from 'dompurify'; // <--- 1. IMPORT SÉCURITÉ
+import './ArticleDetailPage.css';
 
 function ArticleDetailPage() {
-  const { id } = useParams(); // On récupère l'ID depuis l'URL
+  const { id } = useParams();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +18,7 @@ function ArticleDetailPage() {
         .from('articles')
         .select('*, created_by_profile:created_by(username)')
         .eq('id', id)
-        .eq('status', 'publié') // Sécurité : on ne montre pas les brouillons
+        .eq('status', 'publié')
         .single();
 
       if (error) console.error("Erreur article:", error);
@@ -30,6 +31,9 @@ function ArticleDetailPage() {
 
   if (loading) return <div className="page-section"><p>Chargement...</p></div>;
   if (!article) return <div className="page-section"><p>Article introuvable.</p></div>;
+
+  // 2. NETTOYAGE DU HTML (SÉCURITÉ)
+  const cleanContent = DOMPurify.sanitize(article.contenu);
 
   return (
     <main className="page-section article-detail-page">
@@ -51,14 +55,15 @@ function ArticleDetailPage() {
 
         {article.image && (
           <div className="article-cover-image">
-            <img src={article.image} alt={article.titre} />
+            {/* 3. AJOUT DU LAZY LOADING (PERFORMANCE) */}
+            <img src={article.image} alt={article.titre} loading="lazy" />
           </div>
         )}
 
-        {/* Affichage du contenu HTML */}
         <div 
-          className="article-content ql-editor" // ql-editor applique les styles par défaut de Quill
-          dangerouslySetInnerHTML={{ __html: article.contenu }} 
+          className="article-content ql-editor"
+          // 4. UTILISATION DU CONTENU NETTOYÉ
+          dangerouslySetInnerHTML={{ __html: cleanContent }} 
         />
       </div>
     </main>

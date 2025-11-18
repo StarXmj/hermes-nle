@@ -8,6 +8,7 @@ import { FaEye, FaTimes, FaCalendarAlt } from 'react-icons/fa'; // Icônes
 import '../pages/ContactPage.css'; // CSS Formulaire
 import '../pages/ArticleDetailPage.css'; // CSS pour la PRÉVISUALISATION (Important !)
 import '../components/TestModeModal.css'; // CSS pour la MODALE
+import DOMPurify from 'dompurify'; // <--- AJOUTER L'IMPORT
 
 const BUCKET_NAME = 'blog';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -181,14 +182,15 @@ function BlogForm({ article, onSave, onCancel }) {
 
   // --- NOUVEAU : Composant de Prévisualisation ---
   const PreviewModal = () => {
-    // Logique pour l'image de prévisualisation
     let previewImageSrc = formData.image;
-    // Si un fichier est sélectionné mais pas encore uploadé, on crée une URL temporaire
     if (file) {
       previewImageSrc = URL.createObjectURL(file);
     } else if (existingFileName && article.image) {
       previewImageSrc = article.image;
     }
+
+    // NETTOYAGE
+    const cleanPreviewContent = DOMPurify.sanitize(formData.contenu);
 
     return (
       <div className="modal-overlay" style={{zIndex: 9999, alignItems: 'flex-start', paddingTop: '2rem'}}>
@@ -232,8 +234,8 @@ function BlogForm({ article, onSave, onCancel }) {
                 )}
 
                 <div 
-                  className="article-content ql-editor" // Important pour le style Quill
-                  dangerouslySetInnerHTML={{ __html: formData.contenu }} 
+                  className="article-content ql-editor"
+              dangerouslySetInnerHTML={{ __html: cleanPreviewContent }} // <--- UTILISER LA VERSION NETTOYÉE
                 />
              </div>
           </div>

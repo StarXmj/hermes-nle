@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
     "aos": "^2.3.4",
+    "dompurify": "^3.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-ga4": "^2.1.0",

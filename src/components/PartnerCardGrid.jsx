@@ -7,7 +7,7 @@ function PartnerCardGrid({ partenaire }) {
   return (
     <div className="partner-card-grid" data-aos="zoom-in">
       <div className="partner-logo-container">
-        <img src={partenaire.logo} alt={partenaire.nom} className="partner-logo" />
+        <img src={partenaire.logo} alt={partenaire.nom} className="partner-logo" loading="lazy"/>
       </div>
       <div className="partner-content">
         <h3>{partenaire.nom}</h3>

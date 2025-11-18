@@ -10,7 +10,7 @@ function PartnerCardList({ partenaire }) {
       
       {/* 1. Colonne de gauche (Logo) */}
       <div className="partner-logo-container">
-        <img src={partenaire.logo} alt={`Logo de ${partenaire.nom}`} className="partner-logo" />
+        <img src={partenaire.logo} alt={`Logo de ${partenaire.nom}`} className="partner-logo" loading="lazy"/>
       </div>
       
       {/* 2. Colonne de droite (Infos) */}
