@@ -1,31 +1,48 @@
 // src/components/CookieConsent.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import ReactGA from 'react-ga4'; // 1. Import
 import './CookieConsent.css';
+
+// On récupère l'ID depuis le .env
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_ID;
 
 function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
 
+  // Fonction d'initialisation
+  const initGA = () => {
+    if (GA_MEASUREMENT_ID) {
+      ReactGA.initialize(GA_MEASUREMENT_ID);
+      console.log("Google Analytics activé !");
+    }
+  };
+
   useEffect(() => {
-    // On vérifie si l'utilisateur a déjà fait un choix
     const consent = localStorage.getItem('cookie_consent');
-    if (!consent) {
-      // Si pas de trace, on affiche la bannière après un petit délai (effet visuel)
+    
+    if (consent === 'accepted') {
+      // 2. Si déjà accepté par le passé, on lance GA tout de suite
+      initGA();
+    } else if (!consent) {
+      // Sinon, on affiche la bannière
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
     }
+    // Si 'declined', on ne fait rien
   }, []);
 
   const handleAccept = () => {
     localStorage.setItem('cookie_consent', 'accepted');
     setShowBanner(false);
-    // Ici, vous pourriez activer Google Analytics ou d'autres traceurs
+    // 3. On lance GA au moment du clic
+    initGA();
   };
 
   const handleDecline = () => {
     localStorage.setItem('cookie_consent', 'declined');
     setShowBanner(false);
-    // Ici, on s'assure que rien n'est activé
+    // On ne lance rien
   };
 
   if (!showBanner) return null;
@@ -34,7 +51,7 @@ function CookieConsent() {
     <div className="cookie-banner">
       <div className="cookie-content">
         <p>
-          🍪 Nous utilisons des cookies pour améliorer votre expérience et analyser le trafic. 
+          🍪 Nous utilisons des cookies pour analyser le trafic (Google Analytics) et améliorer votre expérience.
           Pour en savoir plus, consultez notre <Link to="/politique-de-confidentialite">Politique de Confidentialité</Link>.
         </p>
       </div>

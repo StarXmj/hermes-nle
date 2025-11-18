@@ -5,26 +5,23 @@ import { appRoutes } from './routeConfig.jsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import TestModeModal from './components/TestModeModal';
-import { Analytics } from '@vercel/analytics/react';
+import AutoLogout from './components/AutoLogout';
+import CookieConsent from './components/CookieConsent';
+import RouteTracker from './components/RouteTracker'; // <--- 1. Import du Tracker
 import './App.css'; 
 import './pages/LegalPage.css';
-import AutoLogout from './components/AutoLogout'; // <--- 1. IMPORTER ICI
-import CookieConsent from './components/CookieConsent'; // <--- 1. IMPORTER
 
-// --- NOUVEAU : Fonction pour créer les routes ---
-// Cette fonction sait lire les routes "enfants" (children)
+// (On a supprimé l'import @vercel/analytics)
+
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
     if (route.children) {
-      // C'est une route "parente" (comme ProtectedRoute)
       return (
         <Route key={index} element={route.element}>
-          {/* On crée les routes enfants récursivement */}
           {createRoutes(route.children)} 
         </Route>
       );
     }
-    // C'est une route simple
     return (
       <Route 
         key={index} 
@@ -34,10 +31,8 @@ const createRoutes = (routes) => {
     );
   });
 };
-// --- FIN DE LA NOUVELLE FONCTION ---
 
 function App() {
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -46,17 +41,23 @@ function App() {
 
   return (
     <div className="App">
+      {/* 2. Tracker Google Analytics (invisible) */}
+      <RouteTracker />
+
       <AutoLogout />
-     
+      <TestModeModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
       <Navbar />
 
       <Routes>
-        {/* On utilise notre nouvelle fonction pour créer les routes */}
         {createRoutes(appRoutes)}
       </Routes>
 
       <Footer />
-      <Analytics />
+      
+      {/* 3. Bannière Cookies (qui initialise GA) */}
       <CookieConsent />
     </div>
   );
