@@ -14,7 +14,6 @@ import './pages/LegalPage.css';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Snowfall from 'react-snowfall'; // 1. Import Neige
-import ChristmasTree from './components/ChristmasTree'; // 2. Import Sapin
 
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -76,10 +75,7 @@ function App() {
       </Routes>
 
       {/* 5. LE SAPIN INTERACTIF */}
-      <ChristmasTree 
-        isActive={isChristmasMode} 
-        onToggle={() => setIsChristmasMode(!isChristmasMode)} 
-      />
+      
 
       <Footer />
       <CookieConsent />
