@@ -38,9 +38,61 @@ function ArticleDetailPage() {
   return (
     <main className="page-section article-detail-page">
       <Helmet>
-        <title>{article.titre} - Blog Hermes</title>
-        <meta name="description" content={article.resume} />
-      </Helmet>
+      {/* 1. SEO Standard */}
+      <title>{article.titre} | Hermes by NLE</title>
+      <meta name="description" content={article.resume || "Découvrez cet article sur le blog de la vie étudiante Hermes by NLE."} />
+      {/* URL Canonique : Important pour éviter le contenu dupliqué */}
+      <link rel="canonical" href={`https://hermes-nle.netlify.app/blog/${article.id}`} />
+
+      {/* 2. Facebook / Open Graph (Essentiel pour le partage) */}
+      <meta property="og:site_name" content="Hermes by NLE" />
+      <meta property="og:type" content="article" />
+      <meta property="og:title" content={article.titre} />
+      <meta property="og:description" content={article.resume || "Article du blog étudiant Hermes by NLE"} />
+      {/* Image de partage : utilise l'image de l'article ou une image par défaut */}
+      <meta property="og:image" content={article.image || "https://hermes-nle.netlify.app/images/default-share-image.jpg"} />
+      <meta property="og:url" content={`https://hermes-nle.netlify.app/blog/${article.id}`} />
+      
+      {/* Dates pour les moteurs de recherche */}
+      <meta property="article:published_time" content={article.date_creat} />
+      {article.last_modif && <meta property="article:modified_time" content={article.last_modif} />}
+      <meta property="article:author" content={article.created_by_profile?.username || "Hermes by NLE"} />
+
+      {/* 3. Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={article.titre} />
+      <meta name="twitter:description" content={article.resume} />
+      <meta name="twitter:image" content={article.image || "https://hermes-nle.netlify.app/images/default-share-image.jpg"} />
+    
+    {/* Données Structurées (Schema.org) pour Google */}
+<script type="application/ld+json">
+  {JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": article.titre,
+    "description": article.resume,
+    "image": [article.image || "URL_DEFAUT"],
+    "datePublished": article.date_creat,
+    "dateModified": article.last_modif || article.date_creat,
+    "author": {
+      "@type": "Person",
+      "name": article.created_by_profile?.username || "Hermes by NLE"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Hermes by NLE",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://hermes-nle.netlify.app/logo-hermes.png" // Assurez-vous que cette image existe
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://hermes-nle.netlify.app/blog/${article.id}`
+    }
+  })}
+</script>
+    </Helmet>
 
       <div className="article-container">
         <Link to="/blog" className="back-link"><FaArrowLeft /> Retour au blog</Link>

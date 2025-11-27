@@ -1,26 +1,32 @@
 // src/components/ActuCard.jsx
 import React from 'react';
-import './ActuCard.css'; // On importe le CSS
+import './ActuCard.css';
 
-function ActuCard({ article }) {
-  // Formattage de la date (ne change pas)
+function ActuCard({ article, status }) { // 1. On récupère 'status'
+  
   const formattedDate = new Date(article.dateISO).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
+    day: 'numeric', month: 'short', year: 'numeric'
   });
 
-  return (
-    // 1. On ajoute une classe 'no-image' pour le style
-    <a href={article.lien} target="_blank" rel="noopener noreferrer" className="actu-card no-image" data-aos="fade-up">
-      
-      {/* 2. On a SUPPRIMÉ le <div> "actu-card-image-container" */}
+  // 2. On détermine la classe
+  const isPast = status === 'past';
+  const cardClassName = `actu-card no-image ${isPast ? 'past-actu' : ''}`;
 
-      {/* 3. Tout est maintenant dans "actu-card-content" */}
+  return (
+    <a 
+      href={article.lien} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className={cardClassName} // 3. On applique la classe
+      data-aos="fade-up"
+    >
       <div className="actu-card-content">
         
-        {/* L'étiquette est maintenant en haut du texte */}
-        <span className={`actu-card-category ${article.categorie.toLowerCase()}`}>
+        {/* On grise aussi la catégorie si c'est passé */}
+        <span 
+          className={`actu-card-category ${article.categorie.toLowerCase()}`}
+          style={isPast ? { backgroundColor: '#999', color: '#fff' } : {}}
+        >
           {article.categorie}
         </span>
         

@@ -1,6 +1,6 @@
-// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import { appRoutes } from './routeConfig.jsx'; 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -10,10 +10,14 @@ import RouteTracker from './components/RouteTracker';
 import './App.css'; 
 import './pages/LegalPage.css';
 
-// Imports Animation & Noël
+// Imports Animation & Decor
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import Snowfall from 'react-snowfall'; // 1. Import Neige
+import Snowfall from 'react-snowfall';
+import { THEMES } from './data/themes'; // Import de la config
+
+// URL Image Père Noël (ou autre assets)
+const SANTA_URL = "https://cdn-icons-png.flaticon.com/512/744/744546.png";
 
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -31,52 +35,78 @@ const createRoutes = (routes) => {
 };
 
 function App() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // 3. État pour la neige (activé par défaut en période de fêtes ?)
-  // Ici je le mets à false par défaut, l'utilisateur clique pour activer.
-  // Si vous voulez que ça neige direct, mettez useState(true).
-  const [isChristmasMode, setIsChristmasMode] = useState(false);
+  const [activeThemeId, setActiveThemeId] = useState('default');
 
   useEffect(() => {
-    setIsModalOpen(true);
-    AOS.init({
-      duration: 800,
-      once: true,
-      easing: 'ease-out-cubic',
-      offset: 100,
-    });
+    AOS.init({ duration: 800, once: true, offset: 100 });
+
+    // 1. Charger le thème actif
+    const fetchTheme = async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'current_theme')
+        .single();
+      
+      if (data) setActiveThemeId(data.value);
+    };
+    fetchTheme();
+
+    // 2. Écouter les changements en direct
+    const channel = supabase
+      .channel('theme_changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
+        if (payload.new.key === 'current_theme') {
+          setActiveThemeId(payload.new.value);
+        }
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
+  // Récupérer l'objet de configuration complet basé sur l'ID
+  const currentThemeConfig = THEMES[activeThemeId] || THEMES['default'];
+
   return (
-    <div className="App">
-      <div className={`App ${isChristmasMode ? 'christmas-mode' : ''}`}></div>
+    <div className={`App ${currentThemeConfig.className}`}>
       <RouteTracker />
       <AutoLogout />
       
-      {/* 4. LA NEIGE (Conditionnelle) */}
-      {isChristmasMode && (
+      {/* --- GESTION DU DÉCOR --- */}
+      
+      {/* 1. Neige */}
+      {currentThemeConfig.elements.snow && (
         <Snowfall 
-          style={{
-            position: 'fixed',
-            width: '100vw',
-            height: '100vh',
-            zIndex: 9999, // Au dessus de tout
-            pointerEvents: 'none' // Important : permet de cliquer au travers !
-          }}
-          snowflakeCount={150} // Nombre de flocons
+          color={currentThemeConfig.elements.snowColor || '#fff'}
+          snowflakeCount={150} // Un peu plus de neige
+          style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 9998, pointerEvents: 'none' }}
         />
       )}
 
+      {/* 2. Guirlande */}
+      {currentThemeConfig.elements.garland && (
+        <div 
+          className="christmas-garland"
+          style={{ 
+            backgroundImage: `url('${currentThemeConfig.elements.garlandImg}')` 
+          }}
+        ></div>
+      )}
+
+      {/* 3. Père Noël */}
+      {currentThemeConfig.elements.santa && (
+        <div className="santa-container">
+          <img 
+            src={currentThemeConfig.elements.santaImg} 
+            alt="Père Noël" 
+            className="santa-sleigh" 
+          />
+        </div>
+      )}
+
       <Navbar />
-
-      <Routes>
-        {createRoutes(appRoutes)}
-      </Routes>
-
-      {/* 5. LE SAPIN INTERACTIF */}
-      
-
+      <Routes>{createRoutes(appRoutes)}</Routes>
       <Footer />
       <CookieConsent />
     </div>

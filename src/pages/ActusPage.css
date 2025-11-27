@@ -1,0 +1,132 @@
+/* src/pages/ActusPage.css */
+
+.actus-page-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.actus-page-header {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+  background-color: #f9f9f9;
+}
+
+.actus-page-header h1 {
+  font-size: 3rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+/* On réutilise les styles boutons filtres et timeline de ActionsPage.css 
+   S'ils sont déjà chargés globalement, c'est bon, sinon on les remet ici par sécurité */
+
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  color: #555;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn.active {
+  background-color: #0056b3;
+  color: white;
+  border-color: #0056b3;
+}
+
+/* --- La Timeline Verticale --- */
+.timeline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 4rem 1rem 4rem 50px;
+  max-width: 800px; /* Un peu moins large que les events pour la lecture */
+  margin: 0 auto;
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  width: 4px;
+  height: 100%;
+  background-color: #0056b3;
+  z-index: 1;
+}
+
+.timeline-item {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  top: 1.5rem;
+  left: -30px; 
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #0056b3;
+  border: 4px solid #fff;
+  z-index: 3;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #777;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .timeline {
+    padding: 2rem 1rem;
+  }
+  .timeline::before,
+  .timeline-item::after {
+    display: none;
+  }
+}
+.actu-card.no-image.past-actu {
+  background-color: #f9f9f9; /* Fond gris clair */
+  opacity: 0.8; /* Légère transparence globale */
+  border-color: #e0e0e0; /* Bordure grise */
+  box-shadow: none; /* On enlève l'ombre par défaut */
+}
+
+/* On change la couleur du titre */
+.actu-card.no-image.past-actu h3 {
+  color: #777; 
+}
+
+/* On change la couleur du texte */
+.actu-card.no-image.past-actu p,
+.actu-card.no-image.past-actu .actu-card-date {
+  color: #999;
+}
+
+/* Effet au survol : on redonne un peu de vie pour montrer que c'est cliquable */
+.actu-card.no-image.past-actu:hover {
+  opacity: 1;
+  border-color: #bbb;
+  transform: translateY(-2px); /* Mouvement plus petit */
+}

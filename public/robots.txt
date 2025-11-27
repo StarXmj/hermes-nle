@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /update-password
+Disallow: /mot-de-passe-oublie
+
+Sitemap: https://hermes-nle.netlify.app/sitemap.xml

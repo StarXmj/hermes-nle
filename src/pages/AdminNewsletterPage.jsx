@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FaCopy, FaEnvelope } from 'react-icons/fa';
-import './AdminActionsPage.css'; // On réutilise le CSS global admin
+import { FaCopy, FaEnvelope, FaTrash } from 'react-icons/fa'; // 1. Import FaTrash
+import './AdminActionsPage.css'; 
 
 // Helper pour formater la date
 const formatDate = (dateString) => {
@@ -42,17 +42,36 @@ function AdminNewsletterPage() {
 
   // Fonction pour copier tous les emails
   const handleCopyAll = () => {
-    const allEmails = subscribers.map(s => s.email).join(', '); // Séparés par une virgule
+    const allEmails = subscribers.map(s => s.email).join(', ');
     navigator.clipboard.writeText(allEmails).then(() => {
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000); // Reset message après 3s
+      setTimeout(() => setCopySuccess(false), 3000);
     });
+  };
+
+  // 2. Fonction de suppression
+  const handleDelete = async (id) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet abonné de la liste ?")) {
+      const { error } = await supabase
+        .from('subscribers')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        setError("Erreur lors de la suppression : " + error.message);
+      } else {
+        // On met à jour la liste locale pour retirer l'élément supprimé immédiatement
+        setSubscribers(currentSubscribers => currentSubscribers.filter(sub => sub.id !== id));
+      }
+    }
   };
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - Newsletter</title></Helmet>
-
+<Helmet>
+  <title>Liste Newsletter | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour au Tableau de bord</Link>
         <h1>Inscrits Newsletter ({subscribers.length})</h1>
@@ -83,7 +102,18 @@ function AdminNewsletterPage() {
                   Inscrit le : {formatDate(sub.created_at)}
                 </span>
               </div>
-              {/* Pas de bouton modifier/supprimer pour l'instant, c'est juste de la lecture */}
+              
+              {/* 3. Bouton Poubelle */}
+              <div className="admin-row-controls">
+                <button 
+                  className="admin-btn icon-btn danger" 
+                  onClick={() => handleDelete(sub.id)}
+                  title="Supprimer cet abonné"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+
             </div>
           ))
         ) : (

@@ -335,3 +335,162 @@ padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   height: 250px;
 }
 }
+
+/* src/App.css */
+
+/* --- THÈME NOËL --- */
+/* --- THÈME NOËL --- */
+.theme-christmas {
+  /* Fond bleuté pour faire ressortir la neige */
+  background: linear-gradient(to bottom, #f4faff 0%, #ffffff 100%);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* LA GUIRLANDE */
+.theme-christmas .christmas-garland {
+  position: absolute; 
+  top: -25px;
+  left: 0;
+  width: 100%;
+  height: 80px; 
+  
+  /* CORRECTION ICI : z-index à 1000 */
+  /* > 999 (Navbar) pour être visible */
+  /* < 1002 (Burger) pour ne pas gêner le clic */
+  z-index: 1000; 
+  
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  background-position: top center;
+  pointer-events: none; 
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.15));
+}
+
+/* LE PÈRE NOËL */
+.santa-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  z-index: 9999;
+  pointer-events: none;
+  animation: flySantaRandom 60s linear infinite;
+}
+
+.santa-sleigh {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 20px rgba(0,0,0,0.1));
+}
+
+/* Animation "Aléatoire" avec Aller-Retour CORRIGÉ (Sens Inversé) */
+@keyframes flySantaRandom {
+  /* --- PHASE 1 : ALLER (Gauche -> Droite) --- */
+  0% {
+    left: -500px;
+    top: 15%;
+    /* CORRECTION : On commence en miroir scaleX(-1) si l'image regarde vers la gauche par défaut */
+    /* OU si elle regarde à droite mais que c'était l'inverse voulu. */
+    /* J'inverse par rapport à tout à l'heure : -1 ici */
+    transform: scaleX(-1) rotate(5deg); 
+  }
+  10% {
+    top: 5%;
+    transform: scaleX(-1) rotate(0deg);
+  }
+  20% {
+    top: 20%;
+    transform: scaleX(-1) rotate(-2deg);
+  }
+  30% {
+    top: 10%;
+  }
+  40% {
+    left: 110vw; /* Sortie à droite */
+    top: 15%;
+    transform: scaleX(-1) rotate(-5deg);
+  }
+
+  /* --- PHASE 2 : PAUSE & DEMI-TOUR HORS ÉCRAN --- */
+  40.01% {
+    transform: scaleX(1); /* RETOUR À LA NORMALE pour aller vers la gauche */
+    left: 110vw;
+  }
+  49.99% {
+    left: 110vw;
+    top: 60%;
+  }
+
+  /* --- PHASE 3 : RETOUR (Droite -> Gauche) --- */
+  50% {
+    left: 110vw;
+    top: 60%;
+    transform: scaleX(1) rotate(5deg);
+  }
+  60% {
+    top: 75%;
+    transform: scaleX(1) rotate(0deg);
+  }
+  70% {
+    top: 50%;
+    transform: scaleX(1) rotate(-3deg);
+  }
+  80% {
+    top: 65%;
+  }
+  90% {
+    left: -500px; /* Sortie à gauche */
+    top: 55%;
+    transform: scaleX(1) rotate(-5deg);
+  }
+
+  /* --- PHASE 4 : RESET --- */
+  90.01% {
+    transform: scaleX(-1); /* On remet en miroir pour le prochain tour */
+  }
+  100% {
+    left: -500px;
+    top: 15%;
+  }
+}
+
+/* src/App.css */
+
+/* ... (votre code existant) ... */
+
+/* --- LE SAPIN DE LA HOME PAGE --- */
+
+.christmas-tree-wrapper {
+  /* Caché par défaut (pour les thèmes "Classique", "Halloween", etc.) */
+  display: none; 
+  
+  /* Centrage et espacement */
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.christmas-tree-img {
+  width: 140px; /* Taille du sapin */
+  height: auto;
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2)); /* Belle ombre */
+  
+  /* Petite animation de flottement pour le rendre vivant */
+  animation: floatTree 3s ease-in-out infinite;
+  transition: transform 0.3s;
+}
+
+.christmas-tree-img:hover {
+  transform: scale(1.1); /* Grossit un peu au survol */
+}
+
+@keyframes floatTree {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* --- RÈGLE MAGIQUE : AFFICHER SI LE THÈME EST NOËL --- */
+/* Le body ou la div #root a la classe .theme-christmas, donc on peut cibler le sapin à l'intérieur */
+.theme-christmas .christmas-tree-wrapper {
+  display: flex; /* On l'affiche en flex pour le centrage */
+}

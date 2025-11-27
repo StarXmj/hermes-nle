@@ -79,8 +79,10 @@ function AdminBlogPage() {
   if (editingArticle) {
     return (
       <main className="page-section">
-        <Helmet><title>Édition Blog - Admin</title></Helmet>
-        <BlogForm 
+<Helmet>
+  <title>Édition Article | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>        <BlogForm 
           article={editingArticle === 'new' ? {} : editingArticle} 
           onSave={() => { fetchArticles(); setEditingArticle(null); }} 
           onCancel={() => setEditingArticle(null)} 
@@ -91,8 +93,10 @@ function AdminBlogPage() {
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - Blog</title></Helmet>
-      
+<Helmet>
+  <title>Gestion Blog | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>      
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour</Link>
         <h1>Gestion du Blog</h1>

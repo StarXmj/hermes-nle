@@ -84,8 +84,10 @@ function AdminPartenairesPage() {
   if (editingPartenaire) {
     return (
       <main className="page-section">
-        <Helmet><title>Édition Partenaire - Admin</title></Helmet>
-        <PartnerForm 
+<Helmet>
+  <title>Édition Partenaire | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>        <PartnerForm 
           partenaire={editingPartenaire === 'new' ? {} : editingPartenaire} 
           onSave={() => { fetchPartenaires(); setEditingPartenaire(null); }} 
           onCancel={() => setEditingPartenaire(null)} 
@@ -96,8 +98,10 @@ function AdminPartenairesPage() {
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - Partenaires</title></Helmet>
-      
+<Helmet>
+  <title>Gestion Partenaires | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>      
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour</Link>
         <h1>Gestion des Partenaires</h1>

@@ -35,6 +35,10 @@ function LoginPage() {
 
   return (
     <main className="page-section login-page">
+      <Helmet>
+  <title>Connexion Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <div className="login-container">
         <h2>Connexion Admin</h2>
         <p>Veuillez vous connecter pour accéder au panneau de gestion.</p>

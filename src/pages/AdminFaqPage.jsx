@@ -71,8 +71,10 @@ function AdminFaqPage() {
   if (editingFaq) {
     return (
       <main className="page-section">
-        <Helmet><title>Édition FAQ - Admin</title></Helmet>
-        <FaqForm 
+<Helmet>
+  <title>Édition FAQ | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>        <FaqForm 
           faq={editingFaq === 'new' ? {} : editingFaq} 
           onSave={() => { fetchFaqs(); setEditingFaq(null); }} 
           onCancel={() => setEditingFaq(null)} 
@@ -83,8 +85,10 @@ function AdminFaqPage() {
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - FAQ</title></Helmet>
-      
+<Helmet>
+  <title>Gestion FAQ | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>      
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour</Link>
         <h1>Gestion de la FAQ</h1>

@@ -35,6 +35,11 @@ function ForgotPasswordPage() {
 
   return (
     <main className="page-section login-page">
+      // Dans LoginPage.jsx ou le layout Admin
+<Helmet>
+  <title>Mots de passe oublié</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <div className="login-container">
         <h2>Mot de passe oublié</h2>
         <p>Entrez votre email pour recevoir un lien de réinitialisation.</p>

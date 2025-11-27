@@ -122,8 +122,9 @@ function AdminActionsPage() {
     return (
       <main className="page-section">
         <Helmet>
-          <title>Édition - Admin Hermes</title>
-        </Helmet>
+        <title>Édition Action | Admin - Hermes by NLE</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
         <ActionForm 
           action={editingAction === 'new' ? {} : editingAction} 
           onSave={handleSave}
@@ -136,8 +137,9 @@ function AdminActionsPage() {
   return (
     <main className="page-section">
       <Helmet>
-        <title>Admin - Actions - Hermes by NLE</title>
-      </Helmet>
+      <title>Gestion Actions | Admin - Hermes by NLE</title>
+      <meta name="robots" content="noindex, nofollow" />
+    </Helmet>
       
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">

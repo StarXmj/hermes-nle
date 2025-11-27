@@ -77,26 +77,23 @@ function MemberForm({ membre, onSave, onCancel }) {
     setError(null);
 
     if (membre.id) {
-              // On va vérifier la version actuelle en base de données
-              const { data: currentDbVersion, error: checkError } = await supabase
-                .from('membres')
-                .select('last_modif')
-                .eq('id', membre.id)
-                .single();
-        
-              if (!checkError && currentDbVersion) {
-                // On compare les timestamps (en millisecondes pour être précis)
-                const dbTime = new Date(currentDbVersion.last_modif).getTime();
-                const localTime = new Date(membre.last_modif).getTime();
-        
-                // Si la date en base est plus récente que celle qu'on a chargée
-                if (dbTime > localTime) {
-                  setError("⚠️ CONFLIT DÉTECTÉ : Quelqu'un a modifié cette fiche pendant que vous l'éditiez. Vos modifications n'ont pas été enregistrées pour ne pas écraser son travail. Veuillez annuler et rafraîchir la page.");
-                  setLoading(false);
-                  return; // ON ARRÊTE TOUT ICI
-                }
-              }
-            }
+      const { data: currentDbVersion, error: checkError } = await supabase
+        .from('membres')
+        .select('last_modif')
+        .eq('id', membre.id)
+        .single();
+
+      if (!checkError && currentDbVersion) {
+        const dbTime = new Date(currentDbVersion.last_modif).getTime();
+        const localTime = new Date(membre.last_modif).getTime();
+
+        if (dbTime > localTime) {
+          setError("⚠️ CONFLIT DÉTECTÉ : Quelqu'un a modifié cette fiche pendant que vous l'éditiez. Vos modifications n'ont pas été enregistrées pour ne pas écraser son travail. Veuillez annuler et rafraîchir la page.");
+          setLoading(false);
+          return; 
+        }
+      }
+    }
 
     let finalPhoto = formData.photo;
     let fileToDelete = null;
@@ -169,9 +166,25 @@ function MemberForm({ membre, onSave, onCancel }) {
                 <label>Nom / Prénom</label>
                 <input type="text" name="nom" value={formData.nom} onChange={handleChange} required />
             </div>
+            
+            {/* --- MODIFICATION ICI : Liste déroulante pour les Rôles --- */}
             <div className="form-group">
-                <label>Rôle (ex: Président, Trésorier...)</label>
-                <input type="text" name="role" value={formData.role} onChange={handleChange} required />
+                <label>Rôle</label>
+                <select name="role" value={formData.role} onChange={handleChange} required>
+                  <option value="">-- Sélectionner un rôle --</option>
+                  {/* Le Bureau */}
+                  <option value="Président">Président</option>
+                  <option value="Vice-Président">Vice-Président</option>
+                  <option value="Secrétaire">Secrétaire</option>
+                  <option value="Trésorier">Trésorier</option>
+                  
+                  {/* Les Responsables de Pôle */}
+                  <option value="Responsable Communication">Communication</option>
+                  <option value="Responsable Rédaction">Rédaction</option>
+                  <option value="Responsable Événementiel">Événementiel</option>
+                  
+                  
+                </select>
             </div>
         </div>
 

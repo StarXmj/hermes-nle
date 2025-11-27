@@ -72,8 +72,10 @@ function AdminMembersPage() {
   if (editingMembre) {
     return (
       <main className="page-section">
-        <Helmet><title>Édition Membre - Admin</title></Helmet>
-        <MemberForm 
+<Helmet>
+  <title>Édition Membre | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>        <MemberForm 
           membre={editingMembre === 'new' ? {} : editingMembre} 
           onSave={() => { fetchMembres(); setEditingMembre(null); }} 
           onCancel={() => setEditingMembre(null)} 
@@ -84,8 +86,10 @@ function AdminMembersPage() {
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - Équipe</title></Helmet>
-      
+<Helmet>
+  <title>Gestion Équipe | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>      
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour</Link>
         <h1>Gestion de l'Équipe</h1>

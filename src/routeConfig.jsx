@@ -12,8 +12,11 @@ import SitemapPage from './pages/SitemapPage';
 import AboutPage from './pages/AboutPage';
 import PartenairesPage from './pages/PartenairesPage';
 import BlogPage from './pages/BlogPage';
+import ActusPage from './pages/ActusPage'; // <--- Import
 import ArticleDetailPage from './pages/ArticleDetailPage';
-
+import PoleCommunicationPage from './pages/PoleCommunicationPage';
+import PoleRedactionPage from './pages/PoleRedactionPage';
+import PoleEvenementielPage from './pages/PoleEvenementielPage';
 // Pages Auth
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -28,10 +31,12 @@ import AdminMembersPage from './pages/AdminMembersPage';
 import AdminFaqPage from './pages/AdminFaqPage';
 import AdminBlogPage from './pages/AdminBlogPage';
 import AdminNewsletterPage from './pages/AdminNewsletterPage';
-
+import AdminDecorsPage from './pages/AdminDecorsPage'; // <--- Import
 // Composants de sécurité
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
+
+import NotFoundPage from './pages/NotFoundPage'; // Créez ce composant
 
 export const appRoutes = [
   // --- Authentification ---
@@ -118,6 +123,16 @@ export const appRoutes = [
         children: [
           { path: '/admin/newsletter', element: <AdminNewsletterPage />, category: 'admin' }
         ]
+      },
+      {
+        
+        // Pour l'instant on le rend accessible aux admins généraux (ou réutiliser une permission existante)
+        element: <PermissionRoute permission="can_edit_decor" />,
+      children: [
+        {path: '/admin/decors',
+        element: <AdminDecorsPage />,
+        category: 'admin'}
+        ]
       }
     ]
   },
@@ -136,9 +151,33 @@ export const appRoutes = [
     category: 'main',
   },
   {
+    path: '/communication',
+    element: <PoleCommunicationPage />,
+    name: 'Pôle Communication',
+    category: 'hidden', // 'hidden' car pas directement dans le menu principal pour l'instant
+  },
+  {
+    path: '/redaction',
+    element: <PoleRedactionPage />,
+    name: 'Pôle Rédaction',
+    category: 'hidden',
+  },
+  {
+    path: '/evenementiel',
+    element: <PoleEvenementielPage />,
+    name: 'Pôle Événementiel',
+    category: 'hidden',
+  },
+  {
     path: '/actions',
     element: <ActionsPage />,
     name: 'Nos Évènements',
+    category: 'main',
+  },
+  {
+    path: '/actualites',
+    element: <ActusPage />,
+    name: 'Actualités',
     category: 'main',
   },
   {
@@ -191,4 +230,9 @@ export const appRoutes = [
     name: 'Plan du site',
     category: 'legal',
   },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+    category: 'hidden'
+  }
 ];

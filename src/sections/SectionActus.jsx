@@ -116,7 +116,13 @@ function SectionActus() {
           <p className="actus-empty-message">
             Aucune actualité à venir pour le moment.
           </p>
+          
         )}
+        <div style={{textAlign: 'center', marginTop: '2rem'}}>
+  <a href="/actualites" className="cta-button secondary">
+    Voir toutes les actualités
+  </a>
+</div>
       </div>
     </section>
   );

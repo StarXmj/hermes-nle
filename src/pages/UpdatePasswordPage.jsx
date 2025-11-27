@@ -46,6 +46,10 @@ function UpdatePasswordPage() {
 
   return (
     <main className="page-section login-page">
+      <Helmet>
+  <title>Nouveaux mots de passe oublié</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <div className="login-container">
         <h2>Nouveau mot de passe</h2>
         <p>Veuillez choisir votre nouveau mot de passe.</p>

@@ -53,6 +53,7 @@ function HomePage() {
             <p className="hero-incitation">
               Jeux concours, infos de dernière minute... tout se passe là-bas !
             </p>
+            
           </div>
         </div>
 

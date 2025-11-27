@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { FaEdit, FaUsers, FaHandshake, FaBullhorn, FaBloggerB, FaQuestionCircle } from 'react-icons/fa';
 import './AdminDashboard.css';
-
+import { FaTrash, FaPlusCircle, FaMagic } from 'react-icons/fa';
 function AdminDashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
@@ -59,6 +59,10 @@ function AdminDashboard() {
 
   return (
     <main className="page-section">
+      <Helmet>
+  <title>Tableau de bord | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <Helmet>
         <title>Tableau de bord - Admin Hermes</title>
       </Helmet>
@@ -139,6 +143,14 @@ function AdminDashboard() {
             <p>Rédiger et publier des articles.</p>
           </Link>
         )}
+        {/* AJOUTER CECI : Gestion Décors */}
+        {/* On peut conditionner sur une permission ou laisser libre aux admins connectés */}
+        {profile?.can_edit_decor && (
+        <Link to="/admin/decors" className="admin-nav-card">
+            <FaMagic size={30} />
+            <h3>Gérer les Décors</h3>
+            <p>Changer le thème du site (Noël, etc).</p>
+        </Link> )}
 
       </div>
 
@@ -149,7 +161,8 @@ function AdminDashboard() {
        !profile.can_edit_actus && 
        !profile.can_edit_membres && 
        !profile.can_edit_faq && 
-       !profile.can_edit_blog && (
+       !profile.can_edit_blog && 
+       !profile.can_edit_decor && (
         <div style={{marginTop: '3rem', padding: '2rem', backgroundColor: '#f9f9f9', borderRadius: '8px'}}>
           <p style={{color: '#777', fontStyle: 'italic', margin: 0}}>
             Vous êtes connecté, mais vous n'avez aucun droit d'administration assigné pour le moment.

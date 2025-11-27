@@ -92,7 +92,10 @@ function AdminActusPage() {
   if (editingActu) {
     return (
       <main className="page-section">
-        <Helmet><title>Édition Actu - Admin</title></Helmet>
+        <Helmet>
+  <title>Édition Actualité | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
         <ActuForm 
           actu={editingActu === 'new' ? {} : editingActu} 
           onSave={() => { fetchActus(); setEditingActu(null); }} 
@@ -104,8 +107,10 @@ function AdminActusPage() {
 
   return (
     <main className="page-section">
-      <Helmet><title>Admin - Actualités</title></Helmet>
-      
+<Helmet>
+  <title>Gestion Actualités | Admin - Hermes by NLE</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>      
       <div className="admin-header">
         <Link to="/admin" className="admin-back-link">&larr; Retour au Tableau de bord</Link>
         <h1>Gestion des Actualités</h1>
