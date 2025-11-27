@@ -13,6 +13,39 @@ function ActionsPage() {
   const [filter, setFilter] = useState('future'); // 'all', 'future', 'past'
   const [upcomingActionId, setUpcomingActionId] = useState(null);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": allActions.map(action => ({
+      "@type": "Event",
+      "name": action.titre,
+      "startDate": action.dateISO, // Format YYYY-MM-DD
+      // Si pas de date de fin, Google utilise la date de début
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": action.lieu || "Lieu à confirmer",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Pau", // Adaptez si besoin
+          "addressRegion": "Nouvelle-Aquitaine",
+          "addressCountry": "FR"
+        }
+      },
+      "image": [
+        // On vérifie si le lien programme est une image, sinon on met le logo par défaut
+        (action.lienProgramme && action.lienProgramme.match(/\.(jpeg|jpg|gif|png)$/i)) 
+          ? action.lienProgramme 
+          : "https://hermes-nle.netlify.app/logo-hermes.png" // URL absolue de votre logo
+      ],
+      "description": action.description,
+      "organizer": {
+        "@type": "Organization",
+        "name": "Hermes by NLE",
+        "url": "https://hermes-nle.netlify.app"
+      }
+    }))
+  };
   // Fonction pour charger les données
   async function loadActions() {
     // Note : On ne met pas setLoading(true) pour éviter le flash
@@ -96,6 +129,9 @@ function ActionsPage() {
       <Helmet>
         <title>Nos Évènements - Hermes by NLE</title>
         <meta name="description" content="Découvrez toutes les actions passées et à venir de l'association Hermes." />
+      <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
       </Helmet>
       
       <header className="actions-page-header">

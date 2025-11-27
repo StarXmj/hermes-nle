@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense  } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { appRoutes } from './routeConfig.jsx'; 
@@ -16,6 +16,7 @@ import 'aos/dist/aos.css';
 import Snowfall from 'react-snowfall';
 import { THEMES } from './data/themes'; // Import de la config
 
+import LoadingSpinner from './components/LoadingSpinner'; // 2. Importez votre spinner
 // URL Image Père Noël (ou autre assets)
 const SANTA_URL = "https://cdn-icons-png.flaticon.com/512/744/744546.png";
 
@@ -106,7 +107,9 @@ function App() {
       )}
 
       <Navbar />
-      <Routes>{createRoutes(appRoutes)}</Routes>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>{createRoutes(appRoutes)}</Routes>
+      </Suspense>
       <Footer />
       <CookieConsent />
     </div>

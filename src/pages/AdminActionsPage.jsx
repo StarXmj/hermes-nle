@@ -1,12 +1,11 @@
 // src/pages/AdminActionsPage.jsx
-import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { FaTrash, FaEdit, FaPlusCircle } from 'react-icons/fa'; // J'ai retiré les flèches des imports
 import ActionForm from '../components/ActionForm'; 
 import './AdminActionsPage.css';
-
+import { useAdminData } from '../hooks/useAdminData';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const BUCKET_NAME = 'programmes';
 

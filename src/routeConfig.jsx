@@ -1,43 +1,45 @@
 // src/routeConfig.jsx
-import React from 'react';
+import React, { lazy } from 'react'; // 1. Importez 'lazy'
+
+// --- 2. REMPLACEZ TOUS LES IMPORTS STATIQUES PAR CECI ---
 
 // Pages Publiques
-import HomePage from './pages/HomePage';
-import ActionsPage from './pages/ActionsPage'; 
-import ContactPage from './pages/ContactPage';
-import MentionsLegalesPage from './pages/MentionsLegalesPage';
-import PolitiqueConfidentialitePage from './pages/PolitiqueConfidentialitePage';
-import CreditsPage from './pages/CreditsPage';
-import SitemapPage from './pages/SitemapPage';
-import AboutPage from './pages/AboutPage';
-import PartenairesPage from './pages/PartenairesPage';
-import BlogPage from './pages/BlogPage';
-import ActusPage from './pages/ActusPage'; // <--- Import
-import ArticleDetailPage from './pages/ArticleDetailPage';
-import PoleCommunicationPage from './pages/PoleCommunicationPage';
-import PoleRedactionPage from './pages/PoleRedactionPage';
-import PoleEvenementielPage from './pages/PoleEvenementielPage';
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ActionsPage = lazy(() => import('./pages/ActionsPage')); 
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const MentionsLegalesPage = lazy(() => import('./pages/MentionsLegalesPage'));
+const PolitiqueConfidentialitePage = lazy(() => import('./pages/PolitiqueConfidentialitePage'));
+const CreditsPage = lazy(() => import('./pages/CreditsPage'));
+const SitemapPage = lazy(() => import('./pages/SitemapPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const PartenairesPage = lazy(() => import('./pages/PartenairesPage'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
+const ActusPage = lazy(() => import('./pages/ActusPage'));
+const PoleCommunicationPage = lazy(() => import('./pages/PoleCommunicationPage'));
+const PoleRedactionPage = lazy(() => import('./pages/PoleRedactionPage'));
+const PoleEvenementielPage = lazy(() => import('./pages/PoleEvenementielPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+
 // Pages Auth
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import UpdatePasswordPage from './pages/UpdatePasswordPage';
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
 
 // Pages Admin
-import AdminDashboard from './pages/AdminDashboard';
-import AdminActionsPage from './pages/AdminActionsPage';
-import AdminActusPage from './pages/AdminActusPage';
-import AdminPartenairesPage from './pages/AdminPartenairesPage';
-import AdminMembersPage from './pages/AdminMembersPage';
-import AdminFaqPage from './pages/AdminFaqPage';
-import AdminBlogPage from './pages/AdminBlogPage';
-import AdminNewsletterPage from './pages/AdminNewsletterPage';
-import AdminDecorsPage from './pages/AdminDecorsPage'; // <--- Import
-// Composants de sécurité
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminActionsPage = lazy(() => import('./pages/AdminActionsPage'));
+const AdminActusPage = lazy(() => import('./pages/AdminActusPage'));
+const AdminPartenairesPage = lazy(() => import('./pages/AdminPartenairesPage'));
+const AdminMembersPage = lazy(() => import('./pages/AdminMembersPage'));
+const AdminFaqPage = lazy(() => import('./pages/AdminFaqPage'));
+const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
+const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
+const AdminDecorsPage = lazy(() => import('./pages/AdminDecorsPage'));
+
+// Composants de sécurité (Eux, on peut les garder en statique car ils sont légers et critiques)
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
-
-import NotFoundPage from './pages/NotFoundPage'; // Créez ce composant
-
 export const appRoutes = [
   // --- Authentification ---
   {
