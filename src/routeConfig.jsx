@@ -138,7 +138,7 @@ export const appRoutes = [
   {
     path: '/actions',
     element: <ActionsPage />,
-    name: 'Nos Actions',
+    name: 'Nos Évènements',
     category: 'main',
   },
   {

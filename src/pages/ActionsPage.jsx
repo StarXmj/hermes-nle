@@ -94,12 +94,12 @@ function ActionsPage() {
   return (
     <main className="page-section actions-page-container">
       <Helmet>
-        <title>Nos Actions - Hermes by NLE</title>
+        <title>Nos Évènements - Hermes by NLE</title>
         <meta name="description" content="Découvrez toutes les actions passées et à venir de l'association Hermes." />
       </Helmet>
       
       <header className="actions-page-header">
-        <h1>Nos Actions</h1>
+        <h1>Nos Évènements</h1>
         <p>Toutes nos animations, événements et interventions.</p>
         
         <div className="filter-buttons">

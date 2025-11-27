@@ -41,7 +41,7 @@ function SectionActions() {
   return (
     <section className="page-section">
       <div className="section-content">
-        <h2>Nos Actions</h2>
+        <h2>Nos Évènements</h2>
         <p>Découvrez ce que nous faisons pour animer le campus.</p>
 
         {/* 8. On ajoute un indicateur de chargement */}
@@ -62,7 +62,7 @@ function SectionActions() {
 
         <div className="actions-links">
           <a href="/actions" className="cta-button secondary">
-            Voir toutes nos actions
+            Voir tout nos Évènements
           </a>
         </div>
       </div>

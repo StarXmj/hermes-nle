@@ -4,14 +4,17 @@ import { Routes, Route } from 'react-router-dom';
 import { appRoutes } from './routeConfig.jsx'; 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import TestModeModal from './components/TestModeModal';
 import AutoLogout from './components/AutoLogout';
 import CookieConsent from './components/CookieConsent';
-import RouteTracker from './components/RouteTracker'; // <--- 1. Import du Tracker
+import RouteTracker from './components/RouteTracker';
 import './App.css'; 
 import './pages/LegalPage.css';
 
-// (On a supprimé l'import @vercel/analytics)
+// Imports Animation & Noël
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import Snowfall from 'react-snowfall'; // 1. Import Neige
+import ChristmasTree from './components/ChristmasTree'; // 2. Import Sapin
 
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -23,46 +26,62 @@ const createRoutes = (routes) => {
       );
     }
     return (
-      <Route 
-        key={index} 
-        path={route.path} 
-        element={route.element} 
-      />
+      <Route key={index} path={route.path} element={route.element} />
     );
   });
 };
-import AOS from 'aos';
-import 'aos/dist/aos.css'; // Le style des anims
+
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // 3. État pour la neige (activé par défaut en période de fêtes ?)
+  // Ici je le mets à false par défaut, l'utilisateur clique pour activer.
+  // Si vous voulez que ça neige direct, mettez useState(true).
+  const [isChristmasMode, setIsChristmasMode] = useState(false);
 
   useEffect(() => {
     setIsModalOpen(true);
-
     AOS.init({
-      duration: 800,   // Durée de l'animation en ms (0.8s)
-      once: true,      // L'animation ne se joue qu'une seule fois
-      easing: 'ease-out-cubic', // Type de mouvement fluide
-      offset: 50,      // Déclenche l'anim 50px avant que l'élément soit visible
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+      offset: 100,
     });
   }, []);
 
   return (
     <div className="App">
-      {/* 2. Tracker Google Analytics (invisible) */}
+      <div className={`App ${isChristmasMode ? 'christmas-mode' : ''}`}></div>
       <RouteTracker />
-
       <AutoLogout />
       
+      {/* 4. LA NEIGE (Conditionnelle) */}
+      {isChristmasMode && (
+        <Snowfall 
+          style={{
+            position: 'fixed',
+            width: '100vw',
+            height: '100vh',
+            zIndex: 9999, // Au dessus de tout
+            pointerEvents: 'none' // Important : permet de cliquer au travers !
+          }}
+          snowflakeCount={150} // Nombre de flocons
+        />
+      )}
+
       <Navbar />
 
       <Routes>
         {createRoutes(appRoutes)}
       </Routes>
 
+      {/* 5. LE SAPIN INTERACTIF */}
+      <ChristmasTree 
+        isActive={isChristmasMode} 
+        onToggle={() => setIsChristmasMode(!isChristmasMode)} 
+      />
+
       <Footer />
-      
-      {/* 3. Bannière Cookies (qui initialise GA) */}
       <CookieConsent />
     </div>
   );

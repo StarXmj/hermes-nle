@@ -223,7 +223,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 /* Bouton secondaire (style "outline") */
 
 
-
+*/
 
 .collage-photo {
   position: absolute; /* Positionné par rapport au .hero-section */
@@ -243,7 +243,7 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   transition: transform 0.3s ease-out;
 }
 .collage-photo:hover {  
-    transform: rotate(-8deg) scale(0.95); /* Inclinaison */
+    transform: scale(0.95); /* Inclinaison */
 
 z-index: 3; /* Passe devant le texte au survol */
   transition: 1s;

@@ -22,6 +22,7 @@
     "react-quill-new": "^3.6.0",
     "react-router-dom": "^7.9.5",
     "react-router-hash-link": "^2.4.3",
+    "react-snowfall": "^2.3.0",
     "swiper": "^12.0.3",
     "url": "^0.11.4"
   },

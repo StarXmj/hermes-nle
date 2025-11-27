@@ -21,8 +21,8 @@ function HomePage() {
       {/* Section 1 : Bienvenue */}
       <section className="hero-section">
         
-        <div className="collage-photo photo-1" data-aos="fade-right" data-aos-delay="200"></div>
-        <div className="collage-photo photo-2"data-aos="fade-left" data-aos-delay="200"></div>
+        <div className="collage-photo photo-1" data-aos="fade-right" ></div>
+        <div className="collage-photo photo-2"data-aos="fade-left" ></div>
 
         <h1 data-aos="fade-down">Un relais pour tous, une parole pour chacun.</h1>
         <p className="hero-subtitle" data-aos="fade-up" data-aos-delay="200">

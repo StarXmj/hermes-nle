@@ -27,7 +27,7 @@ function Navbar() {
         <ul className="navbar-links">
           <li><Link to="/">Accueil</Link></li>
           <li><Link to="/about">C'est quoi ?</Link></li>
-          <li><Link to="/actions">Actions</Link></li> 
+          <li><Link to="/actions">Évènements</Link></li> 
           <li><HashLink to="/#actualites">Actualités</HashLink></li>      
           <li><Link to="/partenaires">Partenaires</Link></li>
           <li><Link to="/blog">Blog</Link></li> {/* <-- AJOUT ICI */}
@@ -71,7 +71,7 @@ function Navbar() {
         <ul className="drawer-links">
           <li><Link to="/" onClick={toggleDrawer}>Accueil</Link></li>
           <li><Link to="/about" onClick={toggleDrawer}>C'est quoi ?</Link></li>
-          <li><Link to="/actions" onClick={toggleDrawer}>Actions</Link></li>
+          <li><Link to="/actions" onClick={toggleDrawer}>Évènements</Link></li>
           <li><HashLink to="/#actualites" onClick={toggleDrawer}>Actualités</HashLink></li>
           <li><Link to="/partenaires" onClick={toggleDrawer}>Partenaires</Link></li>
                     <li><Link to="/blog" onClick={toggleDrawer}>Blog</Link></li> {/* <-- AJOUT ICI AUSSI */}
