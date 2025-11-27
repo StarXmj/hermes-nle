@@ -289,8 +289,8 @@ background-repeat: no-repeat;
   
  
  
-   top: 78%; left: 50%; /* à 50%/50% du parent référent */
-  transform: translate(-50%, -50%); /* décalage de 50% de sa propre taille */
+  top: 78%; left: 50%; /* à 50%/50% du parent référent */
+  transform: translate(-50%, -50%) !important; /* décalage de 50% de sa propre taille */
  
   width: 230px;
   height: 280px;
@@ -334,82 +334,4 @@ padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   width: 200px;
   height: 250px;
 }
-}
-
-/* =========================================
-   STYLE DU MODE NOËL (Night Mode)
-   ========================================= */
-
-/* 1. Le fond global (Ciel de nuit d'hiver) */
-.App.christmas-mode {
-  background: linear-gradient(to bottom, #0B1021 0%, #2B32B2 100%);
-  color: #fff;
-  transition: background 0.8s ease-in-out;
-  min-height: 100vh;
-}
-
-/* 2. Rendre les sections transparentes pour voir le fond */
-.christmas-mode .page-section,
-.christmas-mode .page-section.alternate-bg {
-  background-color: transparent !important;
-  color: #fff;
-}
-
-/* 3. Forcer les titres et textes en blanc */
-.christmas-mode h1,
-.christmas-mode h2,
-.christmas-mode h3,
-.christmas-mode p,
-.christmas-mode li,
-.christmas-mode span {
-  color: #f0f8ff !important; /* Blanc "AliceBlue" très léger */
-  text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Petite ombre pour lisibilité */
-}
-
-/* 4. Navbar & Footer en mode nuit */
-.christmas-mode .navbar {
-  background-color: rgba(11, 16, 33, 0.95) !important; /* Fond sombre presque opaque */
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-.christmas-mode .navbar-links a {
-  color: #fff !important;
-}
-.christmas-mode .footer {
-  background-color: #050811 !important; /* Encore plus sombre */
-}
-
-/* 5. EFFET "VERRE DÉPOLI" (Glassmorphism) POUR LES CARTES */
-/* Cela s'applique aux actus, actions, partenaires, blog... */
-.christmas-mode .actu-card,
-.christmas-mode .action-card,
-.christmas-mode .partner-card-grid,
-.christmas-mode .article-card,
-.christmas-mode .member-card {
-  background-color: rgba(255, 255, 255, 0.1) !important; /* Blanc transparent */
-  backdrop-filter: blur(10px); /* Flou d'arrière-plan */
-  border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Bordure fine brillante */
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  color: white !important;
-}
-
-/* Ajustement des textes dans les cartes */
-.christmas-mode .actu-card h3,
-.christmas-mode .article-card h3 {
-  color: #81d4fa !important; /* Un bleu clair glacé pour les titres de cartes */
-}
-.christmas-mode .actu-card p,
-.christmas-mode .article-card p {
-  color: #e0e0e0 !important;
-}
-
-/* 6. Boutons en mode Noël */
-.christmas-mode .cta-button {
-  background-color: #ff3333 !important; /* Rouge Noël */
-  color: white !important;
-  border: none;
-  box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
-}
-.christmas-mode .cta-button:hover {
-  background-color: #cc0000 !important;
-  transform: scale(1.05);
 }
