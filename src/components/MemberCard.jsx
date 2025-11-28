@@ -1,18 +1,25 @@
 // src/components/MemberCard.jsx
 import React from 'react';
 import './MemberCard.css';
+// IMPORT UTILS
+import { getOptimizedImageUrl } from '../utils';
 
 function MemberCard({ membre }) {
+  // Optimisation de la photo de profil (200px carré)
+  const optimizedPhoto = getOptimizedImageUrl(membre.photo, 200);
+
   return (
-    // Le rectangle principal
     <div className="member-card" data-aos="fade-left">
       
-      {/* 1. Colonne de gauche (Photo) */}
       <div className="member-photo-container">
-        <img src={membre.photo} alt={membre.nom} className="member-photo" />
+        <img 
+          src={optimizedPhoto} 
+          alt={membre.nom} 
+          className="member-photo" 
+          loading="lazy" // Bonne pratique pour les longues listes
+        />
       </div>
       
-      {/* 2. Colonne de droite (Infos) */}
       <div className="member-info">
         <h3 className="member-name">{membre.nom}</h3>
         <span className="member-role">{membre.role}</span>

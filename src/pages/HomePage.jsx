@@ -17,6 +17,7 @@ function HomePage() {
         <title>Hermes by NLE</title>
         {/* Bonus : Vous pouvez aussi ajouter la méta-description pour le SEO */}
         <meta name="description" content="L'association étudiante qui t'accompagne, t'informe et te défend au quotidien sur le campus de Pau." />
+      <link rel="canonical" href="https://hermes-nle.netlify.app/" />
       </Helmet>
       {/* Section 1 : Bienvenue */}
       <section className="hero-section">

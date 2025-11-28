@@ -148,6 +148,8 @@ function AdminActionsPage() {
         <button 
           className="cta-button" 
           onClick={() => setEditingAction('new')} 
+          aria-label="Retour au Tableau de bord" // Indispensable pour les lecteurs d'écran et le score SEO
+        title="Retour"
         >
           <FaPlusCircle /> Ajouter une action
         </button>
@@ -204,6 +206,7 @@ function AdminActionsPage() {
               <button 
                 className="admin-btn icon-btn" 
                 title="Modifier"
+                ria-label="Modifier l'action"
                 onClick={() => setEditingAction(action)} 
               >
                 <FaEdit />
@@ -211,6 +214,7 @@ function AdminActionsPage() {
               <button 
                 className="admin-btn icon-btn danger" 
                 title="Supprimer"
+                aria-label="Supprimer l'action"
                 onClick={() => handleDelete(action)}
               >
                 <FaTrash />

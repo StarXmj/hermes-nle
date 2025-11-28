@@ -92,6 +92,27 @@ function ArticleDetailPage() {
     }
   })}
 </script>
+<script type="application/ld+json">
+  {JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "https://hermes-nle.netlify.app/"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Le Blog",
+      "item": "https://hermes-nle.netlify.app/blog"
+    },{
+      "@type": "ListItem",
+      "position": 3,
+      "name": article.titre
+    }]
+  })}
+</script>
     </Helmet>
 
       <div className="article-container">

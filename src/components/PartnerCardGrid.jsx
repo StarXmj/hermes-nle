@@ -2,12 +2,23 @@
 import React from 'react';
 import './PartnerCardGrid.css'; 
 import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa'; 
+// 1. Import de l'utilitaire d'optimisation
+import { getOptimizedImageUrl } from '../utils';
 
 function PartnerCardGrid({ partenaire }) {
+  // 2. On optimise l'URL du logo (300px est suffisant pour la grille)
+  const optimizedLogo = getOptimizedImageUrl(partenaire.logo, 300);
+
   return (
     <div className="partner-card-grid" data-aos="zoom-in">
       <div className="partner-logo-container">
-        <img src={partenaire.logo} alt={partenaire.nom} className="partner-logo" loading="lazy"/>
+        {/* 3. On utilise la version optimisée */}
+        <img 
+          src={optimizedLogo} 
+          alt={partenaire.nom} 
+          className="partner-logo" 
+          loading="lazy"
+        />
       </div>
       <div className="partner-content">
         <h3>{partenaire.nom}</h3>

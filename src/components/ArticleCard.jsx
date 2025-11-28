@@ -1,31 +1,32 @@
 // src/components/ArticleCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaCalendarAlt, FaUser } from 'react-icons/fa';
-import './ArticleCard.css'; // On va créer ce CSS juste après
+import { FaCalendarAlt } from 'react-icons/fa';
+import './ArticleCard.css';
 
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    day: 'numeric', month: 'long', year: 'numeric'
-  });
-};
+// 1. IMPORT DU FICHIER UTILS
+import { getOptimizedImageUrl, formatDate } from '../utils'; // Assurez-vous que le chemin est bon
 
 function ArticleCard({ article }) {
+  
+  // 2. UTILISATION DE L'OPTIMISATION
+  // On demande une largeur de 600px (suffisant pour une carte) et une qualité de 80%
+  const optimizedImage = getOptimizedImageUrl(article.image, 600, 80);
+
   return (
     <div className="article-card" data-aos="fade-up">
-      {/* Image (ou placeholder gris si pas d'image) */}
+      {/* Image optimisée en background */}
       <div className="article-card-image" style={{
-        backgroundImage: article.image ? `url(${article.image})` : 'none',
-        backgroundColor: article.image ? 'transparent' : '#eee'
+        backgroundImage: optimizedImage ? `url(${optimizedImage})` : 'none',
+        backgroundColor: optimizedImage ? 'transparent' : '#eee'
       }}>
         {!article.image && <span style={{color: '#aaa'}}>Pas d'image</span>}
       </div>
 
       <div className="article-card-content">
         <div className="article-meta">
+          {/* On utilise aussi la fonction formatDate centralisée */}
           <span><FaCalendarAlt /> {formatDate(article.date_creat)}</span>
-          {/* On pourrait ajouter l'auteur ici si vous le récupérez dans la requête */}
         </div>
 
         <h3>{article.titre}</h3>

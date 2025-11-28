@@ -1,31 +1,35 @@
-// src/components/PartnerCard.jsx
+// src/components/PartnerCardList.jsx
 import React from 'react';
 import './PartnerCardList.css'; 
-import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa'; 
+import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa';
+// IMPORT UTILS
+import { getOptimizedImageUrl } from '../utils';
 
 function PartnerCardList({ partenaire }) {
+  // Optimisation du logo (300px de large max)
+  const optimizedLogo = getOptimizedImageUrl(partenaire.logo, 300);
+
   return (
-    // On utilise un layout "photo à gauche, texte à droite"
     <div className="partner-card" data-aos="zoom-in">
       
-      {/* 1. Colonne de gauche (Logo) */}
       <div className="partner-logo-container">
-        <img src={partenaire.logo} alt={`Logo de ${partenaire.nom}`} className="partner-logo" loading="lazy"/>
+        <img 
+          src={optimizedLogo} 
+          alt={`Logo de ${partenaire.nom}`} 
+          className="partner-logo" 
+          loading="lazy" 
+        />
       </div>
       
-      {/* 2. Colonne de droite (Infos) */}
       <div className="partner-content">
         <h3>{partenaire.nom}</h3>
         <p>{partenaire.description}</p>
-        {/* NOUVEAU : L'Histoire / Détails */}
-
-        <br></br><br></br>
+        <br/><br/>
         {partenaire.histoire && (
             <p className="partner-history">
                 {partenaire.histoire}
             </p>
-        )}<br></br>
-        {/* 3. Les liens sont maintenant TOUJOURS visibles */}
+        )}<br/>
         <div className="partner-links-visible">
           <a 
             href={partenaire.lienAdresse} 
