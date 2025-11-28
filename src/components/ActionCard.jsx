@@ -1,19 +1,27 @@
 // src/components/ActionCard.jsx
 import React from 'react';
-// On importe l'icône "À venir"
-import { FaCalendarAlt, FaMapMarkerAlt, FaExternalLinkAlt, FaBell } from 'react-icons/fa';
+// On ajoute FaLink pour les liens génériques
+import { FaCalendarAlt, FaMapMarkerAlt, FaExternalLinkAlt, FaBell, FaLink, FaTicketAlt } from 'react-icons/fa';
 import './ActionCard.css';
 
-// 1. On accepte les nouvelles props : status, isUpcoming
 function ActionCard({ action, status, isUpcoming }) {
   
-  // 2. On définit la classe CSS en fonction du statut
   const cardClasses = `action-card ${status === 'past' ? 'past-action' : ''}`;
+  
+  // On sécurise : si extra_links est null, on prend un tableau vide
+  const extraLinks = action.extra_links || [];
+
+  // Petite fonction pour choisir l'icône selon le nom du lien (Bonus UX)
+  const getLinkIcon = (label) => {
+    const l = label.toLowerCase();
+    if (l.includes('billet') || l.includes('ticket')) return <FaTicketAlt size={12} />;
+    if (l.includes('program')) return <FaExternalLinkAlt size={12} />;
+    return <FaLink size={12} />;
+  };
 
   return (
-    <div className={cardClasses} data-aos="fade-up"> {/* On utilise la variable de classe */}
+    <div className={cardClasses} data-aos="fade-up">
       
-      {/* 3. On affiche le badge si 'isUpcoming' est true */}
       {isUpcoming && (
         <div className="upcoming-badge">
           <FaBell size={12} /> À venir
@@ -23,33 +31,56 @@ function ActionCard({ action, status, isUpcoming }) {
       <h3>{action.titre}</h3>
       
       <div className="action-details">
-        {/* ... (le reste de la carte ne change pas) ... */}
         <div className="action-detail-item">
           <FaCalendarAlt className="action-icon" /> 
           <span>{action.infoDate}</span>
         </div>
         
-        <a 
-          href={action.lienLieu}
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="action-detail-item location-link"
-        >
-          <FaMapMarkerAlt className="action-icon" /> 
-          <span>{action.lieu}</span>
-        </a>
+        {action.lieu && (
+          <a 
+            href={action.lienLieu}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="action-detail-item location-link"
+          >
+            <FaMapMarkerAlt className="action-icon" /> 
+            <span>{action.lieu}</span>
+          </a>
+        )}
       </div>
 
       <p className="action-desc">{action.description}</p>
       
-      <a 
-        href={action.lienProgramme} 
-        className="action-program-link"
-        target="_blank" 
-        rel="noopener noreferrer"
-      >
-        Voir le programme <FaExternalLinkAlt size={12} />
-      </a>
+      {/* --- ZONE DES LIENS --- */}
+      <div className="action-links-group">
+        
+        {/* 1. Le lien Programme principal (s'il existe) */}
+        {action.lienProgramme && (
+          <a 
+            href={action.lienProgramme} 
+            className="action-btn-link"
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            Voir le programme <FaExternalLinkAlt size={12} />
+          </a>
+        )}
+
+        {/* 2. Les liens modulaires (Billetterie, etc.) */}
+        {extraLinks.map((link, index) => (
+          <a 
+            key={index}
+            href={link.url} 
+            className="action-btn-link secondary" // Classe différente pour varier le style
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            {link.label} {getLinkIcon(link.label)}
+          </a>
+        ))}
+        
+      </div>
+
     </div>
   );
 }

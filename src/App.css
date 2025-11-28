@@ -307,8 +307,8 @@ background-repeat: no-repeat;
 @media (max-width: 600px) {
   
  .hero-section h1 {
-  font-size: 1.5rem; /* Un peu plus gros */
-  margin-bottom: 1rem;
+  font-size: 1.9rem; /* Un peu plus gros */
+  margin-bottom: rem;
 }
 
 .cta-button {
@@ -330,9 +330,9 @@ padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 }
 
 .photo-1 {
-   top:90%; left: 50%; /* à 50%/50% du parent référent */
-  width: 200px;
-  height: 250px;
+   top:85%; left: 50%; /* à 50%/50% du parent référent */
+  width: 170px;
+  height: 220px;
 }
 }
 

@@ -6,6 +6,7 @@ import { FaTrash, FaEdit, FaPlusCircle } from 'react-icons/fa'; // J'ai retiré 
 import ActionForm from '../components/ActionForm'; 
 import './AdminActionsPage.css';
 import { useAdminData } from '../hooks/useAdminData';
+import React, { useState, useEffect } from 'react';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const BUCKET_NAME = 'programmes';
 

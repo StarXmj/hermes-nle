@@ -9,7 +9,7 @@ import CookieConsent from './components/CookieConsent';
 import RouteTracker from './components/RouteTracker';
 import './App.css'; 
 import './pages/LegalPage.css';
-
+import { Toaster } from 'react-hot-toast';
 // Imports Animation & Decor
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -71,6 +71,30 @@ function App() {
 
   return (
     <div className={`App ${currentThemeConfig.className}`}>
+      <Toaster 
+        position="top-center" // Ou "bottom-right" selon vos goûts
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#d4edda',
+              color: '#155724',
+              border: '1px solid #c3e6cb'
+            },
+          },
+          error: {
+            style: {
+              background: '#f8d7da',
+              color: '#721c24',
+              border: '1px solid #f5c6cb'
+            },
+          },
+        }}
+      />
       <RouteTracker />
       <AutoLogout />
       

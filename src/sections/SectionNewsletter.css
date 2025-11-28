@@ -17,7 +17,6 @@
   
   /* Le bloc est centré (margin auto) */
   text-align: left; 
-  max-width: 400px; 
   margin-left: auto;
   margin-right: auto;
 }
@@ -76,7 +75,7 @@
 }
 
 /* 6. Responsive (ne change pas) */
-@media (max-width: 768px) {
+@media (max-width: 1400px) {
   .newsletter-layout {
     flex-direction: column;
   }

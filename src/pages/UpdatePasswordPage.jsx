@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
+import toast from 'react-hot-toast'; // 1. Importer
 
 function UpdatePasswordPage() {
   const [password, setPassword] = useState('');
@@ -34,7 +35,7 @@ function UpdatePasswordPage() {
       if (error) throw error;
 
       // Si succès, on redirige vers l'admin
-      alert("Mot de passe modifié avec succès !");
+      toast.success("Mot de passe modifié avec succès !");
       navigate('/admin');
 
     } catch (err) {

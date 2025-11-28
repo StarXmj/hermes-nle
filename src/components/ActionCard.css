@@ -52,3 +52,58 @@
 .action-card.past-action .action-program-link {
   color: #888;
 }
+
+.action-links-group {
+  display: flex;
+  flex-wrap: wrap; /* Permet de passer à la ligne si trop de boutons */
+  gap: 0.8rem; /* Espace entre les boutons */
+  margin-top: auto; /* Pousse les boutons tout en bas de la carte */
+  padding-top: 1rem;
+}
+
+/* Style des boutons de lien */
+.action-btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  
+  /* Style par défaut (Bleu plein - ex: Programme) */
+  background-color: #0056b3; 
+  color: white;
+}
+
+.action-btn-link:hover {
+  background-color: #004494;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+}
+
+/* Style secondaire (Contour bleu - ex: Billetterie, Facebook) */
+.action-btn-link.secondary {
+  background-color: transparent;
+  border: 1px solid #0056b3;
+  color: #0056b3;
+}
+
+.action-btn-link.secondary:hover {
+  background-color: #e6f0fa; /* Bleu très clair */
+  transform: translateY(-2px);
+}
+
+/* Adaptation pour les événements passés (Grisés) */
+.action-card.past-action .action-btn-link {
+  background-color: #ccc;
+  color: #fff;
+  pointer-events: none; /* Non cliquable si passé */
+}
+.action-card.past-action .action-btn-link.secondary {
+  border-color: #ccc;
+  color: #999;
+  background-color: transparent;
+}

@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 const AutoLogout = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const AutoLogout = () => {
     console.log("Déconnexion automatique pour inactivité.");
     await supabase.auth.signOut();
     navigate('/login'); // Redirection forcée
-    alert("Vous avez été déconnecté pour inactivité.");
+    toast.error("Vous avez été déconnecté pour inactivité.");
   };
 
   // Fonction pour remettre le compteur à zéro
