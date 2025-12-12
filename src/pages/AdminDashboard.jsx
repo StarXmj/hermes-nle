@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { FaEdit, FaUsers, FaHandshake, FaBullhorn, FaBloggerB, FaQuestionCircle } from 'react-icons/fa';
 import './AdminDashboard.css';
 import { FaTrash, FaPlusCircle, FaMagic } from 'react-icons/fa';
+import { FaGamepad } from 'react-icons/fa';
 function AdminDashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
@@ -152,6 +153,14 @@ function AdminDashboard() {
             <p>Changer le thème du site (Noël, etc).</p>
         </Link> )}
 
+          {/* Gestion des Assos (Jeu) */}
+        {profile?.can_admin_asso && (
+          <Link to="/admin/assos" className="admin-nav-card">
+            <FaGamepad size={30} />
+            <h3>Gérer les Assos (Jeu)</h3>
+            <p>Ajouter des associations pour le match.</p>
+          </Link>
+        )}
       </div>
 
       {/* Message si l'utilisateur n'a aucun droit */}

@@ -39,7 +39,7 @@ function UpdatePasswordPage() {
       navigate('/admin');
 
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }

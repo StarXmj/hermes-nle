@@ -20,7 +20,8 @@ const PoleCommunicationPage = lazy(() => import('./pages/PoleCommunicationPage')
 const PoleRedactionPage = lazy(() => import('./pages/PoleRedactionPage'));
 const PoleEvenementielPage = lazy(() => import('./pages/PoleEvenementielPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-
+  import AssoMatchPage from './pages/AssoMatchPage'; // <--- Import
+import HermesRunnerPage from './pages/HermesRunnerPage'; // Import
 // Pages Auth
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
@@ -36,6 +37,7 @@ const AdminFaqPage = lazy(() => import('./pages/AdminFaqPage'));
 const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
 const AdminDecorsPage = lazy(() => import('./pages/AdminDecorsPage'));
+import AdminAssoPage from './pages/AdminAssoPage'; // <--- Import
 
 // Composants de sécurité (Eux, on peut les garder en statique car ils sont légers et critiques)
 import ProtectedRoute from './components/ProtectedRoute';
@@ -135,6 +137,14 @@ export const appRoutes = [
         element: <AdminDecorsPage />,
         category: 'admin'}
         ]
+      },
+      {
+        // On peut créer une permission spécifique "can_admin_asso" ou utiliser une existante
+        // Pour l'instant, disons qu'on utilise "can_edit_partenaires" ou on crée une <PermissionRoute permission="can_admin_asso" />
+        element: <PermissionRoute permission="can_admin_asso" />, // Assurez-vous que cette colonne existe dans 'profiles' comme vu avant
+        children: [
+          { path: '/admin/assos', element: <AdminAssoPage />, category: 'admin' }
+        ]
       }
     ]
   },
@@ -205,6 +215,18 @@ export const appRoutes = [
     element: <ContactPage />,
     name: 'Contact',
     category: 'main',
+  },
+  {
+    path: '/asso-match',
+    element: <AssoMatchPage />,
+    name: 'Le Match des Assos',
+    category: 'main', // Ou 'hidden' si vous ne voulez pas l'avoir dans le menu principal
+  },
+  {
+    path: '/runner',
+    element: <HermesRunnerPage />,
+    name: 'Hermes Runner',
+    category: 'main', // Ou 'hidden'
   },
  
   // --- Pages Légales (Footer) ---
