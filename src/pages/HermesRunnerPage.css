@@ -1,6 +1,8 @@
 /* src/pages/HermesRunnerPage.css */
 
-/* --- UNIVERS GREC (Plein Écran) --- */
+/* =========================================
+   1. UNIVERS & STRUCTURE GLOBALE
+   ========================================= */
 .greek-runner-container, .greek-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: 9999;
@@ -9,263 +11,219 @@
     font-family: 'Cinzel', 'Georgia', serif;
     user-select: none;
     cursor: pointer;
+    
+    /* Optimisation Mobile : Empêche scroll/zoom */
+    touch-action: none; 
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* Bouton Retour */
+/* --- ÉCRAN DE VERROUILLAGE (Portrait) --- */
+.orientation-lock {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #003366;
+    z-index: 100000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+}
+.rotate-icon { font-size: 4rem; margin-bottom: 1rem; animation: rotatePhone 2s infinite ease-in-out; }
+
+/* Affichage uniquement sur mobile en portrait */
+@media only screen and (orientation: portrait) and (max-width: 900px) {
+    .orientation-lock { display: flex; }
+}
+
+/* =========================================
+   2. HUD & UI (Score, Boutons, Effets)
+   ========================================= */
 .greek-back-btn {
-    position: absolute; top: 30px; left: 30px; z-index: 200;
+    position: absolute; top: 20px; left: 20px; z-index: 200;
     color: #fff; text-decoration: none; font-weight: bold;
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 20px; border: 2px solid #fff; border-radius: 30px;
+    padding: 8px 15px; border: 2px solid #fff; border-radius: 30px;
     background: rgba(255,255,255,0.1); backdrop-filter: blur(5px);
     transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+    font-size: 0.8rem;
 }
 .greek-back-btn:hover { background: #fff; color: #0056b3; }
 
-/* HUD */
 .greek-hud-score {
     position: absolute; top: 20px; right: 20px;
     background: rgba(255, 255, 255, 0.9);
     border: 2px solid #DAA520;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    padding: 10px 30px; border-radius: 8px; z-index: 100;
+    padding: 5px 15px; border-radius: 8px; z-index: 100;
     display: flex; flex-direction: column; align-items: center;
 }
-.score-label { font-size: 0.9rem; color: #DAA520; font-weight: 800; letter-spacing: 2px; }
-.score-value { font-size: 2.5rem; color: #333; font-family: 'Georgia', serif; font-weight: 900; line-height: 1; }
+.score-label { font-size: 0.6rem; color: #DAA520; font-weight: 800; letter-spacing: 2px; }
+.score-value { font-size: 1.5rem; color: #333; font-family: 'Georgia', serif; font-weight: 900; line-height: 1; }
 
-.effects-hud { position: absolute; top: 80px; left: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
-.effect-badge { background: rgba(255,255,255,0.9); border: 2px solid #DAA520; padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.effect-icon { font-size: 1.2rem; color: #DAA520; }
-.effect-label { font-size: 0.7rem; font-weight: 800; opacity: 0.7; text-transform: uppercase; }
-.effect-timer { font-size: 1.1rem; font-weight: bold; color: #0056b3; }
+.effects-hud { position: absolute; top: 70px; left: 20px; display: flex; flex-direction: column; gap: 5px; z-index: 100; }
+.effect-badge { 
+    background: rgba(255,255,255,0.9); border: 2px solid #DAA520; padding: 4px 8px; 
+    border-radius: 6px; display: flex; align-items: center; gap: 6px; 
+    color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 0.7rem; 
+}
+.effect-icon { font-size: 0.9rem; color: #DAA520; }
+.effect-timer { font-size: 1rem; font-weight: bold; color: #0056b3; }
 .effect-badge.warning { animation: panicFlash 0.3s infinite alternate; border-color: #e74c3c; }
 
-/* MONDE */
+/* =========================================
+   3. ÉLÉMENTS DE JEU (Monde, Joueur, Obstacles)
+   ========================================= */
 .game-world { position: absolute; width: 100%; height: 100%; }
-.clouds-ground { position: absolute; bottom: 0; width: 100%; height: 120px; background: #fff; box-shadow: 0 -10px 30px rgba(255,255,255,0.8), 0 -20px 60px rgba(255,255,255,0.4); z-index: 10; border-top: 5px solid rgba(255,255,255,0.5); }
-.clouds-ceiling { position: absolute; top: 0; width: 100%; height: 120px; background: #fff; box-shadow: 0 10px 30px rgba(255,255,255,0.8); z-index: 10; opacity: 0.7; }
 
-/* JOUEUR (AGRANDI) */
-.player {
-    position: absolute; left: 10%; bottom: 120px; 
-    width: 100px; height: 100px; /* NEW SIZE */
-    z-index: 20;
-    transition: transform 0.2s; will-change: transform;
-    display: flex; align-items: center; justify-content: center;
+.clouds-ground { 
+    position: absolute; bottom: 0; width: 100%; height: 120px; 
+    background: #fff; z-index: 10; 
+    box-shadow: 0 -5px 20px rgba(255,255,255,0.8);
+    border-top: 3px solid rgba(255,255,255,0.5);
 }
-.player-sprite {
-    transform: scaleX(-1);
-    width: 100%; height: 100%;
-    background-image: url('/images/hermes-run.gif');
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+.clouds-ceiling { 
+    position: absolute; top: 0; width: 100%; height: 120px; 
+    background: #fff; z-index: 10; opacity: 0.7; 
 }
-.player.jumping .player-sprite { background-image: url('/images/hermes-jump.gif'); }
-
-.shield-effect { position: absolute; inset: -15px; border: 3px solid #DAA520; border-radius: 50%; background: rgba(218, 165, 32, 0.2); box-shadow: 0 0 20px #DAA520; animation: pulseShield 1.5s infinite; }
-
-/* --- OBSTACLES (COLONNES) --- */
-.obstacle { position: absolute; display: flex; align-items: flex-end; justify-content: center; z-index: 15; }
-.obstacle.on-ceiling { align-items: flex-start; transform: rotate(180deg); }
-
-/* DESIGN PILONNE / COLONNE */
-.greek-column {
-    width: 100%; height: 100%;
-    background: linear-gradient(to right, #e0e0e0, #fff 40%, #f0f0f0 60%, #ccc);
-    border-left: 2px solid #bbb; border-right: 2px solid #bbb;
-    border-radius: 4px;
-    position: relative;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
-}
-/* Base de la colonne */
-.greek-column::after {
-    content: ''; position: absolute; bottom: 0; left: -10px; right: -10px; height: 15px;
-    background: #e0e0e0; border: 2px solid #bbb; border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-/* Chapiteau (Haut) */
-.greek-column::before {
-    content: ''; position: absolute; top: 0; left: -12px; right: -12px; height: 12px;
-    background: #e0e0e0; border: 2px solid #bbb; border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 2;
-}
-
-/* BONUS (Agrandis aussi un peu) */
-.bonus-item { position: absolute; width: 70px; height: 70px; z-index: 15; animation: floatBonus 2s ease-in-out infinite; display: flex; align-items: center; justify-content: center; }
-.bonus-item.asso img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; border: 3px solid #fff; background: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.8); }
-.powerup-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff; border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.6); }
-.powerup-icon.shield { background: #3498db; }
-.powerup-icon.gravity { background: #9b59b6; }
-.powerup-icon.boost { background: #f1c40f; }
-
-.bonus-popup { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); color: #fff !important; -webkit-text-stroke: 1px #DAA520; animation: popUpFade 1s forwards; z-index: 50; white-space: nowrap; }
-
-/* Game Over / Intro (Reste identique mais adapté aux couleurs) */
-.gameover-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
-.greek-text-red { font-size: 4rem; color: #e74c3c; text-transform: uppercase; margin-bottom: 1rem; text-shadow: 2px 2px 0px #fff; letter-spacing: 3px; }
-.final-score-box { background: #f7f7f7; padding: 3rem 5rem; border-radius: 4px; border: 4px solid #DAA520; text-align: center; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-.final-score-box p { color: #666; font-size: 1.2rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-.final-score-box h2 { color: #333; font-size: 5rem; margin: 10px 0 0; font-family: 'Georgia', serif; font-weight: 900; }
-.gameover-actions { display: flex; gap: 2rem; }
-.greek-button { padding: 15px 40px; background: #DAA520; color: #fff; border: none; border-radius: 4px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4); }
-.greek-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(218, 165, 32, 0.6); background: #c59216; }
-.greek-button.secondary { background: #fff; color: #333; border: 2px solid #ccc; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-.greek-button.secondary:hover { background: #f0f0f0; }
-
-.intro-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
-.intro-content { position: relative; z-index: 10; text-align: center; }
-.greek-title-large { font-size: 6rem; color: #fff; font-weight: 900; text-shadow: 0 5px 0px #DAA520, 0 10px 20px rgba(0,0,0,0.3); margin: 0; letter-spacing: 5px; font-family: 'Cinzel', serif; }
-.intro-subtitle { font-size: 1.5rem; color: #fff; margin-bottom: 3rem; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-.greek-start-button { padding: 20px 60px; font-size: 2rem; font-weight: 900; color: #DAA520; background: #fff; border: 3px solid #DAA520; cursor: pointer; border-radius: 50px; transition: 0.2s; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-.greek-start-button:hover { transform: scale(1.05); background: #DAA520; color: #fff; }
-.mini-card { width: 120px; height: 120px; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.mini-card img { max-width: 80%; max-height: 80%; }
-.waterfall-container { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; display: flex; justify-content: center; gap: 20px; transform: rotate(15deg); opacity: 0.5; }
-.waterfall-column { display: flex; flex-direction: column; gap: 20px; animation: scrollDown 20s linear infinite; }
-@keyframes scrollDown { 0% { transform: translateY(-50%); } 100% { transform: translateY(0); } }
-@keyframes spinGrav { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes floatBonus { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes popUpFade { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -20px) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -100px) scale(1); } }
-@keyframes pulseShield { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
-@keyframes panicFlash { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.7; } }
-
-/* src/pages/HermesRunnerPage.css */
-
-/* ... (Garder le début du fichier : univers grec, hud, sol, plafond...) ... */
-
-/* ... (Section Joueur existante) ... */
-/* src/pages/HermesRunnerPage.css */
-
-/* ... (Garder le début du fichier) ... */
 
 /* --- JOUEUR --- */
 .player {
-    position: absolute; left: 10%; bottom: 120px; 
+    position: absolute; left: 10%; 
     width: 100px; height: 100px; 
-    z-index: 20;
-    will-change: transform; /* Important pour fluidité */
+    z-index: 20; will-change: transform; 
     display: flex; align-items: center; justify-content: center;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transition fluide gravité */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.player.gravity-inverted { transform: scaleY(-1); }
 
-/* GESTION GRAVITÉ (La classe est ajoutée au container .player) */
-.player.gravity-inverted {
-    transform: scaleY(-1); /* Le joueur entier se retourne */
-}
-
-/* SPRITE */
 .player-sprite {
     width: 100%; height: 100%;
-    /* Image par défaut (course) */
     background-image: url('/images/hermes-run.gif');
-    background-size: contain; 
-    background-repeat: no-repeat; 
-    background-position: center;
-    
-    /* CORRECTION SENS : Si le GIF regarde à gauche, on le retourne */
-    transform: scaleX(-1); 
-    
-    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+    transform: scaleX(-1); filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
 }
-
-/* SAUT */
-.player.jumping .player-sprite { 
-    background-image: url('/images/hermes-jump.gif'); 
-}
-
-/* --- TRANSFORMATIONS --- */
-
-/* TIGRE */
-.player.tiger-mode .player-sprite {
-    background-image: url('/images/hermes-tiger-run.gif');
-    filter: none;
-}
-.player.tiger-mode.jumping .player-sprite {
-    background-image: url('/images/hermes-tiger-jump.png');
-}
-
-/* VOL */
-.player.flying-mode .player-sprite {
-    background-image: url('/images/hermes-fly.gif');
-    /* On annule le saut car on plane */
-}
-
-/* ... (Le reste du fichier CSS reste identique) ... */
-@keyframes flap { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
-
+.player.jumping .player-sprite { background-image: url('/images/hermes-jump.gif'); }
+.player.tiger-mode .player-sprite { background-image: url('/images/hermes-tiger-run.gif'); filter: none; }
+.player.tiger-mode.jumping .player-sprite { background-image: url('/images/hermes-tiger-jump.gif'); }
+.player.flying-mode .player-sprite { background-image: url('/images/hermes-fly.gif'); }
 
 /* --- OBSTACLES --- */
 .obstacle { position: absolute; display: flex; align-items: flex-end; justify-content: center; z-index: 15; }
 .obstacle.on-ceiling { align-items: flex-start; transform: rotate(180deg); }
 
-/* Piliers (Classique) */
 .greek-column {
     width: 100%; height: 100%;
     background: linear-gradient(to right, #e0e0e0, #fff 40%, #f0f0f0 60%, #ccc);
-    border-left: 2px solid #bbb; border-right: 2px solid #bbb; border-radius: 4px;
-    position: relative; box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+    border-left: 1px solid #bbb; border-right: 1px solid #bbb; border-radius: 4px;
+    position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
 }
-.greek-column::after {
-    content: ''; position: absolute; bottom: 0; left: -10px; right: -10px; height: 15px;
-    background: #e0e0e0; border: 2px solid #bbb; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+.greek-column::after, .greek-column::before {
+    content: ''; position: absolute; left: -5px; right: -5px; height: 10px;
+    background: #e0e0e0; border: 1px solid #bbb; border-radius: 2px;
 }
-.greek-column::before {
-    content: ''; position: absolute; top: 0; left: -12px; right: -12px; height: 12px;
-    background: #e0e0e0; border: 2px solid #bbb; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2;
-}
+.greek-column::after { bottom: 0; } .greek-column::before { top: 0; z-index: 2; }
 
-/* LE VORTEX (Transformation Terrain) */
 .vortex-column {
-    width: 80px; height: 100%; /* Prend tout l'écran */
-    background: repeating-linear-gradient(
-      45deg,
-      #8e44ad,
-      #8e44ad 10px,
-      #9b59b6 10px,
-      #9b59b6 20px
-    );
-    opacity: 0.8;
-    box-shadow: 0 0 30px #8e44ad;
-    animation: vortexSpin 1s linear infinite;
-    border-radius: 10px;
+    width: 60px; height: 100%;
+    background: repeating-linear-gradient(45deg, #8e44ad, #8e44ad 10px, #9b59b6 10px, #9b59b6 20px);
+    opacity: 0.8; box-shadow: 0 0 20px #8e44ad;
+    animation: vortexSpin 1s linear infinite; border-radius: 8px;
 }
-@keyframes vortexSpin {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 50px; }
-}
-
 
 /* --- BONUS --- */
-.bonus-item { position: absolute; width: 70px; height: 70px; z-index: 15; animation: floatBonus 2s ease-in-out infinite; display: flex; align-items: center; justify-content: center; }
-.bonus-item.asso img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; border: 3px solid #fff; background: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.8); }
+.bonus-item { 
+    position: absolute; width: 70px; height: 70px; 
+    z-index: 15; animation: floatBonus 2s ease-in-out infinite; 
+    display: flex; align-items: center; justify-content: center; 
+}
+.bonus-item.asso img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; border: 2px solid #fff; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+.powerup-icon { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; border: 2px solid #fff; box-shadow: 0 0 10px rgba(255,255,255,0.6); }
+.powerup-icon.fly { background: #3498db; } .powerup-icon.tiger { background: #e74c3c; }
 
-.powerup-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff; border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.6); }
-/* Couleurs spécifiques */
-.powerup-icon.fly { background: #3498db; }
-.powerup-icon.tiger { background: #e74c3c; }
-
-/* POPUP (Plus long et plus lisible) */
 .bonus-popup {
-    position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 3rem; font-weight: 900; text-transform: uppercase;
-    text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
-    color: #fff !important; 
-    -webkit-text-stroke: 2px #DAA520;
-    animation: popUpFade 2s forwards; /* Plus lent */
-    z-index: 50; white-space: nowrap;
-}
-@keyframes popUpFade { 
-    0% { opacity: 0; transform: translate(-50%, 20px) scale(0.5); } 
-    20% { opacity: 1; transform: translate(-50%, -20px) scale(1.2); } 
-    80% { opacity: 1; transform: translate(-50%, -100px) scale(1); } 
-    100% { opacity: 0; transform: translate(-50%, -150px) scale(0.8); } 
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 2rem; font-weight: 900; text-transform: uppercase;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.3); color: #fff !important; 
+    -webkit-text-stroke: 1px #DAA520; animation: popUpFade 2s forwards; z-index: 50; white-space: nowrap;
 }
 
-/* Badges HUD */
-.effect-badge.fly { border-color: #3498db; color: #3498db; box-shadow: 0 0 10px rgba(52, 152, 219, 0.4); }
-.effect-badge.tiger { border-color: #e74c3c; color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); }
-.effect-badge.gravity { border-color: #9b59b6; color: #9b59b6; box-shadow: 0 0 10px rgba(155, 89, 182, 0.4); }
+/* =========================================
+   4. MENUS (Intro & Game Over)
+   ========================================= */
+.gameover-overlay, .intro-screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200;
+}
 
-/* ... (Garder Game Over et Intro du fichier précédent) ... */
+.greek-title-large { font-size: 3rem; color: #fff; font-weight: 900; text-shadow: 0 3px 0px #DAA520; margin: 0; text-align: center; }
+.intro-subtitle { font-size: 1rem; color: #eee; margin-bottom: 1.5rem; text-align: center; }
+.greek-start-button { padding: 12px 40px; font-size: 1.2rem; font-weight: 900; color: #DAA520; background: #fff; border: 3px solid #DAA520; cursor: pointer; border-radius: 50px; }
+
+/* Styles Game Over par défaut */
+.greek-text-red { font-size: 3rem; color: #e74c3c; text-transform: uppercase; margin-bottom: 1rem; text-shadow: 2px 2px 0px #fff; letter-spacing: 3px; text-align: center; }
+.final-score-box { background: #f7f7f7; padding: 2rem 3rem; border-radius: 4px; border: 4px solid #DAA520; text-align: center; margin-bottom: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.final-score-box h2 { font-size: 3rem; margin: 5px 0 0; }
+.gameover-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.greek-button { padding: 12px 30px; background: #DAA520; color: #fff; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4); text-decoration: none;}
+.greek-button:hover { transform: translateY(-3px); }
+.greek-button.secondary { background: #fff; color: #333; border: 2px solid #ccc; }
+
+/* =========================================
+   5. ANIMATIONS
+   ========================================= */
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+@keyframes floatBonus { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes popUpFade { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.5); } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -80px) scale(0.8); } }
+@keyframes vortexSpin { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+@keyframes panicFlash { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.7; } }
+
+/* =========================================
+   6. RESPONSIVE : MOBILE & TABLETTE PAYSAGE
+   (Cible les petits écrans en largeur OU en hauteur)
+   ========================================= */
+@media (max-height: 500px) or (max-width: 768px) {
+    
+    /* --- Éléments du jeu (Retaillés) --- */
+    .clouds-ground { height: 50px; }
+    .clouds-ceiling { height: 50px; }
+    .player { width: 60px; height: 60px; }
+    .bonus-item { width: 50px; height: 50px; }
+    .powerup-icon { font-size: 1.2rem; }
+    .greek-hud-score { top: 10px; right: 10px; padding: 4px 10px; }
+    .score-value { font-size: 1.2rem; }
+    .effects-hud { top: 50px; left: 10px; }
+    .bonus-popup { font-size: 1.5rem; }
+    
+    /* --- Menu Intro (Compact) --- */
+    .greek-title-large { font-size: 2.2rem; text-shadow: 0 2px 0px #DAA520; }
+    .intro-subtitle { font-size: 0.9rem; margin-bottom: 1rem; }
+    .greek-start-button { padding: 10px 30px; font-size: 1.1rem; }
+
+    /* --- Menu Défaite (ADAPTÉ) --- */
+    .greek-text-red { 
+        font-size: 2rem; /* Titre plus petit */
+        margin-bottom: 0.5rem; 
+        letter-spacing: 1px;
+    }
+    .final-score-box { 
+        padding: 1rem 1.5rem; /* Boîte de score beaucoup plus fine */
+        margin-bottom: 1rem; 
+        border-width: 2px;
+    }
+    .final-score-box p { font-size: 0.8rem; margin: 0; }
+    .final-score-box h2 { font-size: 2rem; margin: 0; }
+    
+    .gameover-actions { 
+        gap: 0.5rem; 
+        width: 100%; 
+        justify-content: center;
+    }
+    .greek-button { 
+        padding: 8px 16px; 
+        font-size: 0.85rem; 
+        width: auto;
+    }
+}

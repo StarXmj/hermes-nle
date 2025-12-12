@@ -3,65 +3,102 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaRedo, FaShieldAlt, FaBolt, FaFeatherAlt, FaPaw, FaWind } from 'react-icons/fa';
+import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaMobileAlt } from 'react-icons/fa';
 import './HermesRunnerPage.css';
 
 // --- CONFIGURATION ---
-const GRAVITY = 0.6;
-const JUMP_FORCE = 13;
-const SPEED_INCREMENT = 0.0015;
-const INITIAL_SPEED = 7;
-const MAX_SPEED = 22; 
-const SPAWN_RATE = 110;
+const GRAVITY = 0.6; 
+const JUMP_FORCE = 13.5; 
+const INITIAL_SPEED = 6; 
+const MAX_SPEED = 20; 
+const MAX_JUMP_HEIGHT = 160; 
 
-// Temps
-const DURATION_FLIGHT = 4000;
-const DURATION_TIGER = 5000;
+// Temps des effets
+const DURATION_FLIGHT = 5000;
+const DURATION_TIGER = 6000;
 const DURATION_GRAVITY = 8000;
-const WARNING_TIME = 1500;
-
-const GROUND_HEIGHT = 120;
-const CEILING_HEIGHT = 120;
-const PLAYER_SIZE = 100;
+const WARNING_TIME = 2000;
 
 function HermesRunnerPage() {
   const [gameStatus, setGameStatus] = useState('loading');
   const [assos, setAssos] = useState([]);
   const [score, setScore] = useState(0);
   const [bonusMessage, setBonusMessage] = useState(null);
-  
   const [activeEffects, setActiveEffects] = useState([]);
+  
+  // États de jeu
   const [isTiger, setIsTiger] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [gravityInverted, setGravityInverted] = useState(false);
 
+  // --- DIMENSIONS DYNAMIQUES ---
+  // On utilise des états pour que React mette à jour l'affichage si on change d'orientation
+  const [dimensions, setDimensions] = useState({
+    groundHeight: 120,
+    ceilingHeight: 120,
+    playerSize: 100
+  });
+
   const requestRef = useRef();
   const runnerRef = useRef(null);
   const gameAreaRef = useRef(null);
-  const ceilingYRef = useRef(300);
+  const ceilingYRef = useRef(300); // Plafond jouable (exclut les bandes nuages)
 
   const gameState = useRef({
-    playerY: 0, velocity: 0, isJumping: false,
+    playerY: 0, 
+    velocity: 0, 
+    isJumping: false,
     currentSpeed: INITIAL_SPEED,
     isGravityInverted: false, gravityEndTime: 0,
     isFlying: false, flyEndTime: 0,
     isTiger: false, tigerEndTime: 0,
     invincible: false,
-    obstacles: [], bonuses: [], frame: 0, score: 0, isGameOver: false
+    obstacles: [], 
+    bonuses: [], 
+    frame: 0, 
+    score: 0, 
+    isGameOver: false,
+    spawnTimer: 0 
   });
 
   const [entities, setEntities] = useState({ obstacles: [], bonuses: [] });
 
+  // GESTION RESPONSIVE ET ORIENTATION
   useEffect(() => {
-    const updateDimensions = () => {
-      const playableHeight = window.innerHeight - GROUND_HEIGHT - CEILING_HEIGHT - PLAYER_SIZE + 20;
-      ceilingYRef.current = playableHeight > 100 ? playableHeight : 300;
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      // Détection Mobile (Petit écran ou mode paysage smartphone)
+      const isMobile = width < 768 || height < 500;
+
+      // Valeurs réduites pour mobile
+      const newGround = isMobile ? 50 : 120;
+      const newCeiling = isMobile ? 50 : 120;
+      const newPlayerSize = isMobile ? 60 : 100;
+
+      setDimensions({
+        groundHeight: newGround,
+        ceilingHeight: newCeiling,
+        playerSize: newPlayerSize
+      });
+
+      // Calcul de la zone jouable verticale
+      const playableHeight = height - newGround - newCeiling - newPlayerSize + 10;
+      ceilingYRef.current = playableHeight > 80 ? playableHeight : 200;
     };
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+
+    handleResize(); // Init
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
+    
+    return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+    }
   }, []);
 
+  // Chargement Assos
   useEffect(() => {
     const loadData = async () => {
       const { data } = await supabase.from('asso').select('*').eq('status', 'publié');
@@ -71,6 +108,7 @@ function HermesRunnerPage() {
     loadData();
   }, []);
 
+  // Saut
   const handleJump = useCallback(() => {
     if (gameStatus !== 'playing' || gameState.current.isGameOver) return;
     const state = gameState.current;
@@ -88,12 +126,16 @@ function HermesRunnerPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); handleJump(); }
+      if (e.code === 'Space' || e.code === 'ArrowUp') { 
+          e.preventDefault(); 
+          handleJump(); 
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleJump]);
 
+  // --- BOUCLE DE JEU ---
   const updateGame = () => {
     if (gameState.current.isGameOver) return;
     const state = gameState.current;
@@ -101,7 +143,9 @@ function HermesRunnerPage() {
     const currentCeiling = ceilingYRef.current;
 
     state.frame++;
-    const targetSpeed = INITIAL_SPEED + (state.score / 150);
+    
+    // Vitesse Crescendo Doux
+    const targetSpeed = INITIAL_SPEED + (state.score / 300);
     state.currentSpeed = Math.min(targetSpeed, MAX_SPEED);
     state.score += (state.currentSpeed / 50);
     setScore(Math.floor(state.score));
@@ -111,6 +155,7 @@ function HermesRunnerPage() {
         if (!state.isGravityInverted) { 
             state.isGravityInverted = true; 
             setGravityInverted(true); 
+            if (state.playerY < 50) state.velocity = 5; 
         }
     } else {
         if (state.isGravityInverted) { 
@@ -124,7 +169,9 @@ function HermesRunnerPage() {
         const timeLeft = state.flyEndTime - now;
         if (timeLeft > 1000) {
             state.isFlying = true; setIsFlying(true);
-            state.playerY = currentCeiling - 50; state.velocity = 0;
+            const flightHeight = state.isGravityInverted ? 30 : currentCeiling - 30;
+            state.playerY += (flightHeight - state.playerY) * 0.1;
+            state.velocity = 0;
         } else {
             state.isFlying = false; setIsFlying(false); state.invincible = true; 
         }
@@ -136,13 +183,14 @@ function HermesRunnerPage() {
         state.isTiger = true; setIsTiger(true); state.invincible = true;
     } else {
         state.isTiger = false; setIsTiger(false);
-        if (state.flyEndTime < now) state.invincible = false;
+        if (state.flyEndTime < now - 1000) state.invincible = false;
     }
 
     // --- PHYSIQUE ---
     if (!state.isFlying) {
         state.playerY += state.velocity;
-        if (state.isGravityInverted) state.velocity += GRAVITY; else state.velocity -= GRAVITY;
+        if (state.isGravityInverted) state.velocity += GRAVITY; 
+        else state.velocity -= GRAVITY;
 
         if (state.playerY <= 0) {
             state.playerY = 0;
@@ -154,14 +202,11 @@ function HermesRunnerPage() {
         }
     }
 
-    // --- MISE À JOUR DU DOM ---
+    // --- DOM (Position Joueur) ---
     if (runnerRef.current) {
-        runnerRef.current.style.bottom = `${GROUND_HEIGHT + state.playerY}px`;
+        // Utilise la hauteur dynamique du sol
+        runnerRef.current.style.bottom = `${dimensions.groundHeight + state.playerY}px`;
         
-        // GESTION ROTATION (Gravité)
-        // Si gravité inversée => Tête en bas (scaleY -1)
-        // Sinon => Normal (scaleY 1)
-        // Note: Le CSS ne doit PAS avoir de transform par défaut pour que ça marche.
         const rotation = state.isGravityInverted ? 'scaleY(-1)' : 'scaleY(1)';
         runnerRef.current.style.transform = rotation;
         
@@ -170,11 +215,15 @@ function HermesRunnerPage() {
     }
 
     // --- SPAWN ---
-    if (state.frame % Math.floor(SPAWN_RATE / (state.currentSpeed / 5)) === 0) {
+    state.spawnTimer -= state.currentSpeed;
+    if (state.spawnTimer <= 0) {
         spawnEntity(state, currentCeiling);
+        const minGap = 450 + (state.currentSpeed * 8); 
+        const randomGap = Math.random() * 300;
+        state.spawnTimer = minGap + randomGap;
     }
 
-    // Déplacement
+    // --- DÉPLACEMENT ---
     const moveFactor = state.currentSpeed / 10;
     state.obstacles.forEach(obs => obs.x -= moveFactor);
     state.obstacles = state.obstacles.filter(o => o.x > -20);
@@ -186,6 +235,59 @@ function HermesRunnerPage() {
 
     setEntities({ obstacles: state.obstacles, bonuses: state.bonuses });
     requestRef.current = requestAnimationFrame(updateGame);
+  };
+
+  const spawnEntity = (state, ceilingY) => {
+      const rand = Math.random();
+      const isOnCeiling = state.isGravityInverted;
+      
+      // On adapte la taille des obstacles si on est sur mobile
+      // (On détecte mobile via la hauteur du sol, astuce simple)
+      const isMobile = dimensions.groundHeight < 80;
+
+      // 1. BONUS (35%)
+      if (rand > 0.65) {
+          const rBonus = Math.random();
+          let type = 'asso';
+          if (rBonus > 0.85) type = 'tiger'; 
+          else if (rBonus > 0.70) type = 'fly';
+
+          let assoData = null;
+          if (type === 'asso' && assos.length > 0) assoData = assos[Math.floor(Math.random() * assos.length)];
+
+          // Hauteur adaptative
+          const randomJumpHeight = 20 + Math.random() * (MAX_JUMP_HEIGHT - 60); 
+          const yPos = isOnCeiling ? ceilingY - randomJumpHeight : randomJumpHeight;
+
+          state.bonuses.push({ id: Date.now() + Math.random(), x: 110, y: yPos, type: type, asso: assoData, collected: false });
+          return;
+      }
+
+      // 2. OBSTACLE
+      if (rand < 0.05 && !state.isGravityInverted && state.gravityEndTime < Date.now()) {
+          state.obstacles.push({ id: Date.now(), x: 110, type: 'vortex', width: 80, height: 1000 });
+          return;
+      }
+
+      const types = ['small', 'medium', 'tall'];
+      const typeRand = Math.random();
+      let type = 'small';
+      if (typeRand > 0.6) type = 'medium';
+      if (typeRand > 0.9) type = 'tall';
+
+      let height = 50;
+      if (type === 'medium') height = isMobile ? 70 : 90; 
+      if (type === 'tall') height = isMobile ? 90 : 110;  
+
+      // Largeur réduite sur mobile
+      const width = isMobile ? 50 : 70;
+
+      state.obstacles.push({
+          id: Date.now(), x: 110, 
+          y: isOnCeiling ? ceilingY : 0, 
+          isOnCeiling: isOnCeiling,
+          type: type, width: width, height: height
+      });
   };
 
   const updateHUD = (state, now) => {
@@ -205,76 +307,36 @@ function HermesRunnerPage() {
       setActiveEffects(effects);
   };
 
-  const spawnEntity = (state, ceilingY) => {
-      const rand = Math.random();
-      
-      // VORTEX (10%)
-      if (rand > 0.90) {
-          const hasVortex = state.obstacles.some(o => o.type === 'vortex' && o.x > 50);
-          if (!hasVortex) {
-              state.obstacles.push({ id: Date.now(), x: 100, type: 'vortex', width: 80, height: 1000 });
-          }
-          return;
-      }
-
-      // BONUS (30%)
-      if (rand > 0.60) {
-          const rBonus = Math.random();
-          let type = 'asso';
-          if (rBonus > 0.8) type = 'tiger';
-          else if (rBonus > 0.6) type = 'fly';
-
-          let assoData = null;
-          if (type === 'asso' && assos.length > 0) assoData = assos[Math.floor(Math.random() * assos.length)];
-
-          const isOnCeiling = state.isGravityInverted;
-          
-          // --- CORRECTION MAJEURE ICI : HAUTEUR DES BONUS ---
-          // On les met à 20px du sol (ou du plafond inversé).
-          // C'est très bas, donc facile à attraper en courant ou petit saut.
-          const yPos = isOnCeiling ? 20 : ceilingY - 20; 
-
-          state.bonuses.push({
-              id: Date.now() + Math.random(),
-              x: 100, y: yPos, type: type, asso: assoData, collected: false
-          });
-          return;
-      }
-
-      // OBSTACLE (60%)
-      const isOnCeiling = state.isGravityInverted;
-      const types = ['small', 'medium', 'tall'];
-      const type = types[Math.floor(Math.random() * types.length)];
-      let height = 70;
-      if (type === 'medium') height = 110;
-      if (type === 'tall') height = 160;
-
-      state.obstacles.push({
-          id: Date.now(), x: 100, y: isOnCeiling ? ceilingY : 0, isOnCeiling: isOnCeiling,
-          type: type, width: 70, height: height
-      });
-  };
-
   const checkCollisions = (state) => {
-    const pLeft = 10; const pRight = 16; 
-    const pBottom = state.playerY; const pTop = state.playerY + PLAYER_SIZE - 15; 
+    // Hitbox adaptative
+    const pLeft = 12; 
+    const pRight = 14; 
+    
+    const pBottom = state.playerY + 15; 
+    const pTop = state.playerY + dimensions.playerSize - 15; // Utilise la taille dynamique
 
     state.obstacles.forEach(obs => {
-      const obsLeft = obs.x + 1; const obsRight = obs.x + 4; 
-      if (pRight > obsLeft && pLeft < obsRight) {
+      const obsLeft = obs.x + 1; 
+      const obsRight = obs.x + 3; // Hitbox obstacle fine
+
+      if (obsLeft < pRight && obsRight > pLeft) {
         if (obs.type === 'vortex') {
             if (!obs.triggered) { obs.triggered = true; applyTerrainEffect(); }
             return; 
         }
+
         let collision = false;
         if (obs.isOnCeiling) {
-            if (pTop > (obs.y - obs.height + 15)) collision = true;
+            const obsBottomLimit = obs.y - obs.height + 5; 
+            if (pTop > obsBottomLimit) collision = true;
         } else {
-            if (pBottom < (obs.y + obs.height - 15)) collision = true;
+            const obsTopLimit = obs.height - 5; 
+            if (pBottom < obsTopLimit) collision = true;
         }
+
         if (collision) {
           if (state.invincible || state.isTiger) {
-            obs.x = -100; setScore(s => s + 50);
+            obs.x = -100; setScore(s => s + 50); showMessage("BOUM !", "#fff");
           } else {
             gameOver();
           }
@@ -284,8 +346,10 @@ function HermesRunnerPage() {
 
     state.bonuses.forEach(bonus => {
       if (bonus.x < 18 && bonus.x > 8) {
-        const bBottom = bonus.y; const bTop = bonus.y + 70;
-        if (pTop > bBottom && pBottom < bTop) applyBonus(bonus);
+        const bY = bonus.y; 
+        const playerCenter = state.playerY + (dimensions.playerSize/2);
+        const bonusCenter = bY + (dimensions.playerSize < 80 ? 25 : 35); // Centre du bonus approx
+        if (Math.abs(playerCenter - bonusCenter) < 60) applyBonus(bonus);
       }
     });
   };
@@ -293,7 +357,6 @@ function HermesRunnerPage() {
   const applyTerrainEffect = () => {
       const now = Date.now();
       gameState.current.gravityEndTime = now + DURATION_GRAVITY;
-      if (!gameState.current.isGravityInverted) gameState.current.isJumping = true;
       showMessage("VORTEX DU CHAOS !", "#8e44ad");
   };
 
@@ -304,8 +367,8 @@ function HermesRunnerPage() {
 
     switch (bonus.type) {
       case 'asso':
-        state.score += 100;
-        showMessage(`+100 ${bonus.asso.nom}`, bonus.asso.color);
+        state.score += 10; 
+        showMessage(`+10 ${bonus.asso ? bonus.asso.nom : 'POINTS'}`, bonus.asso ? bonus.asso.color : '#FFD700');
         break;
       case 'fly':
         state.flyEndTime = now + DURATION_FLIGHT;
@@ -313,7 +376,7 @@ function HermesRunnerPage() {
         break;
       case 'tiger':
         state.tigerEndTime = now + DURATION_TIGER;
-        showMessage("TIGRE ROUGE !", "#e74c3c");
+        showMessage("MODE TIGRE !", "#e74c3c");
         break;
       default: break;
     }
@@ -321,7 +384,7 @@ function HermesRunnerPage() {
 
   const showMessage = (text, color) => {
     setBonusMessage({ text, color });
-    setTimeout(() => setBonusMessage(null), 2500);
+    setTimeout(() => setBonusMessage(null), 4000);
   };
 
   const startGame = () => {
@@ -332,7 +395,8 @@ function HermesRunnerPage() {
       isGravityInverted: false, gravityEndTime: 0,
       isFlying: false, flyEndTime: 0,
       isTiger: false, tigerEndTime: 0,
-      invincible: false
+      invincible: false,
+      spawnTimer: 0
     };
     setScore(0);
     setIsTiger(false); setIsFlying(false); setGravityInverted(false);
@@ -349,125 +413,138 @@ function HermesRunnerPage() {
 
   const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
 
-  if (gameStatus === 'intro') {
-    return (
-      <div className="greek-overlay">
+  return (
+    <>
+      <div className="orientation-lock">
+        <FaMobileAlt className="rotate-icon" />
+        <h2>Tournez votre téléphone</h2>
+        <p>Hermes Quest se joue uniquement à l'horizontale.</p>
+      </div>
+
+      <div 
+          className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} 
+          onMouseDown={handleJump} 
+          onTouchStart={handleJump}
+      >
         <Helmet><title>Hermes Quest</title></Helmet>
-        <Link to="/" className="greek-back-btn"><FaArrowLeft /> Olympe</Link>
-        <div className="intro-screen">
-          <div className="waterfall-container">
-            {[0, 1, 2, 3].map((colIndex) => (
-              <div key={colIndex} className={`waterfall-column col-${colIndex}`}>
-                {[...shuffleArray(assos), ...shuffleArray(assos)].map((asso, i) => (
-                  <div key={i} className="mini-card" style={{ borderColor: asso.color || '#DAA520' }}>
-                    {asso.logo ? <img src={asso.logo} alt="" /> : <span style={{color: asso.color}}>{asso.nom[0]}</span>}
+        
+        {/* INTRO */}
+        {gameStatus === 'intro' && (
+          <div className="greek-overlay">
+            <Link to="/" className="greek-back-btn"><FaArrowLeft /> Olympe</Link>
+            <div className="intro-screen">
+              <div className="waterfall-container">
+                {[0, 1, 2, 3].map((colIndex) => (
+                  <div key={colIndex} className={`waterfall-column col-${colIndex}`}>
+                    {[...shuffleArray(assos), ...shuffleArray(assos)].map((asso, i) => (
+                      <div key={i} className="mini-card" style={{ borderColor: asso.color || '#DAA520' }}>
+                        {asso.logo ? <img src={asso.logo} alt="" /> : <span style={{color: asso.color}}>{asso.nom ? asso.nom[0] : '?'}</span>}
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
-            ))}
-          </div>
-          <div className="intro-content">
-            <h1 className="greek-title-large">HERMES QUEST</h1>
-            <p className="intro-subtitle">Survivez au Chaos. Collectionnez la Gloire.</p>
-            <button className="greek-start-button" onClick={startGame}><span className="text">LANCER</span></button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div 
-        className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} 
-        onMouseDown={handleJump} 
-        onTouchStart={handleJump}
-    >
-      <Helmet><title>Vers l'Olympe !</title></Helmet>
-      
-      <div className="greek-hud-score">
-        <span className="score-label">GLOIRE</span>
-        <span className="score-value">{score}</span>
-      </div>
-
-      <div className="effects-hud">
-        {activeEffects.map(effect => (
-            <div key={effect.id} className={`effect-badge ${effect.type} ${effect.warning ? 'warning' : ''}`}>
-                <div className="effect-icon">{effect.icon}</div>
-                <div className="effect-info">
-                    <span className="effect-label">{effect.label}</span>
-                    {effect.timer && <span className="effect-timer">{effect.timer}s</span>}
-                </div>
+              <div className="intro-content">
+                <h1 className="greek-title-large">HERMES QUEST</h1>
+                <p className="intro-subtitle">Vitesse Divine & Sauts Légendaires</p>
+                <p style={{color:'#fff', marginBottom:'1.5rem', fontSize:'0.8rem', opacity:0.9}}>
+                    Tapez pour sauter • Évitez les colonnes
+                </p>
+                <button className="greek-start-button" onClick={startGame}><span className="text">COURIR</span></button>
+              </div>
             </div>
-        ))}
-      </div>
+          </div>
+        )}
 
-      {bonusMessage && (
-        <div className="bonus-popup" style={{ color: bonusMessage.color || '#DAA520' }}>
-          {bonusMessage.text}
-        </div>
-      )}
+        {/* HUD EN JEU */}
+        {gameStatus === 'playing' && (
+            <>
+                <Link to="/" className="greek-back-btn" style={{top: '15px', left: '15px', padding: '6px 12px'}}><FaArrowLeft /></Link>
+                <div className="greek-hud-score">
+                    <span className="score-label">SCORE</span>
+                    <span className="score-value">{score}</span>
+                </div>
+                <div className="effects-hud">
+                    {activeEffects.map(effect => (
+                        <div key={effect.id} className={`effect-badge ${effect.type} ${effect.warning ? 'warning' : ''}`}>
+                            <div className="effect-icon">{effect.icon}</div>
+                            <div className="effect-info">
+                                {effect.timer && <span className="effect-timer">{effect.timer}s</span>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </>
+        )}
 
-      <div className="game-world" ref={gameAreaRef}>
-        <div className="clouds-ground"></div>
-        <div className="clouds-ceiling"></div>
+        {bonusMessage && (
+          <div className="bonus-popup" style={{ color: bonusMessage.color || '#DAA520' }}>
+            {bonusMessage.text}
+          </div>
+        )}
 
-        {/* JOUEUR */}
-        <div 
-            className={`player ${isTiger ? 'tiger-mode' : ''} ${isFlying ? 'flying-mode' : ''} ${gravityInverted ? 'gravity-inverted' : ''}`} 
-            ref={runnerRef}
-        >
-            <div className="player-sprite"></div>
-            {isTiger && <div className="tiger-aura"></div>}
-            {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
-        </div>
+        <div className="game-world" ref={gameAreaRef}>
+          {/* Les hauteurs sont gérées par CSS Media Queries, ici on met juste les divs */}
+          <div className="clouds-ground"></div>
+          <div className="clouds-ceiling"></div>
 
-        {entities.obstacles.map(obs => (
           <div 
-            key={obs.id} 
-            className={`obstacle ${obs.type} ${obs.isOnCeiling ? 'on-ceiling' : ''}`} 
-            style={{ 
-                left: `${obs.x}%`, 
-                bottom: obs.isOnCeiling ? 'auto' : `${GROUND_HEIGHT}px`,
-                top: obs.isOnCeiling ? `${CEILING_HEIGHT}px` : 'auto',
-                width: `${obs.width}px`,
-                height: obs.type === 'vortex' ? '100%' : `${obs.height}px`,
-                top: obs.type === 'vortex' ? 0 : (obs.isOnCeiling ? `${CEILING_HEIGHT}px` : 'auto')
-            }}
+              className={`player ${isTiger ? 'tiger-mode' : ''} ${isFlying ? 'flying-mode' : ''} ${gravityInverted ? 'gravity-inverted' : ''}`} 
+              ref={runnerRef}
           >
-            {obs.type === 'vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
+              <div className="player-sprite"></div>
+              {isTiger && <div className="tiger-aura"></div>}
+              {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
           </div>
-        ))}
 
-        {entities.bonuses.map(bonus => (
-          <div 
-            key={bonus.id} 
-            className={`bonus-item ${bonus.type}`}
-            style={{ 
-                left: `${bonus.x}%`, 
-                bottom: `${GROUND_HEIGHT + bonus.y}px`
-            }}
-          >
-            {bonus.type === 'asso' && <img src={bonus.asso.logo} alt="" style={{borderColor: bonus.asso.color}} />}
-            {bonus.type === 'fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
-            {bonus.type === 'tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
-          </div>
-        ))}
-      </div>
+          {entities.obstacles.map(obs => (
+            <div 
+              key={obs.id} 
+              className={`obstacle ${obs.type} ${obs.isOnCeiling ? 'on-ceiling' : ''}`} 
+              style={{ 
+                  left: `${obs.x}%`, 
+                  // Utilisation des dimensions dynamiques
+                  bottom: obs.type === 'vortex' ? 0 : (obs.isOnCeiling ? 'auto' : `${dimensions.groundHeight}px`),
+                  top: obs.type === 'vortex' ? 0 : (obs.isOnCeiling ? `${dimensions.ceilingHeight}px` : 'auto'),
+                  width: `${obs.width}px`,
+                  height: obs.type === 'vortex' ? '100%' : `${obs.height}px`
+              }}
+            >
+              {obs.type === 'vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
+            </div>
+          ))}
 
-      {gameStatus === 'gameover' && (
-        <div className="gameover-overlay animate-in">
-          <h1 className="greek-text-red">CHUTE D'ICARE</h1>
-          <div className="final-score-box">
-            <p>Gloire Acquise</p>
-            <h2>{score}</h2>
-          </div>
-          <div className="gameover-actions">
-            <button className="greek-button" onClick={startGame}><FaRedo /> Réessayer</button>
-            <Link to="/" className="greek-button secondary"><FaArrowLeft /> Olympe</Link>
-          </div>
+          {entities.bonuses.map(bonus => (
+            <div 
+              key={bonus.id} 
+              className={`bonus-item ${bonus.type}`}
+              style={{ 
+                  left: `${bonus.x}%`, 
+                  bottom: `${dimensions.groundHeight + bonus.y}px`
+              }}
+            >
+              {bonus.type === 'asso' && bonus.asso && <img src={bonus.asso.logo} alt="" style={{borderColor: bonus.asso.color}} />}
+              {bonus.type === 'fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
+              {bonus.type === 'tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
+            </div>
+          ))}
         </div>
-      )}
-    </div>
+
+        {gameStatus === 'gameover' && (
+          <div className="gameover-overlay animate-in">
+            <h1 className="greek-text-red">ÉCHEC</h1>
+            <div className="final-score-box">
+              <p>Score Final</p>
+              <h2>{score}</h2>
+            </div>
+            <div className="gameover-actions">
+              <button className="greek-button" onClick={startGame}><FaRedo /> Rejouer</button>
+              <Link to="/" className="greek-button secondary"><FaArrowLeft /> Quitter</Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
