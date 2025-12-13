@@ -3,8 +3,21 @@
 /* =========================================
    1. UNIVERS & STRUCTURE GLOBALE
    ========================================= */
+/* src/pages/HermesRunnerPage.css */
+
+/* =========================================
+   1. UNIVERS & STRUCTURE GLOBALE
+   ========================================= */
 .greek-runner-container, .greek-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    
+    /* CORRECTION ICI : 100dvh s'adapte à la barre d'adresse mobile */
+    height: 100vh; 
+    height: 100dvh; 
+    
     z-index: 9999;
     background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
     overflow: hidden;

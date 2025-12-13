@@ -1,25 +1,25 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa' // 1. Import du plugin
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
     react(),
-    // 2. Configuration PWA
     VitePWA({
-      registerType: 'autoUpdate', // Met à jour l'app automatiquement dès qu'une nouvelle version est dispo
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'], // Fichiers statiques à mettre en cache
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Hermes by NLE',
         short_name: 'Hermes',
         description: "L'application de l'association étudiante qui t'accompagne à Pau.",
-        theme_color: '#003366', // Votre bleu foncé
+        theme_color: '#003366',
         background_color: '#ffffff',
-        display: 'standalone', // Mode "App" sans barre d'URL
-        orientation: 'portrait',
+        display: 'standalone',
+        // CORRECTION ICI : 'any' permet la rotation automatique (portrait et paysage)
+        orientation: 'any', 
         icons: [
           {
-            src: '/pwa-192x192.png', // Nous allons créer ces images juste après
+            src: '/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
@@ -32,7 +32,7 @@ export default defineConfig({
             src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable' // Important pour Android (icônes rondes)
+            purpose: 'any maskable'
           }
         ]
       }
