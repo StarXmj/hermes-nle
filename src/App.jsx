@@ -15,6 +15,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Snowfall from 'react-snowfall';
 import { THEMES } from './data/themes'; // Import de la config
+import InstallPWA from './components/InstallPWA'; // Ajustez le chemin
 
 import LoadingSpinner from './components/LoadingSpinner'; // 2. Importez votre spinner
 // URL Image Père Noël (ou autre assets)
@@ -134,6 +135,7 @@ function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>{createRoutes(appRoutes)}</Routes>
       </Suspense>
+      <InstallPWA /> {/* <--- Ajoutez le bouton ici */}
       <Footer />
       <CookieConsent />
     </div>
