@@ -260,7 +260,7 @@
         max-width: 400px;
         /* Hauteur limitée pour ne pas pousser l'écran trop bas */
         height: 35vh; 
-        min-height: 250px;
+        min-height: 200px;
     }
 }
 
@@ -274,7 +274,7 @@
         width: 40%; /* Moins large */
         
         /* Hauteur adaptée à l'écran paysage */
-        height: 55vh; 
+        height: 45vh; 
         max-height: none; /* On laisse le flex gérer */
         
         padding: 8px;

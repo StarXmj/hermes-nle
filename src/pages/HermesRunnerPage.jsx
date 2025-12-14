@@ -21,6 +21,10 @@ const DURATION_GRAVITY = 8000;
 const WARNING_TIME = 1500;
 const SCORE_BONUS_ASSO = 10;
 
+// ... autres constantes ...
+const TARGET_FPS = 60;
+const FRAME_INTERVAL = 1000 / TARGET_FPS; // Environ 16.6ms par image
+
 function HermesRunnerPage() {
   const [gameStatus, setGameStatus] = useState('loading');
   const [assos, setAssos] = useState([]);
@@ -31,6 +35,8 @@ function HermesRunnerPage() {
   const [isTiger, setIsTiger] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [gravityInverted, setGravityInverted] = useState(false);
+
+  const lastFrameTimeRef = useRef(0);
 
   // AUTH
   const { player, leaderboardAllTime, leaderboardWeekly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
@@ -100,8 +106,28 @@ function HermesRunnerPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleJump]);
 
-  const updateGame = () => {
+  const updateGame = (timestamp) => {
     if (gameState.current.isGameOver) return;
+
+    // Initialisation du temps au premier lancement
+    if (!lastFrameTimeRef.current) {
+        lastFrameTimeRef.current = timestamp;
+    }
+
+    // Calcul du temps écoulé depuis la dernière frame
+    const elapsed = timestamp - lastFrameTimeRef.current;
+
+    // Si pas assez de temps s'est écoulé (on est sur un écran 120Hz et c'est la frame "intermédiaire"), on attend
+    if (elapsed < FRAME_INTERVAL) {
+        requestRef.current = requestAnimationFrame(updateGame);
+        return;
+    }
+
+    // On "consomme" le temps pour revenir au rythme de 60 FPS
+    // Cela permet de garder une fluidité même si on a un léger décalage
+    lastFrameTimeRef.current = timestamp - (elapsed % FRAME_INTERVAL);
+
+    // --- DÉBUT DE VOTRE LOGIQUE DE JEU EXISTANTE ---
     const state = gameState.current;
     const now = Date.now();
     const currentCeiling = ceilingYRef.current;
@@ -112,6 +138,7 @@ function HermesRunnerPage() {
     state.score += (state.currentSpeed / 50);
     setScore(Math.floor(state.score));
 
+    // ... (Tout le reste de votre logique : gravité, sauts, spawn, collisions...)
     if (state.gravityEndTime > now) { if (!state.isGravityInverted) { state.isGravityInverted = true; setGravityInverted(true); } }
     else { if (state.isGravityInverted) { state.isGravityInverted = false; setGravityInverted(false); state.isJumping = true; } }
 
@@ -156,6 +183,9 @@ function HermesRunnerPage() {
     checkCollisions(state, dims);
     updateHUD(state, now);
     setEntities({ obstacles: state.obstacles, bonuses: state.bonuses });
+    // --- FIN DE VOTRE LOGIQUE ---
+
+    // On rappelle la boucle
     requestRef.current = requestAnimationFrame(updateGame);
   };
 
@@ -218,13 +248,17 @@ function HermesRunnerPage() {
   };
 
   const startGame = () => {
-    gameState.current = {
+   gameState.current = {
       playerY: 0, velocity: 0, isJumping: false, currentSpeed: INITIAL_SPEED, obstacles: [], bonuses: [],
       frame: 0, score: 0, isGameOver: false,
       isGravityInverted: false, gravityEndTime: 0, isFlying: false, flyEndTime: 0, isTiger: false, tigerEndTime: 0, invincible: false
     };
     setScore(0); setIsTiger(false); setIsFlying(false); setGravityInverted(false); setEntities({ obstacles: [], bonuses: [] });
     setGameStatus('playing');
+
+    // AJOUTER CECI : Réinitialiser le timer de la boucle
+    lastFrameTimeRef.current = 0; 
+    
     requestRef.current = requestAnimationFrame(updateGame);
   };
 
