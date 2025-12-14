@@ -18,12 +18,12 @@ export function useGameAuth() {
   }, []);
 
   const fetchLeaderboards = async () => {
-    // 1. Classement Général (Top 50 pour le menu principal)
+    // 1. Classement Général
     const { data: allTime } = await supabase
-      .from('arcade_players') // Ou 'view_leaderboard' si tu as activé la sécurité SQL stricte
+      .from('arcade_players')
       .select('pseudo, best_score')
       .order('best_score', { ascending: false })
-      .limit(50); // <--- AUGMENTÉ À 50
+      .limit(50);
     
     if (allTime) setLeaderboardAllTime(allTime);
 
@@ -33,12 +33,11 @@ export function useGameAuth() {
         if (weekly) setLeaderboardWeekly(weekly);
         else setLeaderboardWeekly(allTime || []);
     } catch (e) {
-        // Fallback si la fonction RPC n'existe pas encore
         setLeaderboardWeekly(allTime || []);
     }
   };
 
-  // --- INSCRIPTION (Directe) ---
+  // --- INSCRIPTION (LA FONCTION MANQUANTE) ---
   const register = async (email, pseudo, password, newsletterOptin) => {
     setLoading(true);
     setError(null);
@@ -82,7 +81,7 @@ export function useGameAuth() {
         .select('*')
         .eq('email', email)
         .eq('password', password)
-        .single();
+        .maybeSingle();
 
       if (error || !data) throw new Error("Identifiants incorrects.");
       
@@ -96,10 +95,8 @@ export function useGameAuth() {
     }
   };
 
-  // --- SCORE ---
   const saveScore = async (newScore) => {
     if (!player) return;
-
     await supabase.from('arcade_scores').insert([{ 
       player_id: player.id, score: newScore, pseudo: player.pseudo 
     }]);
@@ -107,11 +104,7 @@ export function useGameAuth() {
     if (newScore > player.best_score) {
       const updatedPlayer = { ...player, best_score: newScore };
       saveSession(updatedPlayer);
-      
-      await supabase
-        .from('arcade_players')
-        .update({ best_score: newScore })
-        .eq('id', player.id);
+      await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', player.id);
     }
     fetchLeaderboards();
   };
@@ -126,15 +119,5 @@ export function useGameAuth() {
     localStorage.removeItem('hermes_player');
   };
 
-  return { 
-    player, 
-    leaderboardAllTime, 
-    leaderboardWeekly, 
-    login, 
-    register, 
-    saveScore, 
-    logout, 
-    loading, 
-    error 
-  };
+  return { player, leaderboardAllTime, leaderboardWeekly, login, register, saveScore, logout, loading, error };
 }

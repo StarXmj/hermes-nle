@@ -7,7 +7,6 @@ import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaSignOutAlt, FaTroph
 import './HermesRunnerPage.css';
 import { useGameAuth } from '../hooks/useGameAuth';
 
-// --- CONFIGURATION ---
 const GRAVITY = 0.55; 
 const JUMP_FORCE = 12; 
 const INITIAL_SPEED = 6; 
@@ -22,7 +21,7 @@ const DURATION_GRAVITY = 8000;
 const WARNING_TIME = 1500;
 
 function HermesRunnerPage() {
-  const [gameStatus, setGameStatus] = useState('loading'); 
+  const [gameStatus, setGameStatus] = useState('loading');
   const [assos, setAssos] = useState([]);
   const [score, setScore] = useState(0);
   const [bonusMessage, setBonusMessage] = useState(null);
@@ -36,9 +35,8 @@ function HermesRunnerPage() {
   const { player, leaderboardAllTime, leaderboardWeekly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
   
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); 
+  const [authMode, setAuthMode] = useState('register'); // Par défaut inscription
   const [leaderboardTab, setLeaderboardTab] = useState('weekly');
-  
   const [authForm, setAuthForm] = useState({ email: '', pseudo: '', password: '', newsletter: true });
 
   const dimensionsRef = useRef({ ground: GROUND_HEIGHT, ceiling: CEILING_HEIGHT, player: PLAYER_SIZE });
@@ -55,7 +53,6 @@ function HermesRunnerPage() {
   });
   const [entities, setEntities] = useState({ obstacles: [], bonuses: [] });
 
-  // RESPONSIVE
   useEffect(() => {
     const updateDimensions = () => {
         const isMobile = window.innerWidth < 768 || window.innerHeight < 500;
@@ -63,7 +60,8 @@ function HermesRunnerPage() {
         const ceiling = isMobile ? 60 : 120;
         const pSize = isMobile ? 70 : 100;
         dimensionsRef.current = { ground, ceiling, player: pSize };
-        ceilingYRef.current = (window.innerHeight - ground - ceiling - pSize + 20) > 80 ? (window.innerHeight - ground - ceiling - pSize + 20) : 200;
+        const h = window.innerHeight - ground - ceiling - pSize + 20;
+        ceilingYRef.current = h > 80 ? h : 200;
     };
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
@@ -80,16 +78,13 @@ function HermesRunnerPage() {
     loadData();
   }, []);
 
-  // JEU
   const handleJump = useCallback(() => {
     if (gameStatus !== 'playing' || gameState.current.isGameOver) return;
     const state = gameState.current;
     if (state.isFlying) return; 
-
     const currentCeiling = ceilingYRef.current;
     const onGround = !state.isGravityInverted && state.playerY <= 5;
     const onCeiling = state.isGravityInverted && state.playerY >= currentCeiling - 5;
-
     if ((onGround || onCeiling) && !state.isJumping) {
       state.velocity = state.isGravityInverted ? -JUMP_FORCE : JUMP_FORCE;
       state.isJumping = true;
@@ -97,7 +92,9 @@ function HermesRunnerPage() {
   }, [gameStatus]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); handleJump(); } };
+    const handleKeyDown = (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); handleJump(); }
+    };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleJump]);
@@ -118,11 +115,16 @@ function HermesRunnerPage() {
     else { if (state.isGravityInverted) { state.isGravityInverted = false; setGravityInverted(false); state.isJumping = true; } }
 
     if (state.flyEndTime > now) {
-        if (state.flyEndTime - now > 1000) {
-            state.isFlying = true; setIsFlying(true); state.invincible = true;
-            state.playerY += ((state.isGravityInverted ? 40 : currentCeiling - 40) - state.playerY) * 0.1; state.velocity = 0;
+        const timeLeft = state.flyEndTime - now;
+        if (timeLeft > 1000) {
+            state.isFlying = true; setIsFlying(true); state.invincible = true; 
+            const flightY = state.isGravityInverted ? 40 : currentCeiling - 40;
+            state.playerY += (flightY - state.playerY) * 0.1; state.velocity = 0;
         } else { state.isFlying = false; setIsFlying(false); state.invincible = true; }
-    } else { setIsFlying(false); if (!state.isTiger && now > state.flyEndTime + 1000) state.invincible = false; }
+    } else {
+        setIsFlying(false); 
+        if (!state.isTiger && (now > state.flyEndTime + 1000)) state.invincible = false;
+    }
 
     if (state.tigerEndTime > now) { state.isTiger = true; setIsTiger(true); state.invincible = true; }
     else { state.isTiger = false; setIsTiger(false); if (state.flyEndTime < now) state.invincible = false; }
@@ -136,15 +138,19 @@ function HermesRunnerPage() {
 
     if (runnerRef.current) {
         runnerRef.current.style.bottom = `${dims.ground + state.playerY}px`;
-        runnerRef.current.style.transform = state.isGravityInverted ? 'scaleY(-1)' : 'scaleY(1)';
-        if (state.isJumping && !state.isFlying) runnerRef.current.classList.add('jumping'); else runnerRef.current.classList.remove('jumping');
+        const rotation = state.isGravityInverted ? 'scaleY(-1)' : 'scaleY(1)';
+        runnerRef.current.style.transform = rotation;
+        if (state.isJumping && !state.isFlying) runnerRef.current.classList.add('jumping');
+        else runnerRef.current.classList.remove('jumping');
     }
 
-    if (state.frame % Math.max(50, Math.floor(SPAWN_RATE - (state.currentSpeed * 1.5))) === 0) spawnEntity(state, currentCeiling, dims);
+    if (state.frame % Math.max(50, Math.floor(SPAWN_RATE - (state.currentSpeed * 1.5))) === 0) spawnEntity(state, currentCeiling);
 
-    const move = state.currentSpeed / 10;
-    state.obstacles.forEach(o => o.x -= move); state.obstacles = state.obstacles.filter(o => o.x > -20);
-    state.bonuses.forEach(b => b.x -= move); state.bonuses = state.bonuses.filter(b => b.x > -20 && !b.collected);
+    const moveFactor = state.currentSpeed / 10;
+    state.obstacles.forEach(o => o.x -= moveFactor);
+    state.obstacles = state.obstacles.filter(o => o.x > -20);
+    state.bonuses.forEach(b => b.x -= moveFactor);
+    state.bonuses = state.bonuses.filter(b => b.x > -20 && !b.collected);
 
     checkCollisions(state, dims);
     updateHUD(state, now);
@@ -152,7 +158,7 @@ function HermesRunnerPage() {
     requestRef.current = requestAnimationFrame(updateGame);
   };
 
-  const spawnEntity = (state, ceilingY, dims) => {
+  const spawnEntity = (state, ceilingY) => {
       const rand = Math.random();
       const isOnCeiling = state.isGravityInverted;
       if (rand > 0.94 && !isOnCeiling && !state.obstacles.some(o => o.type==='vortex')) {
@@ -168,22 +174,29 @@ function HermesRunnerPage() {
   };
 
   const checkCollisions = (state, dims) => {
-      if (state.isFlying || state.isTiger || state.invincible) {
-          state.bonuses.forEach(b => { if (b.x < 20 && b.x > 5) applyBonus(b); });
-          if (state.isTiger) state.obstacles.forEach(o => { if (o.x < 15 && o.x > 5) { o.x = -100; setScore(s=>s+50); } });
-          return;
+    if (state.isFlying || state.isTiger || state.invincible) {
+        state.bonuses.forEach(bonus => { if (bonus.x < 20 && bonus.x > 5) applyBonus(bonus); });
+        if (state.isTiger) { state.obstacles.forEach(o => { if (o.x < 15 && o.x > 5) { o.x = -100; setScore(s => s + 50); } }); }
+        return; 
+    }
+    const margin = 20; 
+    const pLeft = 10; const pRight = 14; 
+    const pBottom = state.playerY + margin; 
+    const pTop = state.playerY + dims.player - margin; 
+
+    state.obstacles.forEach(obs => {
+      const obsLeft = obs.x + 1; const obsRight = obs.x + 4; 
+      if (pRight > obsLeft && pLeft < obsRight) {
+        if (obs.type === 'vortex') { if (!obs.triggered) { obs.triggered = true; applyTerrainEffect(); } return; }
+        let collision = false;
+        if (obs.isOnCeiling) { if (pTop > (obs.y + dims.player - obs.height + 10)) collision = true; }
+        else { if (pBottom < (obs.y + obs.height - 10)) collision = true; }
+        if (collision) gameOver();
       }
-      const m = 20; const pL=10, pR=14, pB=state.playerY+m, pT=state.playerY+dims.player-m;
-      state.obstacles.forEach(o => {
-          if (pR > o.x+1 && pL < o.x+4) {
-              if (o.type === 'vortex') { if (!o.triggered) { o.triggered = true; applyTerrainEffect(); } return; }
-              let col = false;
-              if (o.isOnCeiling) { if (pT > (o.y + dims.player - o.height + 10)) col = true; }
-              else { if (pB < (o.y + o.height - 10)) col = true; }
-              if (col) gameOver();
-          }
-      });
-      state.bonuses.forEach(b => { if (b.x < 20 && b.x > 5 && Math.abs((state.playerY+dims.player/2) - (b.y + (dims.player*0.7)/2)) < dims.player) applyBonus(b); });
+    });
+    state.bonuses.forEach(bonus => {
+      if (bonus.x < 20 && bonus.x > 5 && Math.abs((state.playerY + dims.player / 2) - (bonus.y + (dims.player * 0.7) / 2)) < dims.player) applyBonus(bonus);
+    });
   };
 
   const applyTerrainEffect = () => { gameState.current.gravityEndTime = Date.now() + DURATION_GRAVITY; if (!gameState.current.isGravityInverted) gameState.current.velocity = 5; showMessage("VORTEX DU CHAOS !", "#8e44ad"); };
@@ -205,7 +218,8 @@ function HermesRunnerPage() {
 
   const startGame = () => {
     gameState.current = {
-      playerY: 0, velocity: 0, isJumping: false, currentSpeed: INITIAL_SPEED, obstacles: [], bonuses: [], frame: 0, score: 0, isGameOver: false,
+      playerY: 0, velocity: 0, isJumping: false, currentSpeed: INITIAL_SPEED, obstacles: [], bonuses: [],
+      frame: 0, score: 0, isGameOver: false,
       isGravityInverted: false, gravityEndTime: 0, isFlying: false, flyEndTime: 0, isTiger: false, tigerEndTime: 0, invincible: false
     };
     setScore(0); setIsTiger(false); setIsFlying(false); setGravityInverted(false); setEntities({ obstacles: [], bonuses: [] });
@@ -222,6 +236,7 @@ function HermesRunnerPage() {
 
   const handleAuthSubmit = async (e) => {
       e.preventDefault();
+      e.stopPropagation(); // Stop Bubbling
       if (authMode === 'register') {
           const res = await register(authForm.email, authForm.pseudo, authForm.password, authForm.newsletter);
           if (res.success) {
@@ -239,14 +254,17 @@ function HermesRunnerPage() {
       }
   };
 
-  const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+  const openModal = (mode, e) => {
+      e.stopPropagation(); // Stop Bubbling
+      setAuthMode(mode);
+      setShowAuthModal(true);
+  };
 
-  // --- COMPOSANT LEADERBOARD (Réutilisable) ---
   const Leaderboard = ({ limit }) => (
-      <div className="leaderboard-section">
+      <div className="leaderboard-section" onMouseDown={e => e.stopPropagation()}>
           <div className="lb-tabs">
-              <button className={leaderboardTab === 'weekly' ? 'active' : ''} onClick={() => setLeaderboardTab('weekly')}><FaCalendarAlt /> SEMAINE</button>
-              <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={() => setLeaderboardTab('alltime')}><FaTrophy /> LÉGENDE</button>
+              <button className={leaderboardTab === 'weekly' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('weekly'); }}><FaCalendarAlt /> SEMAINE</button>
+              <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('alltime'); }}><FaTrophy /> LÉGENDE</button>
           </div>
           <ul className="lb-list">
               {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).slice(0, limit).map((l, i) => (
@@ -261,44 +279,117 @@ function HermesRunnerPage() {
       </div>
   );
 
-  // --- RENDU ---
-  
-  // 1. INTRO
-  if (gameStatus === 'intro') {
-    return (
-      <div className="greek-overlay">
+  const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+  const currentDims = dimensionsRef.current;
+
+  return (
+    <>
+      <div className="orientation-lock">
+        <FaMobileAlt className="rotate-icon" />
+        <h2>Tournez votre téléphone</h2>
+        <p>L'aventure se vit à l'horizontale !</p>
+      </div>
+
+      <div className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} onMouseDown={handleJump} onTouchStart={handleJump}>
         <Helmet><title>Hermes Quest</title></Helmet>
-        {/* BOUTON RETOUR SITE */}
-        <Link to="/" className="greek-back-btn"><FaHome /> Retour Site</Link>
         
-        <div className="intro-screen">
-          <div className="intro-content">
-            <h1 className="greek-title-large">HERMES QUEST</h1>
-            
-            {player ? (
-                <div className="player-welcome">
-                    <p>Bienvenue, héros <strong>{player.pseudo}</strong></p>
-                    <p className="best-score">Record : {player.best_score}</p>
-                    <button className="greek-start-button" onClick={startGame}>COURIR</button>
-                    <button className="greek-text-btn" onClick={logout}><FaSignOutAlt /> Déconnexion</button>
+        {gameStatus === 'intro' && (
+          <div className="greek-overlay" onMouseDown={e => e.stopPropagation()}>
+            <Link to="/" className="greek-back-btn"><FaHome /> Retour Site</Link>
+            <div className="intro-screen">
+              <div className="waterfall-container">
+                {[0, 1, 2, 3].map((colIndex) => (
+                  <div key={colIndex} className={`waterfall-column col-${colIndex}`}>
+                    {[...shuffleArray(assos), ...shuffleArray(assos)].map((asso, i) => (
+                      <div key={i} className="mini-card" style={{ borderColor: asso.color || '#DAA520' }}>
+                        {asso.logo ? <img src={asso.logo} alt="" /> : <span style={{color: asso.color}}>{asso.nom ? asso.nom[0] : '?'}</span>}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="intro-content">
+                <h1 className="greek-title-large">HERMES QUEST</h1>
+                {player ? (
+                    <div className="player-welcome">
+                        <p>Bienvenue, héros <strong>{player.pseudo}</strong></p>
+                        <p className="best-score">Record : {player.best_score}</p>
+                        <button className="greek-start-button" onClick={() => startGame()}>COURIR</button>
+                        <button className="greek-text-btn" onClick={() => logout()}><FaSignOutAlt /> Déconnexion</button>
+                    </div>
+                ) : (
+                    <div className="intro-actions">
+                        <button className="greek-start-button" onClick={() => startGame()}>COURIR (Invité)</button>
+                        <button className="greek-button secondary" onClick={(e) => openModal('register', e)}>GRAVER SON NOM</button>
+                    </div>
+                )}
+                <div className="intro-lb-container">
+                    <Leaderboard limit={50} />
                 </div>
-            ) : (
-                <div className="intro-actions">
-                    <button className="greek-start-button" onClick={startGame}>COURIR (Invité)</button>
-                    <button className="greek-button secondary" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>GRAVER SON NOM</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gameStatus === 'playing' && (
+            <>
+                <div className="greek-hud-score"><span className="score-label">GLOIRE</span><span className="score-value">{score}</span></div>
+                <div className="effects-hud">
+                    {activeEffects.map(e => (<div key={e.id} className={`effect-badge ${e.type}`}><div className="effect-icon">{e.icon}</div><div className="effect-info"><span className="effect-timer">{e.timer}s</span></div></div>))}
+                </div>
+            </>
+        )}
+
+        {bonusMessage && <div className="bonus-popup" style={{ color: bonusMessage.color }}>{bonusMessage.text}</div>}
+
+        <div className="game-world" ref={gameAreaRef}>
+          <div className="clouds-ground" style={{height: currentDims.ground}}></div>
+          <div className="clouds-ceiling" style={{height: currentDims.ceiling}}></div>
+          <div className={`player ${isTiger?'tiger-mode':''} ${isFlying?'flying-mode':''} ${gravityInverted?'gravity-inverted':''}`} ref={runnerRef} style={{ width: currentDims.player, height: currentDims.player }}>
+              <div className="player-sprite"></div>
+              {isTiger && <div className="tiger-aura"></div>} {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
+          </div>
+          {entities.obstacles.map(o => (
+            <div key={o.id} className={`obstacle ${o.type} ${o.isOnCeiling?'on-ceiling':''}`} style={{ left: `${o.x}%`, bottom: o.type==='vortex'?0:(o.isOnCeiling?'auto':`${currentDims.ground}px`), top: o.type==='vortex'?0:(o.isOnCeiling?`${currentDims.ceiling}px`:'auto'), width:`${o.width}px`, height: o.type==='vortex'?'100%':`${o.height}px` }}>
+              {o.type==='vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
+            </div>
+          ))}
+          {entities.bonuses.map(b => (
+            <div key={b.id} className={`bonus-item ${b.type}`} style={{ left: `${b.x}%`, bottom: `${currentDims.ground + b.y}px`, width: currentDims.player*0.7, height: currentDims.player*0.7 }}>
+              {b.type==='asso' && <img src={b.asso?.logo} style={{borderColor:b.asso?.color}} alt=""/>}
+              {b.type==='fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
+              {b.type==='tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
+            </div>
+          ))}
+        </div>
+
+        {gameStatus === 'gameover' && (
+          <div className="gameover-overlay animate-in" onMouseDown={e => e.stopPropagation()}>
+            <h1 className="greek-text-red">CHUTE D'ICARE</h1>
+            <div className="final-score-box">
+              <p>Gloire Acquise</p>
+              <h2>{score}</h2>
+              {player && <p className="personal-best">Record : {player.best_score}</p>}
+            </div>
+
+            {!player && (
+                <div className="guest-save-prompt">
+                    <p>Inscrivez-vous pour sauver ce score !</p>
+                    <button className="greek-button small" onClick={(e) => openModal('register', e)}>GRAVER MON NOM</button>
                 </div>
             )}
 
-            {/* LEADERBOARD SUR LE MENU PRINCIPAL (INTRO) - Scrollable */}
-            <div className="intro-lb-container">
-                <Leaderboard limit={50} />
+            <Leaderboard limit={10} />
+
+            <div className="gameover-actions">
+              <button className="greek-button" onClick={() => startGame()}><FaRedo /> Réessayer</button>
+              <button className="greek-button secondary" onClick={() => setGameStatus('intro')}><FaArrowLeft /> Menu Principal</button>
             </div>
           </div>
-        </div>
-        
-        {/* MODAL AUTH */}
+        )}
+
         {showAuthModal && (
-            <div className="auth-modal-overlay">
+            <div className="auth-modal-overlay" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
                 <div className="auth-modal">
                     <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
                     <form onSubmit={handleAuthSubmit}>
@@ -319,133 +410,14 @@ function HermesRunnerPage() {
                         
                         <div className="modal-buttons">
                             <button type="submit" className="greek-button" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'S\'INSCRIRE')}</button>
-                            <button type="button" className="greek-text-btn" onClick={() => setShowAuthModal(false)}>Annuler</button>
+                            <button type="button" className="greek-text-btn" onClick={(e) => { e.stopPropagation(); setShowAuthModal(false); }}>Annuler</button>
                         </div>
-                        <p className="switch-auth" onClick={() => setAuthMode(authMode==='login'?'register':'login')}>
+                        <p className="switch-auth" onClick={(e) => { e.stopPropagation(); setAuthMode(authMode==='login'?'register':'login'); }}>
                             {authMode === 'login' ? "Pas de compte ? Créer une légende" : "Déjà un compte ? Connexion"}
                         </p>
                     </form>
                 </div>
             </div>
-        )}
-      </div>
-    );
-  }
-
-  // 2. JEU ACTIF
-  const currentDims = dimensionsRef.current; // Variable définie ICI pour être sûr
-
-  return (
-    <>
-      <div className="orientation-lock">
-        <FaMobileAlt className="rotate-icon" />
-        <h2>Tournez votre téléphone</h2>
-        <p>L'aventure se vit à l'horizontale !</p>
-      </div>
-
-      <div className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} onMouseDown={handleJump} onTouchStart={handleJump}>
-        <Helmet><title>Vers l'Olympe !</title></Helmet>
-        
-        {gameStatus === 'playing' && (
-            <>
-                <div className="greek-hud-score">
-                    <span className="score-label">GLOIRE</span>
-                    <span className="score-value">{score}</span>
-                </div>
-                <div className="effects-hud">
-                    {activeEffects.map(e => (
-                        <div key={e.id} className={`effect-badge ${e.type}`}>
-                            <div className="effect-icon">{e.icon}</div>
-                            <div className="effect-info"><span className="effect-timer">{e.timer}s</span></div>
-                        </div>
-                    ))}
-                </div>
-            </>
-        )}
-
-        {bonusMessage && <div className="bonus-popup" style={{ color: bonusMessage.color }}>{bonusMessage.text}</div>}
-
-        <div className="game-world" ref={gameAreaRef}>
-          <div className="clouds-ground" style={{height: currentDims.ground}}></div>
-          <div className="clouds-ceiling" style={{height: currentDims.ceiling}}></div>
-          
-          <div className={`player ${isTiger?'tiger-mode':''} ${isFlying?'flying-mode':''} ${gravityInverted?'gravity-inverted':''}`} ref={runnerRef} style={{ width: currentDims.player, height: currentDims.player }}>
-              <div className="player-sprite"></div>
-              {isTiger && <div className="tiger-aura"></div>} {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
-          </div>
-
-          {entities.obstacles.map(o => (
-            <div key={o.id} className={`obstacle ${o.type} ${o.isOnCeiling?'on-ceiling':''}`} style={{ left: `${o.x}%`, bottom: o.type==='vortex'?0:(o.isOnCeiling?'auto':`${currentDims.ground}px`), top: o.type==='vortex'?0:(o.isOnCeiling?`${currentDims.ceiling}px`:'auto'), width:`${o.width}px`, height: o.type==='vortex'?'100%':`${o.height}px` }}>
-              {o.type==='vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
-            </div>
-          ))}
-          {entities.bonuses.map(b => (
-            <div key={b.id} className={`bonus-item ${b.type}`} style={{ left: `${b.x}%`, bottom: `${currentDims.ground + b.y}px`, width: currentDims.player*0.7, height: currentDims.player*0.7 }}>
-              {b.type==='asso' && <img src={b.asso?.logo} style={{borderColor:b.asso?.color}} alt=""/>}
-              {b.type==='fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
-              {b.type==='tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
-            </div>
-          ))}
-        </div>
-
-        {/* 3. GAME OVER */}
-        {gameStatus === 'gameover' && (
-          <div className="gameover-overlay animate-in">
-            <h1 className="greek-text-red">CHUTE D'ICARE</h1>
-            <div className="final-score-box">
-              <p>Gloire Acquise</p>
-              <h2>{score}</h2>
-              {player && <p className="personal-best">Record : {player.best_score}</p>}
-            </div>
-
-            {!player && (
-                <div className="guest-save-prompt">
-                    <p>Inscrivez-vous pour sauver ce score !</p>
-                    <button className="greek-button small" onClick={() => { setAuthMode('register'); setShowAuthModal(true); }}>GRAVER MON NOM</button>
-                </div>
-            )}
-
-            {/* LEADERBOARD GAME OVER (Limité à 10) */}
-            <Leaderboard limit={10} />
-
-            <div className="gameover-actions">
-              <button className="greek-button" onClick={startGame}><FaRedo /> Réessayer</button>
-              <button className="greek-button secondary" onClick={() => setGameStatus('intro')}><FaArrowLeft /> Menu Principal</button>
-            </div>
-
-            {/* MODAL AUTH (Réutilisation) */}
-            {showAuthModal && (
-                <div className="auth-modal-overlay">
-                    <div className="auth-modal">
-                        <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
-                        <form onSubmit={handleAuthSubmit}>
-                            {authMode === 'register' && (
-                                <input type="text" placeholder="Pseudo Héroïque" required value={authForm.pseudo} onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} />
-                            )}
-                            <input type="email" placeholder="Email" required value={authForm.email} onChange={e=>setAuthForm({...authForm, email:e.target.value})} />
-                            <input type="password" placeholder="Mot de passe" required value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})} />
-                            
-                            {authMode === 'register' && (
-                                <div className="newsletter-optin">
-                                    <input type="checkbox" id="newsOpt" checked={authForm.newsletter} onChange={e=>setAuthForm({...authForm, newsletter:e.target.checked})} />
-                                    <label htmlFor="newsOpt">Je m'inscris à la newsletter</label>
-                                </div>
-                            )}
-
-                            {authError && <p className="error-text">{authError}</p>}
-                            
-                            <div className="modal-buttons">
-                                <button type="submit" className="greek-button" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'S\'INSCRIRE')}</button>
-                                <button type="button" className="greek-text-btn" onClick={() => setShowAuthModal(false)}>Annuler</button>
-                            </div>
-                            <p className="switch-auth" onClick={() => setAuthMode(authMode==='login'?'register':'login')}>
-                                {authMode === 'login' ? "Pas de compte ? Créer une légende" : "Déjà un compte ? Connexion"}
-                            </p>
-                        </form>
-                    </div>
-                </div>
-            )}
-          </div>
         )}
       </div>
     </>
