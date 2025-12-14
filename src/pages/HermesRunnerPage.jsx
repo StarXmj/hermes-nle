@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaSignOutAlt, FaTrophy, FaCalendarAlt, FaHome, FaMobileAlt } from 'react-icons/fa';
 import './HermesRunnerPage.css';
 import { useGameAuth } from '../hooks/useGameAuth';
+import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaSignOutAlt, FaTrophy, FaCalendarAlt, FaHome, FaMobileAlt, FaTimes } from 'react-icons/fa';
 
 const GRAVITY = 0.55; 
 const JUMP_FORCE = 12; 
@@ -19,6 +19,7 @@ const DURATION_FLIGHT = 4000;
 const DURATION_TIGER = 5000;
 const DURATION_GRAVITY = 8000;
 const WARNING_TIME = 1500;
+const SCORE_BONUS_ASSO = 10;
 
 function HermesRunnerPage() {
   const [gameStatus, setGameStatus] = useState('loading');
@@ -202,7 +203,7 @@ function HermesRunnerPage() {
   const applyTerrainEffect = () => { gameState.current.gravityEndTime = Date.now() + DURATION_GRAVITY; if (!gameState.current.isGravityInverted) gameState.current.velocity = 5; showMessage("VORTEX DU CHAOS !", "#8e44ad"); };
   const applyBonus = (b) => {
       b.collected = true; const now = Date.now();
-      if (b.type === 'asso') { gameState.current.score += 100; showMessage(`+100 ${b.asso?.nom || 'PTS'}`, b.asso?.color || '#FFD700'); }
+      if (b.type === 'asso') { gameState.current.score += SCORE_BONUS_ASSO; showMessage(`+${SCORE_BONUS_ASSO} ${b.asso?.nom || 'PTS'}`, b.asso?.color || '#FFD700'); }
       if (b.type === 'fly') { gameState.current.flyEndTime = now + DURATION_FLIGHT; showMessage("VOL HERMÈS !", "#3498db"); }
       if (b.type === 'tiger') { gameState.current.tigerEndTime = now + DURATION_TIGER; showMessage("MODE TIGRE !", "#e74c3c"); }
   };
@@ -294,9 +295,9 @@ function HermesRunnerPage() {
         <Helmet><title>Hermes Quest</title></Helmet>
         
         {gameStatus === 'intro' && (
-          <div className="greek-overlay" onMouseDown={e => e.stopPropagation()}>
-            <Link to="/" className="greek-back-btn"><FaHome /> Retour Site</Link>
-            <div className="intro-screen">
+          <div className="greek-overlay" onMouseDown={e => e.stopPropagation()}
+          onTouchStart={e => e.stopPropagation()}>
+<Link to="/" className="greek-back-btn"><FaHome /> Retour Site</Link>            <div className="intro-screen">
               <div className="waterfall-container">
                 {[0, 1, 2, 3].map((colIndex) => (
                   <div key={colIndex} className={`waterfall-column col-${colIndex}`}>
@@ -309,22 +310,30 @@ function HermesRunnerPage() {
                 ))}
               </div>
               <div className="intro-content">
-                <h1 className="greek-title-large">HERMES QUEST</h1>
-                {player ? (
-                    <div className="player-welcome">
-                        <p>Bienvenue, héros <strong>{player.pseudo}</strong></p>
-                        <p className="best-score">Record : {player.best_score}</p>
-                        <button className="greek-start-button" onClick={() => startGame()}>COURIR</button>
-                        <button className="greek-text-btn" onClick={() => logout()}><FaSignOutAlt /> Déconnexion</button>
-                    </div>
-                ) : (
-                    <div className="intro-actions">
-                        <button className="greek-start-button" onClick={() => startGame()}>COURIR (Invité)</button>
-                        <button className="greek-button secondary" onClick={(e) => openModal('register', e)}>GRAVER SON NOM</button>
-                    </div>
-                )}
+                
+                {/* TABLEAU À GAUCHE */}
                 <div className="intro-lb-container">
+                    <h3 className="lb-title">LEADERBOARD</h3> {/* <-- TITRE AJOUTÉ */}
                     <Leaderboard limit={50} />
+                </div>
+
+                {/* BOUTONS AU CENTRE */}
+                <div className="intro-actions-side">
+                    <h1 className="greek-title-large">HERMES QUEST</h1>
+                    
+                    {player ? (
+                        <div className="player-welcome">
+                            <p>Bienvenue, héros <strong>{player.pseudo}</strong></p>
+                            <p className="best-score">Record : {player.best_score}</p>
+                            <button className="greek-start-button" onClick={() => startGame()}>COURIR</button>
+                            <button className="greek-text-btn" onClick={() => logout()}><FaSignOutAlt /> Déconnexion</button>
+                        </div>
+                    ) : (
+                        <div className="intro-actions">
+                            <button className="greek-start-button" onClick={() => startGame()}>COURIR (Invité)</button>
+                            <button className="greek-button secondary" onClick={(e) => openModal('register', e)}>GRAVER SON NOM</button>
+                        </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -365,25 +374,38 @@ function HermesRunnerPage() {
 
         {gameStatus === 'gameover' && (
           <div className="gameover-overlay animate-in" onMouseDown={e => e.stopPropagation()}>
-            <h1 className="greek-text-red">CHUTE D'ICARE</h1>
-            <div className="final-score-box">
-              <p>Gloire Acquise</p>
-              <h2>{score}</h2>
-              {player && <p className="personal-best">Record : {player.best_score}</p>}
-            </div>
+            <div className="gameover-card">
+                <h1 className="greek-text-red">CHUTE D'ICARE</h1>
+                
+                <div className="gameover-body">
+                    {/* Partie Score */}
+                    <div className="final-score-section">
+                        <div className="final-score-box">
+                            <p className="score-label-small">Gloire Acquise</p>
+                            <h2>{score}</h2>
+                        </div>
+                        {player && <p className="personal-best">Record personnel : <strong>{player.best_score}</strong></p>}
+                    </div>
 
-            {!player && (
-                <div className="guest-save-prompt">
-                    <p>Inscrivez-vous pour sauver ce score !</p>
-                    <button className="greek-button small" onClick={(e) => openModal('register', e)}>GRAVER MON NOM</button>
+                    {/* Partie Actions & Invite */}
+                    <div className="gameover-controls">
+                        {!player && (
+                            <div className="guest-save-prompt">
+                                <p>Un score digne de l'Olympe ?</p>
+                                <button className="greek-button small action-save" onClick={(e) => openModal('register', e)}>GRAVER MON NOM</button>
+                            </div>
+                        )}
+
+                        <div className="gameover-buttons">
+                            <button className="greek-button primary" onClick={() => startGame()}>
+                                <FaRedo /> Réessayer
+                            </button>
+                            <button className="greek-button secondary" onClick={() => setGameStatus('intro')}>
+                                <FaArrowLeft /> Menu
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            )}
-
-            <Leaderboard limit={10} />
-
-            <div className="gameover-actions">
-              <button className="greek-button" onClick={() => startGame()}><FaRedo /> Réessayer</button>
-              <button className="greek-button secondary" onClick={() => setGameStatus('intro')}><FaArrowLeft /> Menu Principal</button>
             </div>
           </div>
         )}
@@ -391,6 +413,10 @@ function HermesRunnerPage() {
         {showAuthModal && (
             <div className="auth-modal-overlay" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
                 <div className="auth-modal">
+                  <FaTimes 
+                        className="modal-close-icon" 
+                        onClick={(e) => { e.stopPropagation(); setShowAuthModal(false); }} 
+                    />
                     <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
                     <form onSubmit={handleAuthSubmit}>
                         {authMode === 'register' && (
