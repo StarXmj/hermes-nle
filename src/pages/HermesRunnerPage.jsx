@@ -24,6 +24,29 @@ const SCORE_BONUS_ASSO = 10;
 // ... autres constantes ...
 const TARGET_FPS = 60;
 const FRAME_INTERVAL = 1000 / TARGET_FPS; // Environ 16.6ms par image
+// Fonction pour calculer le temps restant avant le prochain Lundi
+
+// Fonction pour calculer le temps avant le prochain Lundi
+const getTimeUntilNextMonday = () => {
+  const now = new Date();
+  const nextMonday = new Date(now);
+  
+  // On trouve le prochain lundi à minuit
+  nextMonday.setDate(now.getDate() + ((7 - now.getDay() + 1) % 7 || 7));
+  nextMonday.setHours(0, 0, 0, 0);
+  
+  // Sécurité si on est pile au moment du reset
+  if (nextMonday <= now) nextMonday.setDate(nextMonday.getDate() + 7);
+
+  const diff = nextMonday - now;
+  
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / 1000 / 60) % 60);
+  const s = Math.floor((diff / 1000) % 60); // <-- AJOUT DES SECONDES
+
+  return `${d}j ${h}h ${m}m ${s}s`; // <-- Format avec secondes
+};
 
 function HermesRunnerPage() {
   const [gameStatus, setGameStatus] = useState('loading');
@@ -295,24 +318,58 @@ function HermesRunnerPage() {
       setShowAuthModal(true);
   };
 
-  const Leaderboard = ({ limit }) => (
-      <div className="leaderboard-section" onMouseDown={e => e.stopPropagation()}>
-          <div className="lb-tabs">
-              <button className={leaderboardTab === 'weekly' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('weekly'); }}><FaCalendarAlt /> SEMAINE</button>
-              <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('alltime'); }}><FaTrophy /> LÉGENDE</button>
-          </div>
-          <ul className="lb-list">
-              {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).slice(0, limit).map((l, i) => (
-                  <li key={i} className={player && player.pseudo === l.pseudo ? 'me' : ''}>
-                      <span className="rank">#{i+1}</span>
-                      <span className="name">{l.pseudo}</span>
-                      <span className="score">{l.best_score || l.max_score}</span>
-                  </li>
-              ))}
-              {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).length === 0 && <li className="empty">Aucun héros...</li>}
-          </ul>
-      </div>
-  );
+  const Leaderboard = ({ limit }) => {
+      // DÉCLARATION DE LA VARIABLE MANQUANTE
+      const [timeLeft, setTimeLeft] = useState(getTimeUntilNextMonday());
+
+      // MISE A JOUR DU TIMER
+      useEffect(() => {
+          const timer = setInterval(() => {
+              setTimeLeft(getTimeUntilNextMonday());
+          }, 1000);
+          return () => clearInterval(timer);
+      }, []);
+
+      return (
+        <div className="leaderboard-section" onMouseDown={e => e.stopPropagation()}>
+            <div className="lb-tabs">
+                <button className={leaderboardTab === 'weekly' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('weekly'); }}>
+                    <FaCalendarAlt /> SEMAINE
+                </button>
+                <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={(e) => { e.stopPropagation(); setLeaderboardTab('alltime'); }}>
+                    <FaTrophy /> LÉGENDE
+                </button>
+            </div>
+
+            {/* COMPTE A REBOURS (qui causait l'erreur sans la variable) */}
+            {leaderboardTab === 'weekly' && (
+                <div className="lb-countdown" style={{ 
+                    fontSize: '0.8rem', 
+                    color: '#fff', 
+                    background: 'rgba(218, 165, 32, 0.2)', 
+                    padding: '2px 0', 
+                    marginBottom: '5px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(218, 165, 32, 0.3)' 
+                }}>
+                    Fin dans : <strong>{timeLeft}</strong>
+                </div>
+            )}
+
+            <ul className="lb-list">
+                {/* On enlève .slice(0, limit) pour afficher tous les scores si demandé */}
+                {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).map((l, i) => (
+                    <li key={i} className={player && player.pseudo === l.pseudo ? 'me' : ''}>
+                        <span className="rank">#{i+1}</span>
+                        <span className="name">{l.pseudo}</span>
+                        <span className="score">{l.best_score || l.max_score}</span>
+                    </li>
+                ))}
+                {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).length === 0 && <li className="empty">Aucun héros...</li>}
+            </ul>
+        </div>
+      );
+  };
 
   const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
   const currentDims = dimensionsRef.current;

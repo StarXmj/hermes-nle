@@ -23,7 +23,7 @@ export function useGameAuth() {
       .from('arcade_players')
       .select('pseudo, best_score')
       .order('best_score', { ascending: false })
-      .limit(50);
+      .limit(1000);
     
     if (allTime) setLeaderboardAllTime(allTime);
 
