@@ -3,102 +3,74 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaMobileAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaRedo, FaFeatherAlt, FaPaw, FaWind, FaSignOutAlt, FaTrophy, FaCalendarAlt, FaHome, FaMobileAlt } from 'react-icons/fa';
 import './HermesRunnerPage.css';
+import { useGameAuth } from '../hooks/useGameAuth';
 
 // --- CONFIGURATION ---
-const GRAVITY = 0.6; 
-const JUMP_FORCE = 13.5; 
+const GRAVITY = 0.55; 
+const JUMP_FORCE = 12; 
 const INITIAL_SPEED = 6; 
-const MAX_SPEED = 20; 
-const MAX_JUMP_HEIGHT = 160; 
-
-// Temps des effets
-const DURATION_FLIGHT = 5000;
-const DURATION_TIGER = 6000;
+const MAX_SPEED = 18; 
+const SPAWN_RATE = 110; 
+const GROUND_HEIGHT = 120;
+const CEILING_HEIGHT = 120;
+const PLAYER_SIZE = 100;
+const DURATION_FLIGHT = 4000;
+const DURATION_TIGER = 5000;
 const DURATION_GRAVITY = 8000;
-const WARNING_TIME = 2000;
+const WARNING_TIME = 1500;
 
 function HermesRunnerPage() {
-  const [gameStatus, setGameStatus] = useState('loading');
+  const [gameStatus, setGameStatus] = useState('loading'); 
   const [assos, setAssos] = useState([]);
   const [score, setScore] = useState(0);
   const [bonusMessage, setBonusMessage] = useState(null);
   const [activeEffects, setActiveEffects] = useState([]);
   
-  // États de jeu
   const [isTiger, setIsTiger] = useState(false);
   const [isFlying, setIsFlying] = useState(false);
   const [gravityInverted, setGravityInverted] = useState(false);
 
-  // --- DIMENSIONS DYNAMIQUES ---
-  // On utilise des états pour que React mette à jour l'affichage si on change d'orientation
-  const [dimensions, setDimensions] = useState({
-    groundHeight: 120,
-    ceilingHeight: 120,
-    playerSize: 100
-  });
+  // AUTH
+  const { player, leaderboardAllTime, leaderboardWeekly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
+  
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); 
+  const [leaderboardTab, setLeaderboardTab] = useState('weekly');
+  
+  const [authForm, setAuthForm] = useState({ email: '', pseudo: '', password: '', newsletter: true });
 
+  const dimensionsRef = useRef({ ground: GROUND_HEIGHT, ceiling: CEILING_HEIGHT, player: PLAYER_SIZE });
   const requestRef = useRef();
   const runnerRef = useRef(null);
   const gameAreaRef = useRef(null);
-  const ceilingYRef = useRef(300); // Plafond jouable (exclut les bandes nuages)
+  const ceilingYRef = useRef(300);
 
   const gameState = useRef({
-    playerY: 0, 
-    velocity: 0, 
-    isJumping: false,
-    currentSpeed: INITIAL_SPEED,
-    isGravityInverted: false, gravityEndTime: 0,
-    isFlying: false, flyEndTime: 0,
-    isTiger: false, tigerEndTime: 0,
-    invincible: false,
-    obstacles: [], 
-    bonuses: [], 
-    frame: 0, 
-    score: 0, 
-    isGameOver: false,
-    spawnTimer: 0 
+    playerY: 0, velocity: 0, isJumping: false, currentSpeed: INITIAL_SPEED,
+    isGravityInverted: false, gravityEndTime: 0, isFlying: false, flyEndTime: 0,
+    isTiger: false, tigerEndTime: 0, invincible: false,
+    obstacles: [], bonuses: [], frame: 0, score: 0, isGameOver: false
   });
-
   const [entities, setEntities] = useState({ obstacles: [], bonuses: [] });
 
-  // GESTION RESPONSIVE ET ORIENTATION
+  // RESPONSIVE
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      // Détection Mobile (Petit écran ou mode paysage smartphone)
-      const isMobile = width < 768 || height < 500;
-
-      // Valeurs réduites pour mobile
-      const newGround = isMobile ? 50 : 120;
-      const newCeiling = isMobile ? 50 : 120;
-      const newPlayerSize = isMobile ? 60 : 100;
-
-      setDimensions({
-        groundHeight: newGround,
-        ceilingHeight: newCeiling,
-        playerSize: newPlayerSize
-      });
-
-      // Calcul de la zone jouable verticale
-      const playableHeight = height - newGround - newCeiling - newPlayerSize + 10;
-      ceilingYRef.current = playableHeight > 80 ? playableHeight : 200;
+    const updateDimensions = () => {
+        const isMobile = window.innerWidth < 768 || window.innerHeight < 500;
+        const ground = isMobile ? 60 : 120;
+        const ceiling = isMobile ? 60 : 120;
+        const pSize = isMobile ? 70 : 100;
+        dimensionsRef.current = { ground, ceiling, player: pSize };
+        ceilingYRef.current = (window.innerHeight - ground - ceiling - pSize + 20) > 80 ? (window.innerHeight - ground - ceiling - pSize + 20) : 200;
     };
-
-    handleResize(); // Init
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
-    
-    return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('orientationchange', handleResize);
-    }
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    window.addEventListener('orientationchange', () => setTimeout(updateDimensions, 200));
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Chargement Assos
   useEffect(() => {
     const loadData = async () => {
       const { data } = await supabase.from('asso').select('*').eq('status', 'publié');
@@ -108,11 +80,11 @@ function HermesRunnerPage() {
     loadData();
   }, []);
 
-  // Saut
+  // JEU
   const handleJump = useCallback(() => {
     if (gameStatus !== 'playing' || gameState.current.isGameOver) return;
     const state = gameState.current;
-    if (state.isFlying) return;
+    if (state.isFlying) return; 
 
     const currentCeiling = ceilingYRef.current;
     const onGround = !state.isGravityInverted && state.playerY <= 5;
@@ -125,282 +97,118 @@ function HermesRunnerPage() {
   }, [gameStatus]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') { 
-          e.preventDefault(); 
-          handleJump(); 
-      }
-    };
+    const handleKeyDown = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); handleJump(); } };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleJump]);
 
-  // --- BOUCLE DE JEU ---
   const updateGame = () => {
     if (gameState.current.isGameOver) return;
     const state = gameState.current;
     const now = Date.now();
     const currentCeiling = ceilingYRef.current;
+    const dims = dimensionsRef.current;
 
     state.frame++;
-    
-    // Vitesse Crescendo Doux
-    const targetSpeed = INITIAL_SPEED + (state.score / 300);
-    state.currentSpeed = Math.min(targetSpeed, MAX_SPEED);
+    state.currentSpeed = Math.min(INITIAL_SPEED + (state.score / 300), MAX_SPEED);
     state.score += (state.currentSpeed / 50);
     setScore(Math.floor(state.score));
 
-    // --- ETATS ---
-    if (state.gravityEndTime > now) {
-        if (!state.isGravityInverted) { 
-            state.isGravityInverted = true; 
-            setGravityInverted(true); 
-            if (state.playerY < 50) state.velocity = 5; 
-        }
-    } else {
-        if (state.isGravityInverted) { 
-            state.isGravityInverted = false; 
-            setGravityInverted(false); 
-            state.isJumping = true; 
-        }
-    }
+    if (state.gravityEndTime > now) { if (!state.isGravityInverted) { state.isGravityInverted = true; setGravityInverted(true); } }
+    else { if (state.isGravityInverted) { state.isGravityInverted = false; setGravityInverted(false); state.isJumping = true; } }
 
     if (state.flyEndTime > now) {
-        const timeLeft = state.flyEndTime - now;
-        if (timeLeft > 1000) {
-            state.isFlying = true; setIsFlying(true);
-            const flightHeight = state.isGravityInverted ? 30 : currentCeiling - 30;
-            state.playerY += (flightHeight - state.playerY) * 0.1;
-            state.velocity = 0;
-        } else {
-            state.isFlying = false; setIsFlying(false); state.invincible = true; 
-        }
-    } else {
-        setIsFlying(false); if (!state.isTiger) state.invincible = false;
-    }
+        if (state.flyEndTime - now > 1000) {
+            state.isFlying = true; setIsFlying(true); state.invincible = true;
+            state.playerY += ((state.isGravityInverted ? 40 : currentCeiling - 40) - state.playerY) * 0.1; state.velocity = 0;
+        } else { state.isFlying = false; setIsFlying(false); state.invincible = true; }
+    } else { setIsFlying(false); if (!state.isTiger && now > state.flyEndTime + 1000) state.invincible = false; }
 
-    if (state.tigerEndTime > now) {
-        state.isTiger = true; setIsTiger(true); state.invincible = true;
-    } else {
-        state.isTiger = false; setIsTiger(false);
-        if (state.flyEndTime < now - 1000) state.invincible = false;
-    }
+    if (state.tigerEndTime > now) { state.isTiger = true; setIsTiger(true); state.invincible = true; }
+    else { state.isTiger = false; setIsTiger(false); if (state.flyEndTime < now) state.invincible = false; }
 
-    // --- PHYSIQUE ---
     if (!state.isFlying) {
         state.playerY += state.velocity;
-        if (state.isGravityInverted) state.velocity += GRAVITY; 
-        else state.velocity -= GRAVITY;
-
-        if (state.playerY <= 0) {
-            state.playerY = 0;
-            if (!state.isGravityInverted) { state.velocity = 0; state.isJumping = false; }
-        }
-        if (state.playerY >= currentCeiling) {
-            state.playerY = currentCeiling;
-            if (state.isGravityInverted) { state.velocity = 0; state.isJumping = false; }
-        }
+        if (state.isGravityInverted) state.velocity += GRAVITY; else state.velocity -= GRAVITY;
+        if (state.playerY <= 0) { state.playerY = 0; if (!state.isGravityInverted) { state.velocity = 0; state.isJumping = false; } }
+        if (state.playerY >= currentCeiling) { state.playerY = currentCeiling; if (state.isGravityInverted) { state.velocity = 0; state.isJumping = false; } }
     }
 
-    // --- DOM (Position Joueur) ---
     if (runnerRef.current) {
-        // Utilise la hauteur dynamique du sol
-        runnerRef.current.style.bottom = `${dimensions.groundHeight + state.playerY}px`;
-        
-        const rotation = state.isGravityInverted ? 'scaleY(-1)' : 'scaleY(1)';
-        runnerRef.current.style.transform = rotation;
-        
-        if (state.isJumping && !state.isFlying) runnerRef.current.classList.add('jumping');
-        else runnerRef.current.classList.remove('jumping');
+        runnerRef.current.style.bottom = `${dims.ground + state.playerY}px`;
+        runnerRef.current.style.transform = state.isGravityInverted ? 'scaleY(-1)' : 'scaleY(1)';
+        if (state.isJumping && !state.isFlying) runnerRef.current.classList.add('jumping'); else runnerRef.current.classList.remove('jumping');
     }
 
-    // --- SPAWN ---
-    state.spawnTimer -= state.currentSpeed;
-    if (state.spawnTimer <= 0) {
-        spawnEntity(state, currentCeiling);
-        const minGap = 450 + (state.currentSpeed * 8); 
-        const randomGap = Math.random() * 300;
-        state.spawnTimer = minGap + randomGap;
-    }
+    if (state.frame % Math.max(50, Math.floor(SPAWN_RATE - (state.currentSpeed * 1.5))) === 0) spawnEntity(state, currentCeiling, dims);
 
-    // --- DÉPLACEMENT ---
-    const moveFactor = state.currentSpeed / 10;
-    state.obstacles.forEach(obs => obs.x -= moveFactor);
-    state.obstacles = state.obstacles.filter(o => o.x > -20);
-    state.bonuses.forEach(b => b.x -= moveFactor);
-    state.bonuses = state.bonuses.filter(b => b.x > -20 && !b.collected);
+    const move = state.currentSpeed / 10;
+    state.obstacles.forEach(o => o.x -= move); state.obstacles = state.obstacles.filter(o => o.x > -20);
+    state.bonuses.forEach(b => b.x -= move); state.bonuses = state.bonuses.filter(b => b.x > -20 && !b.collected);
 
-    checkCollisions(state);
+    checkCollisions(state, dims);
     updateHUD(state, now);
-
     setEntities({ obstacles: state.obstacles, bonuses: state.bonuses });
     requestRef.current = requestAnimationFrame(updateGame);
   };
 
-  const spawnEntity = (state, ceilingY) => {
+  const spawnEntity = (state, ceilingY, dims) => {
       const rand = Math.random();
       const isOnCeiling = state.isGravityInverted;
-      
-      // On adapte la taille des obstacles si on est sur mobile
-      // (On détecte mobile via la hauteur du sol, astuce simple)
-      const isMobile = dimensions.groundHeight < 80;
-
-      // 1. BONUS (35%)
+      if (rand > 0.94 && !isOnCeiling && !state.obstacles.some(o => o.type==='vortex')) {
+          state.obstacles.push({ id: Date.now(), x: 100, type: 'vortex', width: 80, height: 1000 }); return;
+      }
       if (rand > 0.65) {
-          const rBonus = Math.random();
-          let type = 'asso';
-          if (rBonus > 0.85) type = 'tiger'; 
-          else if (rBonus > 0.70) type = 'fly';
-
-          let assoData = null;
-          if (type === 'asso' && assos.length > 0) assoData = assos[Math.floor(Math.random() * assos.length)];
-
-          // Hauteur adaptative
-          const randomJumpHeight = 20 + Math.random() * (MAX_JUMP_HEIGHT - 60); 
-          const yPos = isOnCeiling ? ceilingY - randomJumpHeight : randomJumpHeight;
-
-          state.bonuses.push({ id: Date.now() + Math.random(), x: 110, y: yPos, type: type, asso: assoData, collected: false });
-          return;
+          const type = Math.random() > 0.85 ? 'tiger' : (Math.random() > 0.7 ? 'fly' : 'asso');
+          const assoData = type === 'asso' && assos.length ? assos[Math.floor(Math.random() * assos.length)] : null;
+          state.bonuses.push({ id: Date.now()+Math.random(), x: 100, y: isOnCeiling ? ceilingY-50 : 50, type, asso: assoData, collected: false }); return;
       }
-
-      // 2. OBSTACLE
-      if (rand < 0.05 && !state.isGravityInverted && state.gravityEndTime < Date.now()) {
-          state.obstacles.push({ id: Date.now(), x: 110, type: 'vortex', width: 80, height: 1000 });
-          return;
-      }
-
-      const types = ['small', 'medium', 'tall'];
-      const typeRand = Math.random();
-      let type = 'small';
-      if (typeRand > 0.6) type = 'medium';
-      if (typeRand > 0.9) type = 'tall';
-
-      let height = 50;
-      if (type === 'medium') height = isMobile ? 70 : 90; 
-      if (type === 'tall') height = isMobile ? 90 : 110;  
-
-      // Largeur réduite sur mobile
-      const width = isMobile ? 50 : 70;
-
-      state.obstacles.push({
-          id: Date.now(), x: 110, 
-          y: isOnCeiling ? ceilingY : 0, 
-          isOnCeiling: isOnCeiling,
-          type: type, width: width, height: height
-      });
+      let h = 60; const rH = Math.random(); if (rH > 0.6) h = 90; if (rH > 0.9 && !isOnCeiling) h = 120;
+      state.obstacles.push({ id: Date.now(), x: 100, y: isOnCeiling ? ceilingY : 0, isOnCeiling, type: h===120?'tall':(h===90?'medium':'small'), width: 60, height: h });
   };
 
-  const updateHUD = (state, now) => {
-      const effects = [];
-      if (state.flyEndTime > now) {
-          const timeLeft = state.flyEndTime - now;
-          effects.push({ id: 'fly', label: 'VOL', type: 'fly', icon: <FaFeatherAlt />, warning: timeLeft < 1000, timer: (timeLeft / 1000).toFixed(1) });
+  const checkCollisions = (state, dims) => {
+      if (state.isFlying || state.isTiger || state.invincible) {
+          state.bonuses.forEach(b => { if (b.x < 20 && b.x > 5) applyBonus(b); });
+          if (state.isTiger) state.obstacles.forEach(o => { if (o.x < 15 && o.x > 5) { o.x = -100; setScore(s=>s+50); } });
+          return;
       }
-      if (state.tigerEndTime > now) {
-          const timeLeft = state.tigerEndTime - now;
-          effects.push({ id: 'tiger', label: 'TIGRE', type: 'tiger', icon: <FaPaw />, warning: timeLeft < WARNING_TIME, timer: (timeLeft / 1000).toFixed(1) });
-      }
-      if (state.gravityEndTime > now) {
-          const timeLeft = state.gravityEndTime - now;
-          effects.push({ id: 'gravity', label: 'VORTEX', type: 'gravity', icon: <FaWind />, warning: timeLeft < WARNING_TIME, timer: (timeLeft / 1000).toFixed(1) });
-      }
-      setActiveEffects(effects);
-  };
-
-  const checkCollisions = (state) => {
-    // Hitbox adaptative
-    const pLeft = 12; 
-    const pRight = 14; 
-    
-    const pBottom = state.playerY + 15; 
-    const pTop = state.playerY + dimensions.playerSize - 15; // Utilise la taille dynamique
-
-    state.obstacles.forEach(obs => {
-      const obsLeft = obs.x + 1; 
-      const obsRight = obs.x + 3; // Hitbox obstacle fine
-
-      if (obsLeft < pRight && obsRight > pLeft) {
-        if (obs.type === 'vortex') {
-            if (!obs.triggered) { obs.triggered = true; applyTerrainEffect(); }
-            return; 
-        }
-
-        let collision = false;
-        if (obs.isOnCeiling) {
-            const obsBottomLimit = obs.y - obs.height + 5; 
-            if (pTop > obsBottomLimit) collision = true;
-        } else {
-            const obsTopLimit = obs.height - 5; 
-            if (pBottom < obsTopLimit) collision = true;
-        }
-
-        if (collision) {
-          if (state.invincible || state.isTiger) {
-            obs.x = -100; setScore(s => s + 50); showMessage("BOUM !", "#fff");
-          } else {
-            gameOver();
+      const m = 20; const pL=10, pR=14, pB=state.playerY+m, pT=state.playerY+dims.player-m;
+      state.obstacles.forEach(o => {
+          if (pR > o.x+1 && pL < o.x+4) {
+              if (o.type === 'vortex') { if (!o.triggered) { o.triggered = true; applyTerrainEffect(); } return; }
+              let col = false;
+              if (o.isOnCeiling) { if (pT > (o.y + dims.player - o.height + 10)) col = true; }
+              else { if (pB < (o.y + o.height - 10)) col = true; }
+              if (col) gameOver();
           }
-        }
-      }
-    });
-
-    state.bonuses.forEach(bonus => {
-      if (bonus.x < 18 && bonus.x > 8) {
-        const bY = bonus.y; 
-        const playerCenter = state.playerY + (dimensions.playerSize/2);
-        const bonusCenter = bY + (dimensions.playerSize < 80 ? 25 : 35); // Centre du bonus approx
-        if (Math.abs(playerCenter - bonusCenter) < 60) applyBonus(bonus);
-      }
-    });
+      });
+      state.bonuses.forEach(b => { if (b.x < 20 && b.x > 5 && Math.abs((state.playerY+dims.player/2) - (b.y + (dims.player*0.7)/2)) < dims.player) applyBonus(b); });
   };
 
-  const applyTerrainEffect = () => {
-      const now = Date.now();
-      gameState.current.gravityEndTime = now + DURATION_GRAVITY;
-      showMessage("VORTEX DU CHAOS !", "#8e44ad");
+  const applyTerrainEffect = () => { gameState.current.gravityEndTime = Date.now() + DURATION_GRAVITY; if (!gameState.current.isGravityInverted) gameState.current.velocity = 5; showMessage("VORTEX DU CHAOS !", "#8e44ad"); };
+  const applyBonus = (b) => {
+      b.collected = true; const now = Date.now();
+      if (b.type === 'asso') { gameState.current.score += 100; showMessage(`+100 ${b.asso?.nom || 'PTS'}`, b.asso?.color || '#FFD700'); }
+      if (b.type === 'fly') { gameState.current.flyEndTime = now + DURATION_FLIGHT; showMessage("VOL HERMÈS !", "#3498db"); }
+      if (b.type === 'tiger') { gameState.current.tigerEndTime = now + DURATION_TIGER; showMessage("MODE TIGRE !", "#e74c3c"); }
   };
-
-  const applyBonus = (bonus) => {
-    bonus.collected = true;
-    const state = gameState.current;
-    const now = Date.now();
-
-    switch (bonus.type) {
-      case 'asso':
-        state.score += 10; 
-        showMessage(`+10 ${bonus.asso ? bonus.asso.nom : 'POINTS'}`, bonus.asso ? bonus.asso.color : '#FFD700');
-        break;
-      case 'fly':
-        state.flyEndTime = now + DURATION_FLIGHT;
-        showMessage("VOL HERMÈS !", "#3498db");
-        break;
-      case 'tiger':
-        state.tigerEndTime = now + DURATION_TIGER;
-        showMessage("MODE TIGRE !", "#e74c3c");
-        break;
-      default: break;
-    }
-  };
-
-  const showMessage = (text, color) => {
-    setBonusMessage({ text, color });
-    setTimeout(() => setBonusMessage(null), 4000);
+  const showMessage = (text, color) => { setBonusMessage({ text, color }); setTimeout(() => setBonusMessage(null), 2500); };
+  
+  const updateHUD = (state, now) => {
+      const e = [];
+      if (state.flyEndTime > now) e.push({ id: 'fly', icon: <FaFeatherAlt />, timer: ((state.flyEndTime-now)/1000).toFixed(1), type: 'fly' });
+      if (state.tigerEndTime > now) e.push({ id: 'tiger', icon: <FaPaw />, timer: ((state.tigerEndTime-now)/1000).toFixed(1), type: 'tiger' });
+      if (state.gravityEndTime > now) e.push({ id: 'grav', icon: <FaWind />, timer: ((state.gravityEndTime-now)/1000).toFixed(1), type: 'gravity' });
+      setActiveEffects(e);
   };
 
   const startGame = () => {
     gameState.current = {
-      playerY: 0, velocity: 0, isJumping: false,
-      currentSpeed: INITIAL_SPEED, obstacles: [], bonuses: [],
-      frame: 0, score: 0, isGameOver: false,
-      isGravityInverted: false, gravityEndTime: 0,
-      isFlying: false, flyEndTime: 0,
-      isTiger: false, tigerEndTime: 0,
-      invincible: false,
-      spawnTimer: 0
+      playerY: 0, velocity: 0, isJumping: false, currentSpeed: INITIAL_SPEED, obstacles: [], bonuses: [], frame: 0, score: 0, isGameOver: false,
+      isGravityInverted: false, gravityEndTime: 0, isFlying: false, flyEndTime: 0, isTiger: false, tigerEndTime: 0, invincible: false
     };
-    setScore(0);
-    setIsTiger(false); setIsFlying(false); setGravityInverted(false);
-    setEntities({ obstacles: [], bonuses: [] });
+    setScore(0); setIsTiger(false); setIsFlying(false); setGravityInverted(false); setEntities({ obstacles: [], bonuses: [] });
     setGameStatus('playing');
     requestRef.current = requestAnimationFrame(updateGame);
   };
@@ -408,139 +216,235 @@ function HermesRunnerPage() {
   const gameOver = () => {
     gameState.current.isGameOver = true;
     cancelAnimationFrame(requestRef.current);
+    if (player) saveScore(Math.floor(gameState.current.score));
     setGameStatus('gameover');
   };
 
+  const handleAuthSubmit = async (e) => {
+      e.preventDefault();
+      if (authMode === 'register') {
+          const res = await register(authForm.email, authForm.pseudo, authForm.password, authForm.newsletter);
+          if (res.success) {
+              setShowAuthModal(false);
+              if (gameStatus === 'gameover' && score > 0) saveScore(score);
+          }
+          return;
+      }
+      if (authMode === 'login') {
+          const res = await login(authForm.email, authForm.password);
+          if (res.success) {
+              setShowAuthModal(false);
+              if (gameStatus === 'gameover' && score > 0) saveScore(score);
+          }
+      }
+  };
+
   const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
+  // --- COMPOSANT LEADERBOARD (Réutilisable) ---
+  const Leaderboard = ({ limit }) => (
+      <div className="leaderboard-section">
+          <div className="lb-tabs">
+              <button className={leaderboardTab === 'weekly' ? 'active' : ''} onClick={() => setLeaderboardTab('weekly')}><FaCalendarAlt /> SEMAINE</button>
+              <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={() => setLeaderboardTab('alltime')}><FaTrophy /> LÉGENDE</button>
+          </div>
+          <ul className="lb-list">
+              {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).slice(0, limit).map((l, i) => (
+                  <li key={i} className={player && player.pseudo === l.pseudo ? 'me' : ''}>
+                      <span className="rank">#{i+1}</span>
+                      <span className="name">{l.pseudo}</span>
+                      <span className="score">{l.best_score || l.max_score}</span>
+                  </li>
+              ))}
+              {(leaderboardTab === 'weekly' ? leaderboardWeekly : leaderboardAllTime).length === 0 && <li className="empty">Aucun héros...</li>}
+          </ul>
+      </div>
+  );
+
+  // --- RENDU ---
+  
+  // 1. INTRO
+  if (gameStatus === 'intro') {
+    return (
+      <div className="greek-overlay">
+        <Helmet><title>Hermes Quest</title></Helmet>
+        {/* BOUTON RETOUR SITE */}
+        <Link to="/" className="greek-back-btn"><FaHome /> Retour Site</Link>
+        
+        <div className="intro-screen">
+          <div className="intro-content">
+            <h1 className="greek-title-large">HERMES QUEST</h1>
+            
+            {player ? (
+                <div className="player-welcome">
+                    <p>Bienvenue, héros <strong>{player.pseudo}</strong></p>
+                    <p className="best-score">Record : {player.best_score}</p>
+                    <button className="greek-start-button" onClick={startGame}>COURIR</button>
+                    <button className="greek-text-btn" onClick={logout}><FaSignOutAlt /> Déconnexion</button>
+                </div>
+            ) : (
+                <div className="intro-actions">
+                    <button className="greek-start-button" onClick={startGame}>COURIR (Invité)</button>
+                    <button className="greek-button secondary" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>GRAVER SON NOM</button>
+                </div>
+            )}
+
+            {/* LEADERBOARD SUR LE MENU PRINCIPAL (INTRO) - Scrollable */}
+            <div className="intro-lb-container">
+                <Leaderboard limit={50} />
+            </div>
+          </div>
+        </div>
+        
+        {/* MODAL AUTH */}
+        {showAuthModal && (
+            <div className="auth-modal-overlay">
+                <div className="auth-modal">
+                    <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
+                    <form onSubmit={handleAuthSubmit}>
+                        {authMode === 'register' && (
+                            <input type="text" placeholder="Pseudo Héroïque" required value={authForm.pseudo} onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} />
+                        )}
+                        <input type="email" placeholder="Email" required value={authForm.email} onChange={e=>setAuthForm({...authForm, email:e.target.value})} />
+                        <input type="password" placeholder="Mot de passe secret" required value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})} />
+                        
+                        {authMode === 'register' && (
+                            <div className="newsletter-optin">
+                                <input type="checkbox" id="newsOpt" checked={authForm.newsletter} onChange={e=>setAuthForm({...authForm, newsletter:e.target.checked})} />
+                                <label htmlFor="newsOpt">Je m'inscris à la newsletter</label>
+                            </div>
+                        )}
+
+                        {authError && <p className="error-text">{authError}</p>}
+                        
+                        <div className="modal-buttons">
+                            <button type="submit" className="greek-button" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'S\'INSCRIRE')}</button>
+                            <button type="button" className="greek-text-btn" onClick={() => setShowAuthModal(false)}>Annuler</button>
+                        </div>
+                        <p className="switch-auth" onClick={() => setAuthMode(authMode==='login'?'register':'login')}>
+                            {authMode === 'login' ? "Pas de compte ? Créer une légende" : "Déjà un compte ? Connexion"}
+                        </p>
+                    </form>
+                </div>
+            </div>
+        )}
+      </div>
+    );
+  }
+
+  // 2. JEU ACTIF
+  const currentDims = dimensionsRef.current; // Variable définie ICI pour être sûr
 
   return (
     <>
       <div className="orientation-lock">
         <FaMobileAlt className="rotate-icon" />
         <h2>Tournez votre téléphone</h2>
-        <p>Hermes Quest se joue uniquement à l'horizontale.</p>
+        <p>L'aventure se vit à l'horizontale !</p>
       </div>
 
-      <div 
-          className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} 
-          onMouseDown={handleJump} 
-          onTouchStart={handleJump}
-      >
-        <Helmet><title>Hermes Quest</title></Helmet>
+      <div className={`greek-runner-container ${gravityInverted ? 'gravity-flip' : ''}`} onMouseDown={handleJump} onTouchStart={handleJump}>
+        <Helmet><title>Vers l'Olympe !</title></Helmet>
         
-        {/* INTRO */}
-        {gameStatus === 'intro' && (
-          <div className="greek-overlay">
-            <Link to="/" className="greek-back-btn"><FaArrowLeft /> Olympe</Link>
-            <div className="intro-screen">
-              <div className="waterfall-container">
-                {[0, 1, 2, 3].map((colIndex) => (
-                  <div key={colIndex} className={`waterfall-column col-${colIndex}`}>
-                    {[...shuffleArray(assos), ...shuffleArray(assos)].map((asso, i) => (
-                      <div key={i} className="mini-card" style={{ borderColor: asso.color || '#DAA520' }}>
-                        {asso.logo ? <img src={asso.logo} alt="" /> : <span style={{color: asso.color}}>{asso.nom ? asso.nom[0] : '?'}</span>}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-              <div className="intro-content">
-                <h1 className="greek-title-large">HERMES QUEST</h1>
-                <p className="intro-subtitle">Vitesse Divine & Sauts Légendaires</p>
-                <p style={{color:'#fff', marginBottom:'1.5rem', fontSize:'0.8rem', opacity:0.9}}>
-                    Tapez pour sauter • Évitez les colonnes
-                </p>
-                <button className="greek-start-button" onClick={startGame}><span className="text">COURIR</span></button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* HUD EN JEU */}
         {gameStatus === 'playing' && (
             <>
-                <Link to="/" className="greek-back-btn" style={{top: '15px', left: '15px', padding: '6px 12px'}}><FaArrowLeft /></Link>
                 <div className="greek-hud-score">
-                    <span className="score-label">SCORE</span>
+                    <span className="score-label">GLOIRE</span>
                     <span className="score-value">{score}</span>
                 </div>
                 <div className="effects-hud">
-                    {activeEffects.map(effect => (
-                        <div key={effect.id} className={`effect-badge ${effect.type} ${effect.warning ? 'warning' : ''}`}>
-                            <div className="effect-icon">{effect.icon}</div>
-                            <div className="effect-info">
-                                {effect.timer && <span className="effect-timer">{effect.timer}s</span>}
-                            </div>
+                    {activeEffects.map(e => (
+                        <div key={e.id} className={`effect-badge ${e.type}`}>
+                            <div className="effect-icon">{e.icon}</div>
+                            <div className="effect-info"><span className="effect-timer">{e.timer}s</span></div>
                         </div>
                     ))}
                 </div>
             </>
         )}
 
-        {bonusMessage && (
-          <div className="bonus-popup" style={{ color: bonusMessage.color || '#DAA520' }}>
-            {bonusMessage.text}
-          </div>
-        )}
+        {bonusMessage && <div className="bonus-popup" style={{ color: bonusMessage.color }}>{bonusMessage.text}</div>}
 
         <div className="game-world" ref={gameAreaRef}>
-          {/* Les hauteurs sont gérées par CSS Media Queries, ici on met juste les divs */}
-          <div className="clouds-ground"></div>
-          <div className="clouds-ceiling"></div>
-
-          <div 
-              className={`player ${isTiger ? 'tiger-mode' : ''} ${isFlying ? 'flying-mode' : ''} ${gravityInverted ? 'gravity-inverted' : ''}`} 
-              ref={runnerRef}
-          >
+          <div className="clouds-ground" style={{height: currentDims.ground}}></div>
+          <div className="clouds-ceiling" style={{height: currentDims.ceiling}}></div>
+          
+          <div className={`player ${isTiger?'tiger-mode':''} ${isFlying?'flying-mode':''} ${gravityInverted?'gravity-inverted':''}`} ref={runnerRef} style={{ width: currentDims.player, height: currentDims.player }}>
               <div className="player-sprite"></div>
-              {isTiger && <div className="tiger-aura"></div>}
-              {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
+              {isTiger && <div className="tiger-aura"></div>} {isFlying && <div className="wings-effect"><FaFeatherAlt /></div>}
           </div>
 
-          {entities.obstacles.map(obs => (
-            <div 
-              key={obs.id} 
-              className={`obstacle ${obs.type} ${obs.isOnCeiling ? 'on-ceiling' : ''}`} 
-              style={{ 
-                  left: `${obs.x}%`, 
-                  // Utilisation des dimensions dynamiques
-                  bottom: obs.type === 'vortex' ? 0 : (obs.isOnCeiling ? 'auto' : `${dimensions.groundHeight}px`),
-                  top: obs.type === 'vortex' ? 0 : (obs.isOnCeiling ? `${dimensions.ceilingHeight}px` : 'auto'),
-                  width: `${obs.width}px`,
-                  height: obs.type === 'vortex' ? '100%' : `${obs.height}px`
-              }}
-            >
-              {obs.type === 'vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
+          {entities.obstacles.map(o => (
+            <div key={o.id} className={`obstacle ${o.type} ${o.isOnCeiling?'on-ceiling':''}`} style={{ left: `${o.x}%`, bottom: o.type==='vortex'?0:(o.isOnCeiling?'auto':`${currentDims.ground}px`), top: o.type==='vortex'?0:(o.isOnCeiling?`${currentDims.ceiling}px`:'auto'), width:`${o.width}px`, height: o.type==='vortex'?'100%':`${o.height}px` }}>
+              {o.type==='vortex' ? <div className="vortex-column"></div> : <div className="greek-column"></div>}
             </div>
           ))}
-
-          {entities.bonuses.map(bonus => (
-            <div 
-              key={bonus.id} 
-              className={`bonus-item ${bonus.type}`}
-              style={{ 
-                  left: `${bonus.x}%`, 
-                  bottom: `${dimensions.groundHeight + bonus.y}px`
-              }}
-            >
-              {bonus.type === 'asso' && bonus.asso && <img src={bonus.asso.logo} alt="" style={{borderColor: bonus.asso.color}} />}
-              {bonus.type === 'fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
-              {bonus.type === 'tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
+          {entities.bonuses.map(b => (
+            <div key={b.id} className={`bonus-item ${b.type}`} style={{ left: `${b.x}%`, bottom: `${currentDims.ground + b.y}px`, width: currentDims.player*0.7, height: currentDims.player*0.7 }}>
+              {b.type==='asso' && <img src={b.asso?.logo} style={{borderColor:b.asso?.color}} alt=""/>}
+              {b.type==='fly' && <div className="powerup-icon fly"><FaFeatherAlt /></div>}
+              {b.type==='tiger' && <div className="powerup-icon tiger"><FaPaw /></div>}
             </div>
           ))}
         </div>
 
+        {/* 3. GAME OVER */}
         {gameStatus === 'gameover' && (
           <div className="gameover-overlay animate-in">
-            <h1 className="greek-text-red">ÉCHEC</h1>
+            <h1 className="greek-text-red">CHUTE D'ICARE</h1>
             <div className="final-score-box">
-              <p>Score Final</p>
+              <p>Gloire Acquise</p>
               <h2>{score}</h2>
+              {player && <p className="personal-best">Record : {player.best_score}</p>}
             </div>
+
+            {!player && (
+                <div className="guest-save-prompt">
+                    <p>Inscrivez-vous pour sauver ce score !</p>
+                    <button className="greek-button small" onClick={() => { setAuthMode('register'); setShowAuthModal(true); }}>GRAVER MON NOM</button>
+                </div>
+            )}
+
+            {/* LEADERBOARD GAME OVER (Limité à 10) */}
+            <Leaderboard limit={10} />
+
             <div className="gameover-actions">
-              <button className="greek-button" onClick={startGame}><FaRedo /> Rejouer</button>
-              <Link to="/" className="greek-button secondary"><FaArrowLeft /> Quitter</Link>
+              <button className="greek-button" onClick={startGame}><FaRedo /> Réessayer</button>
+              <button className="greek-button secondary" onClick={() => setGameStatus('intro')}><FaArrowLeft /> Menu Principal</button>
             </div>
+
+            {/* MODAL AUTH (Réutilisation) */}
+            {showAuthModal && (
+                <div className="auth-modal-overlay">
+                    <div className="auth-modal">
+                        <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
+                        <form onSubmit={handleAuthSubmit}>
+                            {authMode === 'register' && (
+                                <input type="text" placeholder="Pseudo Héroïque" required value={authForm.pseudo} onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} />
+                            )}
+                            <input type="email" placeholder="Email" required value={authForm.email} onChange={e=>setAuthForm({...authForm, email:e.target.value})} />
+                            <input type="password" placeholder="Mot de passe" required value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})} />
+                            
+                            {authMode === 'register' && (
+                                <div className="newsletter-optin">
+                                    <input type="checkbox" id="newsOpt" checked={authForm.newsletter} onChange={e=>setAuthForm({...authForm, newsletter:e.target.checked})} />
+                                    <label htmlFor="newsOpt">Je m'inscris à la newsletter</label>
+                                </div>
+                            )}
+
+                            {authError && <p className="error-text">{authError}</p>}
+                            
+                            <div className="modal-buttons">
+                                <button type="submit" className="greek-button" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'S\'INSCRIRE')}</button>
+                                <button type="button" className="greek-text-btn" onClick={() => setShowAuthModal(false)}>Annuler</button>
+                            </div>
+                            <p className="switch-auth" onClick={() => setAuthMode(authMode==='login'?'register':'login')}>
+                                {authMode === 'login' ? "Pas de compte ? Créer une légende" : "Déjà un compte ? Connexion"}
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            )}
           </div>
         )}
       </div>

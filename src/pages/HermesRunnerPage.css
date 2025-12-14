@@ -3,56 +3,21 @@
 /* =========================================
    1. UNIVERS & STRUCTURE GLOBALE
    ========================================= */
-/* src/pages/HermesRunnerPage.css */
-
-/* =========================================
-   1. UNIVERS & STRUCTURE GLOBALE
-   ========================================= */
 .greek-runner-container, .greek-overlay {
     position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100vw; 
-    
-    /* CORRECTION ICI : 100dvh s'adapte à la barre d'adresse mobile */
-    height: 100vh; 
-    height: 100dvh; 
-    
+    top: 0; left: 0; width: 100vw; 
+    height: 100dvh; /* Mobile friendly */
     z-index: 9999;
     background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
     overflow: hidden;
     font-family: 'Cinzel', 'Georgia', serif;
     user-select: none;
     cursor: pointer;
-    
-    /* Optimisation Mobile : Empêche scroll/zoom */
     touch-action: none; 
     -webkit-tap-highlight-color: transparent;
 }
 
-/* --- ÉCRAN DE VERROUILLAGE (Portrait) --- */
-.orientation-lock {
-    display: none;
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #003366;
-    z-index: 100000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    text-align: center;
-    padding: 2rem;
-}
-.rotate-icon { font-size: 4rem; margin-bottom: 1rem; animation: rotatePhone 2s infinite ease-in-out; }
-
-/* Affichage uniquement sur mobile en portrait */
-@media only screen and (orientation: portrait) and (max-width: 900px) {
-    .orientation-lock { display: flex; }
-}
-
-/* =========================================
-   2. HUD & UI (Score, Boutons, Effets)
-   ========================================= */
+/* --- BOUTON RETOUR --- */
 .greek-back-btn {
     position: absolute; top: 20px; left: 20px; z-index: 200;
     color: #fff; text-decoration: none; font-weight: bold;
@@ -62,8 +27,8 @@
     transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
     font-size: 0.8rem;
 }
-.greek-back-btn:hover { background: #fff; color: #0056b3; }
 
+/* --- HUD (Score à droite) --- */
 .greek-hud-score {
     position: absolute; top: 20px; right: 20px;
     background: rgba(255, 255, 255, 0.9);
@@ -75,18 +40,36 @@
 .score-label { font-size: 0.6rem; color: #DAA520; font-weight: 800; letter-spacing: 2px; }
 .score-value { font-size: 1.5rem; color: #333; font-family: 'Georgia', serif; font-weight: 900; line-height: 1; }
 
-.effects-hud { position: absolute; top: 70px; left: 20px; display: flex; flex-direction: column; gap: 5px; z-index: 100; }
-.effect-badge { 
-    background: rgba(255,255,255,0.9); border: 2px solid #DAA520; padding: 4px 8px; 
-    border-radius: 6px; display: flex; align-items: center; gap: 6px; 
-    color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 0.7rem; 
+/* --- HUD EFFETS (Centré en haut) --- */
+.effects-hud { 
+    position: absolute; 
+    top: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: row; gap: 15px; z-index: 100; 
 }
-.effect-icon { font-size: 0.9rem; color: #DAA520; }
-.effect-timer { font-size: 1rem; font-weight: bold; color: #0056b3; }
-.effect-badge.warning { animation: panicFlash 0.3s infinite alternate; border-color: #e74c3c; }
+
+.effect-badge { 
+    background: rgba(255,255,255,0.95); 
+    border: 3px solid #DAA520; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    display: flex; align-items: center; gap: 8px; 
+    color: #333; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+    font-size: 0.9rem; font-weight: bold; min-width: 60px; justify-content: center;
+}
+
+.effect-icon { font-size: 1.2rem; }
+.effect-timer { color: #003366; font-family: monospace; font-size: 1.1rem;}
+.effect-badge.warning { animation: panicFlash 0.3s infinite alternate; border-color: #e74c3c; color: #e74c3c; }
+
+/* Couleurs badges */
+.effect-badge.fly { border-color: #3498db; color: #3498db; } .effect-badge.fly .effect-icon { color: #3498db; }
+.effect-badge.tiger { border-color: #e74c3c; color: #e74c3c; } .effect-badge.tiger .effect-icon { color: #e74c3c; }
+.effect-badge.gravity { border-color: #9b59b6; color: #9b59b6; } .effect-badge.gravity .effect-icon { color: #9b59b6; }
+
 
 /* =========================================
-   3. ÉLÉMENTS DE JEU (Monde, Joueur, Obstacles)
+   2. ÉLÉMENTS DE JEU
    ========================================= */
 .game-world { position: absolute; width: 100%; height: 100%; }
 
@@ -104,7 +87,6 @@
 /* --- JOUEUR --- */
 .player {
     position: absolute; left: 10%; 
-    width: 100px; height: 100px; 
     z-index: 20; will-change: transform; 
     display: flex; align-items: center; justify-content: center;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -115,9 +97,13 @@
     width: 100%; height: 100%;
     background-image: url('/images/hermes-run.gif');
     background-size: contain; background-repeat: no-repeat; background-position: center;
-    transform: scaleX(-1); filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+    transform: scaleX(-1); 
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+    transition: background-image 0.1s;
 }
 .player.jumping .player-sprite { background-image: url('/images/hermes-jump.gif'); }
+
+/* Modes */
 .player.tiger-mode .player-sprite { background-image: url('/images/hermes-tiger-run.gif'); filter: none; }
 .player.tiger-mode.jumping .player-sprite { background-image: url('/images/hermes-tiger-jump.gif'); }
 .player.flying-mode .player-sprite { background-image: url('/images/hermes-fly.gif'); }
@@ -147,8 +133,7 @@
 
 /* --- BONUS --- */
 .bonus-item { 
-    position: absolute; width: 70px; height: 70px; 
-    z-index: 15; animation: floatBonus 2s ease-in-out infinite; 
+    position: absolute; z-index: 15; animation: floatBonus 2s ease-in-out infinite; 
     display: flex; align-items: center; justify-content: center; 
 }
 .bonus-item.asso img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; border: 2px solid #fff; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
@@ -163,43 +148,163 @@
 }
 
 /* =========================================
-   4. MENUS (Intro & Game Over)
+   3. ANIMATION FOND MENU (Waterfall)
    ========================================= */
-.gameover-overlay, .intro-screen {
+.intro-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    /* Pas de fond noir ici pour laisser voir le dégradé bleu derrière */
+    overflow: hidden; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200;
 }
 
+.waterfall-container {
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    display: flex; justify-content: center; gap: 40px;
+    transform: rotate(15deg);
+    opacity: 0.3; /* Transparence pour ne pas gêner le texte */
+    pointer-events: none;
+    z-index: 0;
+}
+
+.waterfall-column {
+    display: flex; flex-direction: column; gap: 30px;
+    animation: scrollDown 20s linear infinite;
+}
+
+/* Décalage des colonnes pour effet naturel */
+.col-0 { animation-duration: 25s; }
+.col-1 { animation-duration: 18s; margin-top: -100px; }
+.col-2 { animation-duration: 22s; }
+.col-3 { animation-duration: 20s; margin-top: -200px; }
+
+.mini-card {
+    width: 100px; height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.mini-card img { max-width: 80%; max-height: 80%; object-fit: contain; }
+
+@keyframes scrollDown {
+    0% { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+}
+
+/* Contenu Intro au premier plan */
+.intro-content {
+    position: relative; z-index: 10; text-align: center;
+    background: rgba(0,0,0,0.4); padding: 2rem; border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* =========================================
+   4. MENUS & UI
+   ========================================= */
 .greek-title-large { font-size: 3rem; color: #fff; font-weight: 900; text-shadow: 0 3px 0px #DAA520; margin: 0; text-align: center; }
 .intro-subtitle { font-size: 1rem; color: #eee; margin-bottom: 1.5rem; text-align: center; }
 .greek-start-button { padding: 12px 40px; font-size: 1.2rem; font-weight: 900; color: #DAA520; background: #fff; border: 3px solid #DAA520; cursor: pointer; border-radius: 50px; }
 
-/* Styles Game Over par défaut */
+.gameover-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200;
+}
+
 .greek-text-red { font-size: 3rem; color: #e74c3c; text-transform: uppercase; margin-bottom: 1rem; text-shadow: 2px 2px 0px #fff; letter-spacing: 3px; text-align: center; }
 .final-score-box { background: #f7f7f7; padding: 2rem 3rem; border-radius: 4px; border: 4px solid #DAA520; text-align: center; margin-bottom: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 .final-score-box h2 { font-size: 3rem; margin: 5px 0 0; }
 .gameover-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 .greek-button { padding: 12px 30px; background: #DAA520; color: #fff; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4); text-decoration: none;}
-.greek-button:hover { transform: translateY(-3px); }
 .greek-button.secondary { background: #fff; color: #333; border: 2px solid #ccc; }
 
+/* LEADERBOARD & AUTH STYLES */
+.intro-actions { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px; }
+.player-welcome { text-align: center; color: white; margin-bottom: 20px; }
+.player-welcome strong { color: #DAA520; font-size: 1.2rem; }
+.best-score { font-size: 0.9rem; opacity: 0.8; margin-bottom: 15px; }
+.greek-text-btn { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; margin-top: 10px; font-size: 0.8rem; }
+
+.intro-lb-container {
+    margin-top: 20px; background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px; padding: 10px; border: 3px solid #DAA520;
+    width: 100%; max-width: 450px; max-height: 35vh; overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.leaderboard-section {
+    background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px;
+    margin: 10px 0 20px 0; width: 100%; max-width: 350px;
+    border: 2px solid #DAA520;
+}
+
+.lb-tabs { display: flex; border-bottom: 2px solid #DAA520; margin-bottom: 10px; }
+.lb-tabs button {
+    flex: 1; background: none; border: none; padding: 8px; cursor: pointer;
+    font-weight: bold; color: #888; display: flex; align-items: center; justify-content: center; gap: 5px;
+    font-family: 'Cinzel', serif;
+}
+.lb-tabs button.active { color: #003366; background: rgba(218, 165, 32, 0.1); border-bottom: 3px solid #003366; }
+
+.lb-list { list-style: none; padding: 0; margin: 0; }
+.lb-list li { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px dashed #eee; font-size: 0.9rem; color: #555; }
+.lb-list li.me { background: #fff8e1; color: #DAA520; font-weight: bold; }
+.lb-list .rank { width: 30px; font-weight: bold; }
+.lb-list .name { flex: 1; text-align: left; }
+.lb-list .score { font-weight: bold; color: #333; }
+
+/* Modal Auth */
+.auth-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+}
+.auth-modal {
+    background: #fff; padding: 2rem; border-radius: 8px; border: 3px solid #DAA520;
+    width: 90%; max-width: 400px; text-align: center;
+    box-shadow: 0 0 30px rgba(218, 165, 32, 0.3);
+}
+.auth-modal h2 { color: #003366; margin-top: 0; font-family: 'Cinzel', serif; }
+.auth-modal input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+.newsletter-optin { display: flex; align-items: center; gap: 10px; margin: 10px 0; text-align: left; font-size: 0.8rem; color: #555; }
+.newsletter-optin input { width: auto; margin: 0; }
+.modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+.switch-auth { margin-top: 15px; font-size: 0.8rem; color: #003366; text-decoration: underline; cursor: pointer; }
+.error-text { color: #e74c3c; font-size: 0.8rem; margin: 5px 0; }
+
 /* =========================================
-   5. ANIMATIONS
+   5. ANIMATIONS & RESPONSIVE
    ========================================= */
-@keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
 @keyframes floatBonus { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes popUpFade { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.5); } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50px) scale(1); } 100% { opacity: 0; transform: translate(-50%, -80px) scale(0.8); } }
 @keyframes vortexSpin { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
 @keyframes panicFlash { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.7; } }
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 40% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
 
-/* =========================================
-   6. RESPONSIVE : MOBILE & TABLETTE PAYSAGE
-   (Cible les petits écrans en largeur OU en hauteur)
-   ========================================= */
+/* --- BLOCAGE VERTICAL --- */
+.orientation-lock {
+    display: none; /* Caché par défaut */
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: #003366;
+    z-index: 2147483647; 
+    flex-direction: column; align-items: center; justify-content: center;
+    color: white; text-align: center; padding: 2rem;
+}
+.rotate-icon { font-size: 5rem; margin-bottom: 2rem; animation: rotatePhone 2s infinite ease-in-out; }
+
+/* Détection Portrait Mobile */
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+    .orientation-lock { display: flex !important; }
+    .greek-runner-container, .greek-overlay { display: none !important; }
+}
+
+/* Adaptation petits écrans (Paysage) */
 @media (max-height: 500px) or (max-width: 768px) {
-    
-    /* --- Éléments du jeu (Retaillés) --- */
     .clouds-ground { height: 50px; }
     .clouds-ceiling { height: 50px; }
     .player { width: 60px; height: 60px; }
@@ -207,36 +312,16 @@
     .powerup-icon { font-size: 1.2rem; }
     .greek-hud-score { top: 10px; right: 10px; padding: 4px 10px; }
     .score-value { font-size: 1.2rem; }
-    .effects-hud { top: 50px; left: 10px; }
-    .bonus-popup { font-size: 1.5rem; }
+    .effects-hud { top: 10px; } /* Remonté pour gain place */
     
-    /* --- Menu Intro (Compact) --- */
     .greek-title-large { font-size: 2.2rem; text-shadow: 0 2px 0px #DAA520; }
     .intro-subtitle { font-size: 0.9rem; margin-bottom: 1rem; }
-    .greek-start-button { padding: 10px 30px; font-size: 1.1rem; }
-
-    /* --- Menu Défaite (ADAPTÉ) --- */
-    .greek-text-red { 
-        font-size: 2rem; /* Titre plus petit */
-        margin-bottom: 0.5rem; 
-        letter-spacing: 1px;
-    }
-    .final-score-box { 
-        padding: 1rem 1.5rem; /* Boîte de score beaucoup plus fine */
-        margin-bottom: 1rem; 
-        border-width: 2px;
-    }
-    .final-score-box p { font-size: 0.8rem; margin: 0; }
-    .final-score-box h2 { font-size: 2rem; margin: 0; }
+    .intro-content { padding: 1rem; }
+    .intro-lb-container { max-height: 25vh; }
     
-    .gameover-actions { 
-        gap: 0.5rem; 
-        width: 100%; 
-        justify-content: center;
-    }
-    .greek-button { 
-        padding: 8px 16px; 
-        font-size: 0.85rem; 
-        width: auto;
-    }
+    .greek-text-red { font-size: 2rem; margin-bottom: 0.5rem; }
+    .final-score-box { padding: 1rem 1.5rem; margin-bottom: 1rem; border-width: 2px; }
+    .final-score-box h2 { font-size: 2rem; margin: 0; }
+    .gameover-actions { gap: 0.5rem; width: 100%; justify-content: center; }
+    .greek-button { padding: 8px 16px; font-size: 0.85rem; width: auto; }
 }
