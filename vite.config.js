@@ -12,11 +12,10 @@ export default defineConfig({
         name: 'Hermes by NLE',
         short_name: 'Hermes',
         description: "L'application de l'association étudiante qui t'accompagne à Pau.",
-        theme_color: '#003366',
-        background_color: '#ffffff',
-        display: 'standalone',
-        // CORRECTION ICI : 'any' permet la rotation automatique (portrait et paysage)
-        orientation: 'any', 
+        theme_color: '#000000', // Noir pour l'immersion
+        background_color: '#000000',
+        display: 'standalone', // Cache l'UI du navigateur
+        orientation: 'landscape', // <--- FORCE LE PAYSAGE
         icons: [
           {
             src: '/pwa-192x192.png',

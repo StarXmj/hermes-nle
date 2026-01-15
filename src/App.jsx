@@ -1,5 +1,6 @@
-import React, { useState, useEffect, Suspense  } from 'react';
-import { Routes, Route } from 'react-router-dom';
+// src/App.jsx
+import React, { useState, useEffect, Suspense } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom'; // AJOUT DE useLocation
 import { supabase } from './supabaseClient';
 import { appRoutes } from './routeConfig.jsx'; 
 import Navbar from './components/Navbar';
@@ -10,17 +11,13 @@ import RouteTracker from './components/RouteTracker';
 import './App.css'; 
 import './pages/LegalPage.css';
 import { Toaster } from 'react-hot-toast';
-// Imports Animation & Decor
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Snowfall from 'react-snowfall';
-import { THEMES } from './data/themes'; // Import de la config
-import InstallPWA from './components/InstallPWA'; // Ajustez le chemin
-
-import LoadingSpinner from './components/LoadingSpinner'; // 2. Importez votre spinner
-// URL Image Père Noël (ou autre assets)
-const SANTA_URL = "https://cdn-icons-png.flaticon.com/512/744/744546.png";
-
+import { THEMES } from './data/themes'; 
+import InstallPWA from './components/InstallPWA'; 
+import LoadingSpinner from './components/LoadingSpinner';
+import MobileGameManager from './components/MobileGameManager'; // <--- IMPORTEZ-LE
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
     if (route.children) {
@@ -38,105 +35,61 @@ const createRoutes = (routes) => {
 
 function App() {
   const [activeThemeId, setActiveThemeId] = useState('default');
+  const location = useLocation(); // 1. On récupère l'URL actuelle
+
+  // 2. Liste des pages où on veut être en PLEIN ÉCRAN (pas de nav, pas de footer)
+  const isGameMode = ['/host', '/join', '/lobby', '/multiplayer-run'].includes(location.pathname);
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true, offset: 100 });
 
-    // 1. Charger le thème actif
     const fetchTheme = async () => {
-      const { data } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'current_theme')
-        .single();
-      
+      const { data } = await supabase.from('settings').select('value').eq('key', 'current_theme').single();
       if (data) setActiveThemeId(data.value);
     };
     fetchTheme();
 
-    // 2. Écouter les changements en direct
     const channel = supabase
       .channel('theme_changes')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
-        if (payload.new.key === 'current_theme') {
-          setActiveThemeId(payload.new.value);
-        }
+        if (payload.new.key === 'current_theme') setActiveThemeId(payload.new.value);
       })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Récupérer l'objet de configuration complet basé sur l'ID
   const currentThemeConfig = THEMES[activeThemeId] || THEMES['default'];
 
   return (
     <div className={`App ${currentThemeConfig.className}`}>
-      <Toaster 
-        position="top-center" // Ou "bottom-right" selon vos goûts
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#333',
-            color: '#fff',
-          },
-          success: {
-            style: {
-              background: '#d4edda',
-              color: '#155724',
-              border: '1px solid #c3e6cb'
-            },
-          },
-          error: {
-            style: {
-              background: '#f8d7da',
-              color: '#721c24',
-              border: '1px solid #f5c6cb'
-            },
-          },
-        }}
-      />
+      <Toaster position="top-center" toastOptions={{ duration: 4000, style: { background: '#333', color: '#fff' }}} />
       <RouteTracker />
       <AutoLogout />
-      
-      {/* --- GESTION DU DÉCOR --- */}
-      
-      {/* 1. Neige */}
+      <MobileGameManager />
+      {/* Décors (Neige, Guirlande...) - On les garde même en jeu si vous voulez, sinon ajoutez !isGameMode && */}
       {currentThemeConfig.elements.snow && (
-        <Snowfall 
-          color={currentThemeConfig.elements.snowColor || '#fff'}
-          snowflakeCount={150} // Un peu plus de neige
-          style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 9998, pointerEvents: 'none' }}
-        />
+        <Snowfall color={currentThemeConfig.elements.snowColor || '#fff'} snowflakeCount={150} style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 9998, pointerEvents: 'none' }} />
+      )}
+      {!isGameMode && currentThemeConfig.elements.garland && (
+        <div className="christmas-garland" style={{ backgroundImage: `url('${currentThemeConfig.elements.garlandImg}')` }}></div>
+      )}
+      {!isGameMode && currentThemeConfig.elements.santa && (
+        <div className="santa-container"><img src={currentThemeConfig.elements.santaImg} alt="Père Noël" className="santa-sleigh" /></div>
       )}
 
-      {/* 2. Guirlande */}
-      {currentThemeConfig.elements.garland && (
-        <div 
-          className="christmas-garland"
-          style={{ 
-            backgroundImage: `url('${currentThemeConfig.elements.garlandImg}')` 
-          }}
-        ></div>
-      )}
+      {/* 3. Navbar masquée en mode jeu */}
+      {!isGameMode && <Navbar />}
 
-      {/* 3. Père Noël */}
-      {currentThemeConfig.elements.santa && (
-        <div className="santa-container">
-          <img 
-            src={currentThemeConfig.elements.santaImg} 
-            alt="Père Noël" 
-            className="santa-sleigh" 
-          />
-        </div>
-      )}
-
-      <Navbar />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>{createRoutes(appRoutes)}</Routes>
       </Suspense>
-      <InstallPWA /> {/* <--- Ajoutez le bouton ici */}
-      <Footer />
+
+      <InstallPWA />
+      
+      {/* 4. Footer masqué en mode jeu */}
+      {!isGameMode && <Footer />}
+      
       <CookieConsent />
     </div>
   );

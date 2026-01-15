@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import toast from 'react-hot-toast'; // 1. Importer
+import { Helmet } from 'react-helmet-async';
 
 function UpdatePasswordPage() {
   const [password, setPassword] = useState('');

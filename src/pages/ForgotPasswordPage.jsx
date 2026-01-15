@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 import './LoginPage.css'; // On réutilise le style du login
+import { Helmet } from 'react-helmet-async';
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -35,7 +36,7 @@ function ForgotPasswordPage() {
 
   return (
     <main className="page-section login-page">
-      // Dans LoginPage.jsx ou le layout Admin
+     
 <Helmet>
   <title>Mots de passe oublié</title>
   <meta name="robots" content="noindex, nofollow" />

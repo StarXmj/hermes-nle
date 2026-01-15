@@ -1,7 +1,5 @@
 // src/routeConfig.jsx
-import React, { lazy } from 'react'; // 1. Importez 'lazy'
-
-// --- 2. REMPLACEZ TOUS LES IMPORTS STATIQUES PAR CECI ---
+import React, { lazy } from 'react';
 
 // Pages Publiques
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -20,8 +18,17 @@ const PoleCommunicationPage = lazy(() => import('./pages/PoleCommunicationPage')
 const PoleRedactionPage = lazy(() => import('./pages/PoleRedactionPage'));
 const PoleEvenementielPage = lazy(() => import('./pages/PoleEvenementielPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-  import AssoMatchPage from './pages/AssoMatchPage'; // <--- Import
-import HermesRunnerPage from './pages/HermesRunnerPage'; // Import
+
+// Imports Statiques (pour les pages "lourdes" ou critiques si besoin)
+import AssoMatchPage from './pages/AssoMatchPage';
+import HermesRunnerPage from './pages/HermesRunnerPage'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
+
+// --- NOUVEAU : PAGES MULTIJOUEUR (HUB) ---
+const HostLobbyPage = lazy(() => import('./pages/hub/HostLobbyPage'));
+const PlayerJoinPage = lazy(() => import('./pages/hub/PlayerJoinPage'));
+const PlayerLobbyPage = lazy(() => import('./pages/hub/PlayerLobbyPage'));
+const MultiplayerRunner = lazy(() => import('./pages/multiplayer/MultiplayerRunner'));
+
 // Pages Auth
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
@@ -37,11 +44,12 @@ const AdminFaqPage = lazy(() => import('./pages/AdminFaqPage'));
 const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
 const AdminDecorsPage = lazy(() => import('./pages/AdminDecorsPage'));
-import AdminAssoPage from './pages/AdminAssoPage'; // <--- Import
+import AdminAssoPage from './pages/AdminAssoPage';
 
-// Composants de sécurité (Eux, on peut les garder en statique car ils sont légers et critiques)
+// Composants de sécurité
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
+
 export const appRoutes = [
   // --- Authentification ---
   {
@@ -62,91 +70,86 @@ export const appRoutes = [
 
   // --- ZONE ADMIN SÉCURISÉE ---
   {
-    // 1. Premier niveau : Il faut être connecté
     element: <ProtectedRoute />,
     children: [
       {
         path: '/admin',
-        element: <AdminDashboard />, // Le dashboard est accessible à tous les connectés
+        element: <AdminDashboard />,
         category: 'admin'
       },
-      
-      // 2. Second niveau : Il faut la permission spécifique
-      
       // Gestion Actions
       {
         element: <PermissionRoute permission="can_edit_actions" />,
-        children: [
-          { path: '/admin/actions', element: <AdminActionsPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/actions', element: <AdminActionsPage />, category: 'admin' }]
       },
-
       // Gestion Actus
       {
         element: <PermissionRoute permission="can_edit_actus" />,
-        children: [
-          { path: '/admin/actus', element: <AdminActusPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/actus', element: <AdminActusPage />, category: 'admin' }]
       },
-
       // Gestion Partenaires
       {
         element: <PermissionRoute permission="can_edit_partenaires" />,
-        children: [
-          { path: '/admin/partenaires', element: <AdminPartenairesPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/partenaires', element: <AdminPartenairesPage />, category: 'admin' }]
       },
-
       // Gestion Membres
       {
         element: <PermissionRoute permission="can_edit_membres" />,
-        children: [
-          { path: '/admin/membres', element: <AdminMembersPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/membres', element: <AdminMembersPage />, category: 'admin' }]
       },
-
       // Gestion FAQ
       {
         element: <PermissionRoute permission="can_edit_faq" />,
-        children: [
-          { path: '/admin/faq', element: <AdminFaqPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/faq', element: <AdminFaqPage />, category: 'admin' }]
       },
-
       // Gestion Blog
       {
         element: <PermissionRoute permission="can_edit_blog" />,
-        children: [
-          { path: '/admin/blog', element: <AdminBlogPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/blog', element: <AdminBlogPage />, category: 'admin' }]
       },
-
       // Gestion Newsletter
       {
         element: <PermissionRoute permission="can_edit_newsletter" />,
-        children: [
-          { path: '/admin/newsletter', element: <AdminNewsletterPage />, category: 'admin' }
-        ]
+        children: [{ path: '/admin/newsletter', element: <AdminNewsletterPage />, category: 'admin' }]
       },
+      // Gestion Décors
       {
-        
-        // Pour l'instant on le rend accessible aux admins généraux (ou réutiliser une permission existante)
         element: <PermissionRoute permission="can_edit_decor" />,
-      children: [
-        {path: '/admin/decors',
-        element: <AdminDecorsPage />,
-        category: 'admin'}
-        ]
+        children: [{ path: '/admin/decors', element: <AdminDecorsPage />, category: 'admin' }]
       },
+      // Gestion Assos
       {
-        // On peut créer une permission spécifique "can_admin_asso" ou utiliser une existante
-        // Pour l'instant, disons qu'on utilise "can_edit_partenaires" ou on crée une <PermissionRoute permission="can_admin_asso" />
-        element: <PermissionRoute permission="can_admin_asso" />, // Assurez-vous que cette colonne existe dans 'profiles' comme vu avant
-        children: [
-          { path: '/admin/assos', element: <AdminAssoPage />, category: 'admin' }
-        ]
+        element: <PermissionRoute permission="can_admin_asso" />,
+        children: [{ path: '/admin/assos', element: <AdminAssoPage />, category: 'admin' }]
       }
     ]
+  },
+
+  // --- MODE MULTIJOUEUR (NOUVELLES ROUTES) ---
+  // Ces routes sont 'hidden' pour ne pas encombrer le menu principal
+  {
+    path: '/host',
+    element: <HostLobbyPage />,
+    name: 'Hôte Session',
+    category: 'hidden',
+  },
+  {
+    path: '/join',
+    element: <PlayerJoinPage />,
+    name: 'Rejoindre',
+    category: 'hidden',
+  },
+  {
+    path: '/lobby',
+    element: <PlayerLobbyPage />,
+    name: 'Salle d\'attente',
+    category: 'hidden',
+  },
+  {
+    path: '/multiplayer-run',
+    element: <MultiplayerRunner />,
+    name: 'Jeu Multi',
+    category: 'hidden',
   },
 
   // --- Pages Publiques (Navigation Principale) ---
@@ -166,7 +169,7 @@ export const appRoutes = [
     path: '/communication',
     element: <PoleCommunicationPage />,
     name: 'Pôle Communication',
-    category: 'hidden', // 'hidden' car pas directement dans le menu principal pour l'instant
+    category: 'hidden',
   },
   {
     path: '/redaction',
@@ -199,7 +202,7 @@ export const appRoutes = [
     category: 'main',
   },
   {
-    path: '/blog/:id', // Route dynamique pour l'article
+    path: '/blog/:id',
     element: <ArticleDetailPage />,
     name: 'Article',
     category: 'hidden', 
@@ -220,13 +223,13 @@ export const appRoutes = [
     path: '/asso-match',
     element: <AssoMatchPage />,
     name: 'Le Match des Assos',
-    category: 'main', // Ou 'hidden' si vous ne voulez pas l'avoir dans le menu principal
+    category: 'main',
   },
   {
     path: '/runner',
     element: <HermesRunnerPage />,
     name: 'Hermes Runner',
-    category: 'main', // Ou 'hidden'
+    category: 'main',
   },
  
   // --- Pages Légales (Footer) ---

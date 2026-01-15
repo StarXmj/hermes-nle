@@ -588,3 +588,40 @@
     .score-value { font-size: 1.2rem; }
     .effects-hud { top: 10px; }
 }
+/* --- GHOST MODE --- */
+.opponent-ghost {
+    position: absolute;
+    left: 20px; /* Même position X que le joueur */
+    opacity: 0.4; /* Semi-transparent */
+    filter: grayscale(100%) brightness(1.5); /* Effet "Esprit" */
+    transition: bottom 0.1s linear, top 0.1s linear; /* Mouvement fluide */
+    z-index: 9; /* Derrière le joueur principal (qui est souvent z-index 10) */
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ghost-pseudo {
+    font-size: 10px;
+    color: white;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 4px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+.ghost-sprite {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Différents avatars fantômes */
+.avatar-hermes .ghost-sprite { background-image: url('../assets/hermes-run.gif'); }
+.avatar-cat .ghost-sprite { background-image: url('https://cdn-icons-png.flaticon.com/512/616/616430.png'); } /* Exemple */
+.avatar-ghost .ghost-sprite { background-image: url('https://cdn-icons-png.flaticon.com/512/1012/1012234.png'); } /* Exemple */
+.avatar-robot .ghost-sprite { background-image: url('https://cdn-icons-png.flaticon.com/512/4712/4712035.png'); } /* Exemple */

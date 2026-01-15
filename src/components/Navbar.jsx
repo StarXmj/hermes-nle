@@ -1,104 +1,115 @@
-// src/components/Navbar.jsx
-import React, { useState } from 'react';
-import './Navbar.css';
+import React, { useState, useEffect } from 'react';
 import HermesLogo from '../assets/logo-hermes.png';
 import { HashLink } from 'react-router-hash-link';
-import { Link } from 'react-router-dom';
-import { FaBars, FaTimes } from 'react-icons/fa'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
+import { FaBars, FaTimes } from 'react-icons/fa';
+import ThemeToggle from './ThemeToggle';
 
 function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
+  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
+
+  const isHomePage = location.pathname === '/';
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // --- NOUVELLE FONCTION POUR REMONTER EN HAUT ---
+  const handleScrollToTop = (e) => {
+    // Si on est déjà sur la home, on force le scroll
+    if (isHomePage) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Sinon, le Link to="/" fera son travail et on scrollera après chargement
+    if (isDrawerOpen) setIsDrawerOpen(false);
   };
 
+  const navLinkClass = (path) => 
+    `text-sm font-medium transition-colors duration-300 ${
+      location.pathname === path 
+        ? 'text-hermes-primary font-bold' 
+        : 'text-gray-600 hover:text-hermes-primary dark:text-gray-300 dark:hover:text-white'
+    }`;
+
   return (
-    <div className="navbar-container">
-      <nav className="navbar">
-        
-        <div className="navbar-logo">
-          <a href="/">
-            <img src={HermesLogo} alt="Logo Hermes by NLE" className="logo-image" data-aos="fade-right" data-aos-delay="200" />
-          </a>
-        </div>
+    <>
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'py-2' : 'py-3 md:py-4 lg:py-6'}`}>
+        <nav className={`mx-4 md:mx-auto max-w-7xl rounded-2xl border flex items-center justify-between px-4 py-2 md:px-6 md:py-3 transition-all duration-300 
+          ${scrolled 
+            ? 'bg-white/80 dark:bg-hermes-dark/90 backdrop-blur-xl shadow-lg border-gray-200 dark:border-white/10' 
+            : 'bg-white/50 dark:bg-white/5 backdrop-blur-md border-transparent dark:border-white/10'
+          }`}>
+          
+          {/* LOGO (Avec fonction Scroll To Top) */}
+          <div className="flex-shrink-0 cursor-pointer">
+            <Link to="/" onClick={handleScrollToTop}>
+              <img src={HermesLogo} alt="Logo" className="h-8 md:h-10 lg:h-12 w-auto hover:scale-105 transition-transform duration-300" />
+            </Link>
+          </div>
 
-        {/* LIENS DU MENU (Bureau) */}
-        <ul className="navbar-links">
-          <li><Link to="/">Accueil</Link></li>
-          <li><Link to="/about">C'est quoi ?</Link></li>
-          <li><Link to="/actions">Évènements</Link></li> 
-          <li><Link to="/actualites">Actualités</Link></li>
-          <li><Link to="/partenaires">Partenaires</Link></li>
-          <li><Link to="/blog">Blog</Link></li> {/* <-- AJOUT ICI */}
-          <li><Link to="/contact">Contact</Link></li>
-        </ul>
+          <ul className="hidden lg:flex items-center gap-4 xl:gap-8">
+            {/* Lien Accueil modifié */}
+            <li><Link to="/" onClick={handleScrollToTop} className={navLinkClass('/')}>Accueil</Link></li>
+            <li><Link to="/about" className={navLinkClass('/about')}>C'est quoi ?</Link></li>
+            <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
+            <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
+            <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
+            <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
+            <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
+          </ul>
 
-        {/* BOUTONS (Bureau) */}
-        <div className="navbar-actions">
-          <Link 
-            to="/contact" 
-            className="btn btn-secondary"
-            state={{ sujetParDefaut: 'devenir_partenaire' }}
-          >
-            Devenir partenaire
-          </Link>
-          <Link 
-            to="/contact" 
-            className="btn btn-primary"
-            state={{ sujetParDefaut: 'rejoindre_association' }}
-          >
-            Nous rejoindre
-          </Link>
-        </div>
+          <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle />
+            <Link to="/contact" state={{ sujetParDefaut: 'rejoindre_association' }} className="px-4 py-2 rounded-xl bg-hermes-primary text-white font-bold text-xs xl:text-sm shadow-lg hover:bg-blue-600 hover:scale-105 transition-all">
+              Nous rejoindre
+            </Link>
+          </div>
 
-        {/* ICÔNE BURGER (Mobile) */}
-        <button className="burger-icon" onClick={toggleDrawer}>
-          <FaBars />
-        </button>
-        
-      </nav>
-
-      {/* OVERLAY */}
-      {isDrawerOpen && <div className="overlay" onClick={toggleDrawer}></div>}
-
-      {/* MENU LATÉRAL (Mobile) */}
-      <div className={`side-drawer ${isDrawerOpen ? 'open' : ''}`}>
-        <button className="close-icon" onClick={toggleDrawer}>
-          <FaTimes />
-        </button>
-        
-        <ul className="drawer-links">
-          <li><Link to="/" onClick={toggleDrawer}>Accueil</Link></li>
-          <li><Link to="/about" onClick={toggleDrawer}>C'est quoi ?</Link></li>
-          <li><Link to="/actions" onClick={toggleDrawer}>Évènements</Link></li>
-          <li><HashLink to="/actualites" onClick={toggleDrawer}>Actualités</HashLink></li>
-          <li><Link to="/partenaires" onClick={toggleDrawer}>Partenaires</Link></li>
-                    <li><Link to="/blog" onClick={toggleDrawer}>Blog</Link></li> {/* <-- AJOUT ICI AUSSI */}
-
-          <li><Link to="/contact" onClick={toggleDrawer}>Contact</Link></li>
-        </ul>
-
-        <div className="drawer-actions">
-          <Link 
-            to="/contact" 
-            className="btn btn-secondary"
-            state={{ sujetParDefaut: 'devenir_partenaire' }}
-            onClick={toggleDrawer}
-          >
-            Devenir partenaire
-          </Link>
-          <Link 
-            to="/contact" 
-            className="btn btn-primary"
-            state={{ sujetParDefaut: 'rejoindre_association' }}
-            onClick={toggleDrawer}
-          >
-            Nous rejoindre
-          </Link>
-        </div>
+          <div className="flex items-center gap-3 lg:hidden">
+            <ThemeToggle />
+            <button className="text-gray-800 dark:text-white p-2" onClick={toggleDrawer}>
+              <FaBars size={22} />
+            </button>
+          </div>
+        </nav>
       </div>
-    </div>
+
+      {!isHomePage && (
+        <div className="h-28 w-full invisible pointer-events-none" aria-hidden="true"></div>
+      )}
+
+      {/* OVERLAY & DRAWER MOBILE */}
+      <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={toggleDrawer} />
+
+      <div className={`fixed top-0 right-0 h-full w-[80%] max-w-sm bg-white dark:bg-[#0f172a] shadow-2xl z-[70] transform transition-transform duration-300 p-6 flex flex-col ${isDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex justify-between items-center mb-8">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Menu</span>
+            <button onClick={toggleDrawer} className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-white">
+                <FaTimes size={24} />
+            </button>
+        </div>
+        
+        <ul className="flex flex-col gap-6 text-lg overflow-y-auto">
+          <li><Link to="/" onClick={handleScrollToTop} className="block text-gray-700 dark:text-gray-300 hover:text-hermes-primary font-medium">Accueil</Link></li>
+          {['C\'est quoi ?', 'Évènements', 'Actualités', 'Partenaires', 'Blog', 'Contact'].map((item, idx) => {
+             const path = `/${item.toLowerCase().replace(/ /g, '').replace('?', '').replace('\'', '')}`;
+             return (
+               <li key={idx}>
+                 <Link to={path} onClick={toggleDrawer} className="block text-gray-700 dark:text-gray-300 hover:text-hermes-primary font-medium">{item}</Link>
+               </li>
+             )
+          })}
+        </ul>
+      </div>
+    </>
   );
 }
 

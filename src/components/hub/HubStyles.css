@@ -1,0 +1,121 @@
+/* src/components/hub/HubStyles.css */
+
+/* --- TABLEAU DES SCORES (LEADERBOARD) --- */
+.live-leaderboard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #DAA520; /* Or Grec */
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.live-leaderboard h3 {
+    text-align: center;
+    color: #DAA520;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif; /* Si vous avez cette font, sinon sans-serif */
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid rgba(218, 165, 32, 0.3);
+    padding-bottom: 10px;
+}
+
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto; /* Scroll si trop de joueurs */
+}
+
+/* Scrollbar personnalisée */
+.leaderboard-list::-webkit-scrollbar {
+    width: 6px;
+}
+.leaderboard-list::-webkit-scrollbar-thumb {
+    background: #DAA520;
+    border-radius: 3px;
+}
+
+/* --- LIGNE D'UN JOUEUR --- */
+.lb-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 8px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: transform 0.2s, background 0.2s;
+    border: 1px solid transparent;
+}
+
+/* Animation d'entrée */
+.lb-item {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Top 3 mis en valeur */
+.lb-item.rank-1 {
+    background: linear-gradient(90deg, rgba(218, 165, 32, 0.2), rgba(0,0,0,0));
+    border-color: #DAA520;
+    transform: scale(1.02);
+}
+.lb-item.rank-2 { border-left: 4px solid #C0C0C0; } /* Argent */
+.lb-item.rank-3 { border-left: 4px solid #CD7F32; } /* Bronze */
+
+/* Joueur éliminé */
+.lb-item.eliminated {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    text-decoration: line-through;
+}
+
+.lb-rank {
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 40px;
+    color: #DAA520;
+}
+
+.lb-name {
+    flex-grow: 1;
+    margin-left: 15px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.lb-score {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* --- AVATARS --- */
+.player-avatar {
+    color: #fff;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .live-leaderboard {
+        width: 95%;
+        padding: 10px;
+    }
+    
+    .lb-rank { font-size: 1rem; width: 30px; }
+    .lb-name { font-size: 1rem; }
+}
