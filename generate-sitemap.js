@@ -58,7 +58,6 @@ async function generateSitemap() {
     });
   }
 
-  // 3. Actions / Événements (Si vous avez des pages de détail, sinon ignorez)
   // ... (même logique que pour le blog)
 
   // Écriture du fichier dans le dossier public
