@@ -2,27 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Mode Jour par défaut */
-  background-color: #f8fafc; /* Slate-50 (Blanc cassé très léger) */
-  color: #0f172a; /* Texte sombre */
+@layer base {
+  :root {
+    /* Mode Jour par défaut */
+    background-color: #f8fafc; /* Slate-50 */
+    color: #0f172a; /* Slate-900 */
+  }
+
+  /* Transition douce pour tout le site lors du changement de thème */
+  body {
+    @apply transition-colors duration-300 font-sans m-0 overflow-x-hidden;
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  /* Mode Nuit : S'applique quand la classe .dark est sur <html> */
+  .dark body {
+    background-color: #0f172a; /* Fond très sombre */
+    color: #ffffff; /* Texte blanc partout */
+  }
+
+  /* Forcer les bordures et inputs en mode sombre si non spécifié */
+  .dark input, .dark textarea, .dark select {
+    @apply bg-slate-800 border-slate-700 text-white placeholder-slate-400;
+  }
 }
 
-/* Mode Nuit */
-.dark body {
-  background-color: #0f172a;
-  color: white;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Scrollbar */
+/* Scrollbar adaptée */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { @apply bg-slate-100 dark:bg-[#0f172a]; }
 ::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-700 rounded-full; }
 ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400 dark:bg-slate-600; }
+
+/* Styles spécifiques à l'App */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

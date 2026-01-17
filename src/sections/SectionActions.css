@@ -144,11 +144,21 @@ action-detail-item.location-link {
   - Les @media queries (Flexbox s'en charge)
 */
 
-/* Les liens "Toutes les actions" (ne change pas) */
-.actions-links {
-  margin-top: 3rem;
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+
+
+/* --- MODE SOMBRE --- */
+.dark .actions-section {
+  background-color: #0f172a; /* Fond sombre */
 }
+
+
+
+.dark .actions-section h2 {
+  color: #ffffff; /* Écriture blanche en nuit */
+}
+
+
+.dark .actions-section .section-description {
+  color: #cbd5e1; /* Gris clair pour la lecture */
+}
+

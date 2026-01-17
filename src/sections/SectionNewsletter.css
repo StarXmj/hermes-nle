@@ -86,3 +86,28 @@
     display: none; 
   }
 }
+
+/* src/sections/SectionNewsletter.css */
+.newsletter-section {
+  padding: 60px 20px;
+  background-color: #ffffff;
+}
+
+.dark .newsletter-section {
+  background-color: #0f172a;
+}
+
+.newsletter-container {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 16px;
+  padding: 3rem;
+  color: white; /* Déjà blanc car c'est un fond bleu */
+  text-align: center;
+}
+
+/* Si vous avez des textes hors du container bleu */
+
+.dark .newsletter-title {
+  color: #ffffff;
+}
+

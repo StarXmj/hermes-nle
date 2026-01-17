@@ -118,3 +118,51 @@
     justify-content: center;
   }
 }
+
+
+/* --- MODE SOMBRE --- */
+.dark .partner-card-grid {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+
+.dark .partner-logo-container {
+  background-color: #f8fafc; /* Fond clair pour les logos */
+  border-bottom-color: #334155;
+}
+
+
+
+
+.dark .partner-content h3 {
+  color: #f8fafc;
+}
+
+
+
+.dark .partner-content p {
+  color: #cbd5e1;
+}
+
+
+.dark .partner-link {
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+}
+
+/* --- DARK MODE : Partenaires Grid & Section --- */
+.dark .partenaires-section {
+  background-color: #0f172a; /* Bleu nuit très sombre */
+}
+
+.dark .partenaires-grid {
+  /* La grille en elle-même est souvent transparente, 
+     mais on peut ajuster les espacements si besoin */
+  background-color: transparent;
+}
+
+/* Si vous avez des titres de catégories dans la grille */
+.dark .partenaires-section h2 {
+  color: #ffffff;
+}

@@ -115,35 +115,7 @@ function HomePage() {
             </div>
         </div>
 
-        {/* =========================================================
-            VERSION TABLETTE (GRID OPTIMISÉE)
-           ========================================================= */}
-        <div className="hidden md:grid lg:hidden w-full max-w-4xl px-8 grid-cols-2 gap-10 relative z-30 mt-8 pb-0 items-start">
-            {randomPostId && (
-              <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-lg bg-white w-full h-[55vh]" data-aos="fade-right">
-                  <iframe 
-                    key={`tablet-${randomPostId}`}
-                    src={`https://www.instagram.com/p/${randomPostId}/embed/captioned`}
-                    // POST TABLETTE : +120px en bas
-                    className="absolute top-[-50px] left-0 w-full h-[calc(100%+120px)] object-cover"
-                    title="Post Tablette"
-                    frameBorder="0" scrolling="no" allowtransparency="true"
-                  ></iframe>
-              </div>
-            )}
-            {randomReelId && (
-              <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-lg bg-black w-full h-[55vh]" data-aos="fade-left" data-aos-delay="100">
-                  <iframe 
-                    key={`tablet-${randomReelId}`}
-                    src={`https://www.instagram.com/reel/${randomReelId}/embed/captioned`}
-                    // REEL TABLETTE : +180px en bas pour être tranquille
-                    className="absolute top-[-50px] left-0 w-full h-[calc(100%+180px)] object-cover"
-                    title="Reel Tablette"
-                    frameBorder="0" scrolling="no" allowtransparency="true"
-                  ></iframe>
-              </div>
-            )}
-        </div>
+      
 
 
         {/* --- FOND MONTAGNE --- */}

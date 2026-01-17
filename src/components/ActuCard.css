@@ -110,3 +110,21 @@
   margin-bottom: 0;
   flex-grow: 1; /* Pousse le contenu en bas */
 }
+
+/* --- DARK MODE : Actu Card --- */
+.dark .actu-card.no-image {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+.dark .actu-card-content h3 {
+  color: #f8fafc;
+}
+
+.dark .actu-card-content p {
+  color: #ffffff;
+}
+
+.dark .actu-card-date {
+  color: #94a3b8;
+}

@@ -97,3 +97,41 @@
   color: #0056b3;
   text-decoration: underline;
 }
+
+.dark .footer {
+  background-color: #0f172a; /* Fond sombre Hermes */
+  color: #cbd5e1;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark .footer-socials a {
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.dark .footer-socials a:hover {
+  color: #60a5fa; /* Bleu plus clair pour le contraste */
+  border-color: #60a5fa;
+}
+
+.dark .footer-newsletter a {
+  color: #cbd5e1;
+}
+.dark .footer-newsletter a:hover {
+  color: #60a5fa;
+}
+.dark .footer-copyright {
+  border-top-color: #1e293b; /* Ligne de séparation plus discrète en sombre */
+}
+.dark .footer-copyright p {
+  color: #94a3b8;
+}
+.dark .footer-legal-links {
+  background-color: transparent; /* Pour hériter du fond du footer */
+  color: #94a3b8;
+}
+.dark .footer-legal-links a {
+  color: #94a3b8;
+}
+.dark .footer-legal-links a:hover {
+  color: #60a5fa;
+}

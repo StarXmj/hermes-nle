@@ -9,7 +9,6 @@
 /* On change <main> pour qu'il ne soit qu'un conteneur */
 main {
   flex: 1;
-  /* On enlève le display:flex, les sections s'empilent naturellement */
 }
 
 /* 1. STYLE DE LA SECTION BIENVENUE (ancien .page-content) */
@@ -21,14 +20,8 @@ main {
   align-items: center;
   text-align: center;
   min-height: calc(100vh - 87px);
-  /* On enlève le padding fixe en haut/bas */
-  
-padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
-
-  /* --- LA MAGIE EST ICI --- */
-  /* * On prend 100% de la hauteur (vh)
-   * MOINS la hauteur de votre Navbar (Logo 55px + Padding 1rem*2 = 87px)
-  */
+  padding: 2rem 2rem 14rem 2rem;  
+  box-sizing: border-box; 
 
   /* On garde l'arrière-plan montagnes */
   background-image: url('./assets/vecteezy_alps-mountain-range-with-pine-tree-forest-and-river_13924610.svg');
@@ -36,6 +29,12 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   background-position: center ;
   background-repeat: no-repeat;
   position: relative;
+  transition: background-color 0.3s ease;
+}
+
+/* --- DARK MODE : HERO SECTION --- */
+.dark .hero-section {
+    background-color: #0f172a;
 }
 
 /* Le calque de la section Bienvenue */
@@ -48,6 +47,12 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   height: 100%;
   background: linear-gradient(to top, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%);
   z-index: 1;
+  transition: background 0.3s ease;
+}
+
+/* --- DARK MODE : CALQUE HERO --- */
+.dark .hero-section::before {
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.4) 100%);
 }
 
 /* Texte et bouton de la section Bienvenue */
@@ -56,62 +61,71 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   z-index: 2;
   position: relative;
   color: #003366;
+  transition: color 0.3s ease;
+}
+
+/* --- DARK MODE : TEXTE HERO --- */
+.dark .hero-section h1,
+.dark .hero-section p,
+.dark .hero-section .hero-subtitle {
+  color: #f8fafc;
 }
 
 .hero-section h1 {
-  font-size: 2.75rem; /* Un peu plus gros */
+  font-size: 2.75rem; 
   margin-bottom: 1rem;
 }
 
-/* Style pour votre "petit text" */
 .hero-section .hero-subtitle {
   font-size: 1.25rem;
-  margin-bottom: rem;
-  max-width: 600px; /* Pour qu'il ne soit pas trop large */
+  margin-bottom: 1rem;
+  max-width: 600px; 
 }
 
 .hero-section p {
   font-size: 1.25rem;
   margin-bottom: 4rem;
 }
+
 .hero-section .cta-button  {
  margin: 10px;
 }
 
-
-
 /* --- BOUTON PRINCIPAL MODERNE --- */
-
 .cta-button {
   z-index: 2;
   position: relative;
   overflow: hidden;
   text-decoration: none;
-
   background: linear-gradient(135deg, #0056b3, #003f88);
-  color: white;
-
+  color: white !important;
   border: none;
   padding: 14px 32px;
-
   font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-radius: 12px;
-
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   box-shadow: 0 6px 18px rgba(0, 86, 179, 0.3);
 }
 
-/* Glow + léger mouvement + dégradé animé */
+/* --- BOUTON DARK MODE --- */
+.dark .cta-button {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6); /* Bleu vers Violet Néon */
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
 .cta-button:hover {
   transform: translateY(-4px) scale(1.06);
   box-shadow: 0 10px 28px rgba(0, 86, 179, 0.55);
 }
 
-/* Dégradé animé interne (effet "shimmer") */
+.dark .cta-button:hover {
+    box-shadow: 0 10px 28px rgba(139, 92, 246, 0.6);
+}
+
 .cta-button::before {
   content: "";
   position: absolute;
@@ -133,37 +147,34 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
 }
 
 .cta-button-insta {  
-    z-index: 2;
+  z-index: 2;
   position: relative;
   overflow: hidden;
   text-decoration: none;
   background: linear-gradient(135deg, #F58529, #DD2A7B,#515BD4);
-  color: white;
-
+  color: white !important;
   border: none;
   padding: 14px 32px;
-
   font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-radius: 12px;
-
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.3s ease;
-  box-shadow: 0 6px 18px rgba(0, 86, 179, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 18px rgba(221, 42, 123, 0.3);
+}
 
-
-
+/* --- BOUTON INSTA DARK MODE --- */
+.dark .cta-button-insta {
+    box-shadow: 0 6px 20px rgba(221, 42, 123, 0.5);
 }
 
 .cta-button-insta:hover {
   transform: translateY(-4px) scale(1.1);
-  box-shadow: 0 10px 28px rgba(0, 86, 179, 0.55);
-  
+  box-shadow: 0 10px 28px rgba(221, 42, 123, 0.6);
 }
 
-/* Dégradé animé interne (effet "shimmer") */
 .cta-button-insta::before {
   content: "";
   position: absolute;
@@ -184,182 +195,133 @@ padding: 2rem 2rem 14rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   left: 50%;
 }
 
-
 /* 2. STYLES COMMUNS POUR LES NOUVELLES SECTIONS */
 .page-section {
-  padding: 4rem 2rem; /* Espace intérieur pour chaque section */
+  padding: 4rem 2rem; 
+  transition: background-color 0.3s ease;
 }
 
 .page-section .section-content {
-  margin: 0 auto; /* Centre le contenu */
+  margin: 0 auto; 
   text-align: center;
 }
 
 .page-section h2 {
   font-size: 2.5rem;
-  color: #003366; /* Bleu foncé pour les titres */
+  color: #003366; 
   margin-bottom: 1rem;
+  transition: color 0.3s ease;
+}
+
+/* --- DARK MODE : TITRES SECTIONS --- */
+.dark .page-section h2 {
+    color: #f8fafc;
 }
 
 .page-section p {
   font-size: 1.15rem;
   color: #555;
   margin-bottom: 2rem;
+  transition: color 0.3s ease;
+}
+
+/* --- DARK MODE : TEXTE SECTIONS --- */
+.dark .page-section p {
+    color: #cbd5e1;
 }
 
 /* 3. STYLE POUR ALTERNER LES FONDS (blanc / gris clair) */
 .page-section.alternate-bg {
-  background-color: #f9f9f9; /* Gris très clair */
+  background-color: #f9f9f9; 
 }
 
-/* src/App.css */
+/* --- DARK MODE : FOND ALTERNÉ --- */
+.dark .page-section.alternate-bg {
+    background-color: #0f172a;
+}
 
-/* ... (tout votre code existant) ... */
-
-
-/* --- STYLES DE BOUTONS ADDITIONNELS --- */
-
-
-/* Bouton secondaire (style "outline") */
-
-
-
-
+/* COLLAGE PHOTOS */
 .collage-photo {
-  position: absolute; /* Positionné par rapport au .hero-section */
-  z-index: 1; /* Derrière le texte (z-index: 2), devant le fond */
-  
-  /* Look "Polaroid" */
+  position: absolute; 
+  z-index: 1; 
   border: 5px solid white;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  
-  /* Style de l'image */
   background-size: cover;
   background-position: center;
-  
-  /* Dimensions (ajustez si besoin) */
-  ;
-  
   transition: transform 0.3s ease-out;
 }
-.collage-photo:hover {  
-    transform: scale(0.95); /* Inclinaison */
 
-z-index: 3; /* Passe devant le texte au survol */
-  transition: 1s;
- 
-  
+/* --- DARK MODE : COLLAGE --- */
+.dark .collage-photo {
+    border-color: #f1f5f9;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* 2. Style de la Photo 1 */
+.collage-photo:hover {  
+  transform: scale(0.95); 
+  z-index: 3; 
+  transition: 1s;
+}
+
 .photo-1 {
-  
   background-image: url('../public/images/equipes/equipe.jpg');
-  top: 10%; /* 15% du haut */
-  left: 4%; /* 10% de la gauche */
-  transform: rotate(-8deg); /* Inclinaison */
- 
+  top: 10%; 
+  left: 4%; 
+  transform: rotate(-8deg); 
   width: 250px;
   height: 300px;
-  
 }
 
-/* 3. Style de la Photo 2 */
 .photo-2 {
   background-image: url('../public/images/equipes/IMG-20251028-WA0007.jpg');
   background-size: 360px 420px;
- 
-background-repeat: no-repeat;
-  bottom: 10%; /* 10% du bas */
-  right: 8%; /* 12% de la droite */
-  transform: rotate(5deg); /* Inclinaison */
+  background-repeat: no-repeat;
+  bottom: 10%; 
+  right: 8%; 
+  transform: rotate(5deg); 
   width: 360px;
   height: 420px
 }
 
-
-
-/* VÉRIFICATION : Assurez-vous que ce style est bien dans App.css */
-/* S'il existe déjà, pas besoin de le recopier */
-
 @media (max-width: 1400px) {
- 
-
   .photo-1 {
-  
- 
- 
-  top: 78%; left: 50%; /* à 50%/50% du parent référent */
-  transform: translate(-50%, -50%) !important; /* décalage de 50% de sa propre taille */
- 
-  width: 230px;
-  height: 280px;
-  
-}
-
-.photo-2 {
-  
-  display: none;
-}
-
+    top: 78%; left: 50%; 
+    transform: translate(-50%, -50%) !important; 
+    width: 230px;
+    height: 280px;
+  }
+  .photo-2 {
+    display: none;
+  }
 }
 
 @media (max-width: 600px) {
-  
- .hero-section h1 {
-  font-size: 1.9rem; /* Un peu plus gros */
-  margin-bottom: rem;
+  .hero-section h1 { font-size: 1.9rem; }
+  .cta-button, .cta-button-insta { font-size: 0.65rem; }
+  .hero-section { padding: 2rem 2rem 10rem 2rem; }
+  .photo-1 { top:85%; left: 50%; width: 170px; height: 220px; }
 }
 
-.cta-button {
- 
-  font-size: 0.65rem;
-  
-}
-.cta-button-insta {
- 
-  font-size: 0.65rem;
-  
-}
-.hero-section {
- 
-  
-padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le padding est inclus */
-
- 
-}
-
-.photo-1 {
-   top:85%; left: 50%; /* à 50%/50% du parent référent */
-  width: 170px;
-  height: 220px;
-}
-}
-
-/* src/App.css */
-
-/* --- THÈME NOËL --- */
 /* --- THÈME NOËL --- */
 .theme-christmas {
-  /* Fond bleuté pour faire ressortir la neige */
   background: linear-gradient(to bottom, #f4faff 0%, #ffffff 100%);
   min-height: 100vh;
   position: relative;
+  transition: background 0.3s ease;
 }
 
-/* LA GUIRLANDE */
+/* --- DARK MODE : NOEL --- */
+.dark .theme-christmas {
+    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+}
+
 .theme-christmas .christmas-garland {
   position: absolute; 
   top: -25px;
   left: 0;
   width: 100%;
   height: 80px; 
-  
-  /* CORRECTION ICI : z-index à 1000 */
-  /* > 999 (Navbar) pour être visible */
-  /* < 1002 (Burger) pour ne pas gêner le clic */
   z-index: 1000; 
-  
   background-repeat: repeat-x;
   background-size: auto 100%;
   background-position: top center;
@@ -367,7 +329,6 @@ padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   filter: drop-shadow(0 5px 5px rgba(0,0,0,0.15));
 }
 
-/* LE PÈRE NOËL */
 .santa-container {
   position: fixed;
   top: 0;
@@ -384,113 +345,44 @@ padding: 2rem 2rem 10rem 2rem;  box-sizing: border-box; /* S'assure que le paddi
   filter: drop-shadow(0 20px 20px rgba(0,0,0,0.1));
 }
 
-/* Animation "Aléatoire" avec Aller-Retour CORRIGÉ (Sens Inversé) */
 @keyframes flySantaRandom {
-  /* --- PHASE 1 : ALLER (Gauche -> Droite) --- */
-  0% {
-    left: -500px;
-    top: 15%;
-    /* CORRECTION : On commence en miroir scaleX(-1) si l'image regarde vers la gauche par défaut */
-    /* OU si elle regarde à droite mais que c'était l'inverse voulu. */
-    /* J'inverse par rapport à tout à l'heure : -1 ici */
-    transform: scaleX(-1) rotate(5deg); 
-  }
-  10% {
-    top: 5%;
-    transform: scaleX(-1) rotate(0deg);
-  }
-  20% {
-    top: 20%;
-    transform: scaleX(-1) rotate(-2deg);
-  }
-  30% {
-    top: 10%;
-  }
-  40% {
-    left: 110vw; /* Sortie à droite */
-    top: 15%;
-    transform: scaleX(-1) rotate(-5deg);
-  }
-
-  /* --- PHASE 2 : PAUSE & DEMI-TOUR HORS ÉCRAN --- */
-  40.01% {
-    transform: scaleX(1); /* RETOUR À LA NORMALE pour aller vers la gauche */
-    left: 110vw;
-  }
-  49.99% {
-    left: 110vw;
-    top: 60%;
-  }
-
-  /* --- PHASE 3 : RETOUR (Droite -> Gauche) --- */
-  50% {
-    left: 110vw;
-    top: 60%;
-    transform: scaleX(1) rotate(5deg);
-  }
-  60% {
-    top: 75%;
-    transform: scaleX(1) rotate(0deg);
-  }
-  70% {
-    top: 50%;
-    transform: scaleX(1) rotate(-3deg);
-  }
-  80% {
-    top: 65%;
-  }
-  90% {
-    left: -500px; /* Sortie à gauche */
-    top: 55%;
-    transform: scaleX(1) rotate(-5deg);
-  }
-
-  /* --- PHASE 4 : RESET --- */
-  90.01% {
-    transform: scaleX(-1); /* On remet en miroir pour le prochain tour */
-  }
-  100% {
-    left: -500px;
-    top: 15%;
-  }
+  0% { left: -500px; top: 15%; transform: scaleX(-1) rotate(5deg); }
+  10% { top: 5%; transform: scaleX(-1) rotate(0deg); }
+  20% { top: 20%; transform: scaleX(-1) rotate(-2deg); }
+  30% { top: 10%; }
+  40% { left: 110vw; top: 15%; transform: scaleX(-1) rotate(-5deg); }
+  40.01% { transform: scaleX(1); left: 110vw; }
+  49.99% { left: 110vw; top: 60%; }
+  50% { left: 110vw; top: 60%; transform: scaleX(1) rotate(5deg); }
+  60% { top: 75%; transform: scaleX(1) rotate(0deg); }
+  70% { top: 50%; transform: scaleX(1) rotate(-3deg); }
+  80% { top: 65%; }
+  90% { left: -500px; top: 55%; transform: scaleX(1) rotate(-5deg); }
+  90.01% { transform: scaleX(-1); }
+  100% { left: -500px; top: 15%; }
 }
 
-/* src/App.css */
-
-/* ... (votre code existant) ... */
-
-/* --- LE SAPIN DE LA HOME PAGE --- */
-
 .christmas-tree-wrapper {
-  /* Caché par défaut (pour les thèmes "Classique", "Halloween", etc.) */
   display: none; 
-  
-  /* Centrage et espacement */
   justify-content: center;
   margin-top: 1.5rem;
 }
 
 .christmas-tree-img {
-  width: 140px; /* Taille du sapin */
+  width: 140px; 
   height: auto;
-  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2)); /* Belle ombre */
-  
-  /* Petite animation de flottement pour le rendre vivant */
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2)); 
   animation: floatTree 3s ease-in-out infinite;
   transition: transform 0.3s;
 }
 
-.christmas-tree-img:hover {
-  transform: scale(1.1); /* Grossit un peu au survol */
-}
+.christmas-tree-img:hover { transform: scale(1.1); }
 
 @keyframes floatTree {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
 
-/* --- RÈGLE MAGIQUE : AFFICHER SI LE THÈME EST NOËL --- */
-/* Le body ou la div #root a la classe .theme-christmas, donc on peut cibler le sapin à l'intérieur */
 .theme-christmas .christmas-tree-wrapper {
-  display: flex; /* On l'affiche en flex pour le centrage */
+  display: flex; 
 }

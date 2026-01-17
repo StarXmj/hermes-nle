@@ -57,3 +57,18 @@
     grid-template-columns: repeat(2, auto);
   }
 }
+
+.dark .partenaires-section {
+  background-color: #1e293b; /* Un peu plus clair que le noir pur pour contraster */
+}
+
+
+
+.dark .partenaires-section h2 {
+  color: #ffffff;
+}
+
+
+.dark .partenaires-intro {
+  color: #cbd5e1;
+}

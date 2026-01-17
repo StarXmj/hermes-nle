@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState, useEffect, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom'; // AJOUT DE useLocation
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { appRoutes } from './routeConfig.jsx'; 
 import Navbar from './components/Navbar';
@@ -17,7 +17,8 @@ import Snowfall from 'react-snowfall';
 import { THEMES } from './data/themes'; 
 import InstallPWA from './components/InstallPWA'; 
 import LoadingSpinner from './components/LoadingSpinner';
-import MobileGameManager from './components/MobileGameManager'; // <--- IMPORTEZ-LE
+import MobileGameManager from './components/MobileGameManager';
+
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
     if (route.children) {
@@ -35,9 +36,8 @@ const createRoutes = (routes) => {
 
 function App() {
   const [activeThemeId, setActiveThemeId] = useState('default');
-  const location = useLocation(); // 1. On récupère l'URL actuelle
+  const location = useLocation();
 
-  // 2. Liste des pages où on veut être en PLEIN ÉCRAN (pas de nav, pas de footer)
   const isGameMode = ['/host', '/join', '/lobby', '/multiplayer-run'].includes(location.pathname);
 
   useEffect(() => {
@@ -62,32 +62,43 @@ function App() {
   const currentThemeConfig = THEMES[activeThemeId] || THEMES['default'];
 
   return (
-    <div className={`App ${currentThemeConfig.className}`}>
-      <Toaster position="top-center" toastOptions={{ duration: 4000, style: { background: '#333', color: '#fff' }}} />
+    /* On utilise min-h-screen pour que le fond sombre couvre toute la page */
+    <div className={`App min-h-screen ${currentThemeConfig.className}`}>
+      <Toaster position="top-center" toastOptions={{ 
+        duration: 4000, 
+        style: { background: '#333', color: '#fff' }
+      }} />
       <RouteTracker />
       <AutoLogout />
       <MobileGameManager />
-      {/* Décors (Neige, Guirlande...) - On les garde même en jeu si vous voulez, sinon ajoutez !isGameMode && */}
+
+      {/* Décors */}
       {currentThemeConfig.elements.snow && (
-        <Snowfall color={currentThemeConfig.elements.snowColor || '#fff'} snowflakeCount={150} style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 9998, pointerEvents: 'none' }} />
+        <Snowfall 
+          color={currentThemeConfig.elements.snowColor || '#fff'} 
+          snowflakeCount={150} 
+          style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 9998, pointerEvents: 'none' }} 
+        />
       )}
       {!isGameMode && currentThemeConfig.elements.garland && (
         <div className="christmas-garland" style={{ backgroundImage: `url('${currentThemeConfig.elements.garlandImg}')` }}></div>
       )}
       {!isGameMode && currentThemeConfig.elements.santa && (
-        <div className="santa-container"><img src={currentThemeConfig.elements.santaImg} alt="Père Noël" className="santa-sleigh" /></div>
+        <div className="santa-container">
+          <img src={currentThemeConfig.elements.santaImg} alt="Père Noël" className="santa-sleigh" />
+        </div>
       )}
 
-      {/* 3. Navbar masquée en mode jeu */}
       {!isGameMode && <Navbar />}
 
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>{createRoutes(appRoutes)}</Routes>
-      </Suspense>
+      <main className="flex-grow">
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>{createRoutes(appRoutes)}</Routes>
+        </Suspense>
+      </main>
 
       <InstallPWA />
       
-      {/* 4. Footer masqué en mode jeu */}
       {!isGameMode && <Footer />}
       
       <CookieConsent />

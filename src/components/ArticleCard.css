@@ -65,3 +65,25 @@
 .read-more-link:hover {
   text-decoration: underline;
 }
+
+/* --- DARK MODE : Article Card --- */
+.dark .article-card {
+  background-color: #1e293b; /* Slate-800 */
+  border-color: #334155;
+}
+
+.dark .article-card-content h3 {
+  color: #f8fafc; /* Blanc cassé */
+}
+
+.dark .article-card-content p {
+  color: #cbd5e1; /* Gris clair */
+}
+
+.dark .article-meta {
+  color: #94a3b8;
+}
+
+.dark .read-more-link {
+  color: #60a5fa; /* Bleu plus clair */
+}

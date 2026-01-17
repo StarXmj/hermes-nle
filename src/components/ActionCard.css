@@ -1,3 +1,4 @@
+/* src/components/ActionCard.css */
 .action-card {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
@@ -5,20 +6,35 @@
   padding: 1.5rem;
   text-align: left;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s;
+  transition: all 0.2s;
   display: flex;
   flex-direction: column;
   position: relative;
-  /* PAS DE 'width' FIXE ICI */
   max-width: 100%; 
 }
 
-/* NOUVEAU : Style pour le badge "À venir" */
+/* --- MODE SOMBRE --- */
+.dark .action-card {
+  background-color: #1e293b; /* Slate-800 */
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .action-card h3 {
+  color: #f8fafc;
+}
+
+.dark .action-card .action-desc,
+.dark .action-card .action-detail-item {
+  color: #cbd5e1; /* Texte gris clair/blanc */
+}
+
+/* Badge "À venir" */
 .upcoming-badge {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background-color: #0056b3;
+  background-color: #3b82f6;
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
@@ -27,41 +43,34 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  z-index: 4; /* Au-dessus de tout */
+  z-index: 4;
 }
 
-/* NOUVEAU : Style pour griser les actions passées */
+/* Actions passées */
 .action-card.past-action {
-  background-color: #f9f9f9; /* Fond gris comme demandé */
-  opacity: 0.8; /* On atténue l'ensemble */
+  background-color: #f9f9f9;
+  opacity: 0.8;
 }
 
-.action-card.past-action h3 {
-  color: #777; /* Titre en gris */
+.dark .action-card.past-action {
+  background-color: #0f172a; /* Encore plus sombre si passé */
+  opacity: 0.6;
 }
 
-.action-card.past-action .action-icon {
-  color: #777; /* Icônes en gris */
-}
-
+.action-card.past-action h3 { color: #777; }
+.action-card.past-action .action-icon { color: #777; }
 .action-card.past-action .action-detail-item,
-.action-card.past-action .action-desc {
-  color: #555; /* Texte en gris foncé */
-}
+.action-card.past-action .action-desc { color: #555; }
 
-.action-card.past-action .action-program-link {
-  color: #888;
-}
-
+/* Boutons */
 .action-links-group {
   display: flex;
-  flex-wrap: wrap; /* Permet de passer à la ligne si trop de boutons */
-  gap: 0.8rem; /* Espace entre les boutons */
-  margin-top: auto; /* Pousse les boutons tout en bas de la carte */
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: auto;
   padding-top: 1rem;
 }
 
-/* Style des boutons de lien */
 .action-btn-link {
   display: inline-flex;
   align-items: center;
@@ -72,38 +81,26 @@
   font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  
-  /* Style par défaut (Bleu plein - ex: Programme) */
-  background-color: #0056b3; 
+  background-color: #3b82f6; 
   color: white;
 }
 
 .action-btn-link:hover {
-  background-color: #004494;
+  background-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
 }
 
-/* Style secondaire (Contour bleu - ex: Billetterie, Facebook) */
 .action-btn-link.secondary {
   background-color: transparent;
-  border: 1px solid #0056b3;
-  color: #0056b3;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
 }
 
-.action-btn-link.secondary:hover {
-  background-color: #e6f0fa; /* Bleu très clair */
-  transform: translateY(-2px);
+.dark .action-btn-link.secondary {
+  color: #60a5fa;
+  border-color: #60a5fa;
 }
 
-/* Adaptation pour les événements passés (Grisés) */
-.action-card.past-action .action-btn-link {
-  background-color: #ccc;
-  color: #fff;
-  pointer-events: none; /* Non cliquable si passé */
-}
-.action-card.past-action .action-btn-link.secondary {
-  border-color: #ccc;
-  color: #999;
-  background-color: transparent;
+.dark .action-btn-link.secondary:hover {
+  background-color: rgba(59, 130, 246, 0.1);
 }

@@ -148,3 +148,76 @@
     text-align: justify;
   }
 }
+
+
+
+/* --- MODE SOMBRE --- */
+.dark .partner-card {
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.partner-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.partner-logo-container {
+  flex-shrink: 0; 
+  width: 140px;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 8px; 
+  padding: 0.5rem;
+  border: 1px solid #eee;
+}
+
+.dark .partner-logo-container {
+  background-color: #f8fafc; /* On garde un fond clair pour le logo */
+}
+
+.partner-content h3 {
+  font-size: 1.6rem; 
+  color: #003366;
+  margin: 0 0 1rem 0;
+}
+
+.dark .partner-content h3 {
+  color: #f8fafc;
+}
+
+.partner-history {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
+}
+
+.dark .partner-history {
+  color: #cbd5e1;
+}
+
+.partner-link {
+  background-color: #f7f9fc;
+  color: #3b82f6;
+  padding: 8px 14px;
+  border-radius: 30px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.dark .partner-link {
+  background-color: #334155;
+  color: #60a5fa;
+}
+
+.dark .partner-link:hover {
+  background-color: #3b82f6;
+  color: white;
+}

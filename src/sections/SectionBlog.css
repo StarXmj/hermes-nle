@@ -5,3 +5,31 @@
   gap: 2rem;
   margin-top: 2rem;
 }
+
+/* src/sections/SectionBlog.css */
+.blog-section {
+  padding: 80px 20px;
+  background-color: #ffffff;
+}
+
+.dark .blog-section {
+  background-color: #0f172a;
+}
+
+.blog-section h2 {
+  color: #003366;
+  text-align: center;
+}
+
+.dark .blog-section h2 {
+  color: #ffffff;
+}
+
+.blog-description {
+  text-align: center;
+  color: #64748b;
+}
+
+.dark .blog-description {
+  color: #94a3b8;
+}
