@@ -49,9 +49,11 @@ function PartenairesPage() {
               <meta name="description" content="Découvrez nos partenaires et les avantages étudiants exclusifs." />
       </Helmet>
       <div className="section-content">
+        <header className="partenaires-page-header">
+
         <h1>Nos Partenaires</h1>
         <p>Découvrez tous les partenaires qui s'engagent pour la vie étudiante à nos côtés.</p>
-
+        </header>
         {loading ? (
           <p>Chargement...</p>
         ) : partenaires.length > 0 ? (

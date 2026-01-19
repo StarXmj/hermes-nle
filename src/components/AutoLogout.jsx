@@ -25,7 +25,6 @@ const AutoLogout = () => {
   };
 
   useEffect(() => {
-    // Liste des événements qui prouvent que l'utilisateur est actif
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
 
     // On lance le timer au démarrage

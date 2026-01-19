@@ -97,7 +97,7 @@
 
 .actu-card.no-image .actu-card-content h3 {
   font-size: 1.2rem; /* Un peu plus grand */
-  color: #003366;
+  color: #2563EB;
   margin-top: 0;
   margin-bottom: 0.5rem;
   flex-shrink: 0; /* Empêche le titre de rétrécir */
@@ -110,6 +110,9 @@
   margin-bottom: 0;
   flex-grow: 1; /* Pousse le contenu en bas */
 }
+
+.dark .actu-card.no-image .actu-card-content p 
+{color: #ffffff;}
 
 /* --- DARK MODE : Actu Card --- */
 .dark .actu-card.no-image {

@@ -13,7 +13,11 @@
   flex-basis: 250px; /* Largeur de base */
   text-align: center;
 }
-
+.contact-page-header h1 {
+  font-size: 3rem;
+  color: #2563EB;
+  margin-bottom: 1rem;
+}
 .contact-icon {
   color: #0056b3; /* Bleu Hermes */
   margin-bottom: 0.5rem;
@@ -21,7 +25,7 @@
 
 .contact-info-item h3 {
   margin: 0.5rem 0;
-  color: #003366;
+  color: #2563EB;
 }
 
 .contact-info-item p {
@@ -58,6 +62,11 @@
 .form-group label {
   font-weight: 600;
   color: #333;
+}
+
+.dark .form-group label {
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .form-group input,

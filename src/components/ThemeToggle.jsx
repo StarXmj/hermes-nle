@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 export default function ThemeToggle() {
-  // On récupère le thème sauvegardé ou 'dark' par défaut
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  // Changement ici : on met 'light' par défaut au lieu de 'dark'
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
-    const root = window.document.documentElement; // C'est la balise <html>
+    const root = window.document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {

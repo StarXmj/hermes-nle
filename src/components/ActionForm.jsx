@@ -42,7 +42,7 @@ function ActionForm({ action, onSave, onCancel }) {
       
       setFormData({ ...baseData });
 
-      // Chargement des liens supplémentaires
+     
       setExtraLinks(action.extra_links || []);
       
     } else {
@@ -59,7 +59,6 @@ function ActionForm({ action, onSave, onCancel }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- GESTION DES LIENS MODULAIRES ---
   
   const addLink = () => {
     setExtraLinks([...extraLinks, { label: '', url: '', file: null }]);
@@ -104,7 +103,6 @@ function ActionForm({ action, onSave, onCancel }) {
     setError(null);
 
     try {
-        // 1. Upload des Fichiers des Liens Supplémentaires (Seule logique d'upload restante)
         const processedExtraLinks = await Promise.all(extraLinks.map(async (link, index) => {
             // Si un NOUVEAU fichier est sélectionné
             if (link.file) {
@@ -123,7 +121,6 @@ function ActionForm({ action, onSave, onCancel }) {
             return { label: link.label, url: link.url };
         }));
 
-        // 2. Préparation données BDD
         const dataToSave = {
             ...formData,
             dateISO: new Date(formData.dateISO).toISOString(),

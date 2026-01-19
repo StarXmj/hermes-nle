@@ -3,6 +3,12 @@
 /* 1. On supprime tous les anciens styles .partenaires-carousel */
 
 /* 2. On ajoute le style de la liste verticale */
+.partenaires-page-header h1 {
+  font-size: 3rem;
+  color: #2563EB;
+  margin-bottom: 1rem;
+}
+
 .partenaires-list {
   display: flex;
   flex-direction: column; /* Affichage vertical */

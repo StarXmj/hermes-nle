@@ -33,7 +33,7 @@ function ActionCard({ action, status, isUpcoming }) {
       <div className="action-details">
         <div className="action-detail-item">
           <FaCalendarAlt className="action-icon" /> 
-          <span>{action.infoDate}</span>
+<span>{action.infoDate}</span>
         </div>
         
         {action.lieu && (
@@ -51,7 +51,6 @@ function ActionCard({ action, status, isUpcoming }) {
 
       <p className="action-desc">{action.description}</p>
       
-      {/* --- ZONE DES LIENS --- */}
       <div className="action-links-group">
         
         {/* 1. Le lien Programme principal (s'il existe) */}

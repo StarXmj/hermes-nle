@@ -14,8 +14,18 @@ function HomePage() {
   const [randomReelId, setRandomReelId] = useState(null);
   const [allPosts, setAllPosts] = useState([]);
   const [allReels, setAllReels] = useState([]);
+  
+  // État pour gérer la position du scroll pour la parallaxe
+  const [offsetY, setOffsetY] = useState(0);
 
-  // 1. Récupération des données
+  const handleScroll = () => setOffsetY(window.pageYOffset);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // 1. Récupération des données Instagram
   useEffect(() => {
     async function fetchInstagramLinks() {
       try {
@@ -63,41 +73,41 @@ function HomePage() {
         <link rel="canonical" href="https://hermes-nle.netlify.app/" />
       </Helmet>
 
-      {/* --- FOND DYNAMIQUE --- */}
-      <div className="absolute top-[-10%] left-[-10%] w-64 h-64 md:w-96 md:h-96 bg-blue-300/40 dark:bg-hermes-primary/30 rounded-full blur-[80px] md:blur-[100px] pointer-events-none animate-blob" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-cyan-300/40 dark:bg-hermes-secondary/20 rounded-full blur-[80px] md:blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
+      {/* --- FOND DYNAMIQUE (PARALLAXE SUR LES BLOBS) --- */}
+      <div 
+        className="absolute top-[-10%] left-[-10%] w-56 h-56 md:w-80 md:h-80 bg-blue-300/40 dark:bg-hermes-primary/30 rounded-full blur-[70px] md:blur-[90px] pointer-events-none animate-blob" 
+        style={{ transform: `translateY(${offsetY * 0.2}px)` }}
+      />
+      <div 
+        className="absolute bottom-[-10%] right-[-10%] w-56 h-56 md:w-80 md:h-80 bg-cyan-300/40 dark:bg-hermes-secondary/20 rounded-full blur-[70px] md:blur-[90px] pointer-events-none animate-blob animation-delay-2000" 
+        style={{ transform: `translateY(${offsetY * -0.1}px)` }}
+      />
       
       {/* --- HERO SECTION --- */}
-      <section className="relative z-10 min-h-[90vh] md:min-h-[95vh] flex flex-col items-center justify-center md:justify-start lg:justify-center px-4 text-center py-24 md:pt-20 lg:py-0 overflow-hidden">
+      <section className="relative z-10 min-h-[80vh] md:min-h-[85vh] flex flex-col items-center justify-center px-4 text-center py-16 md:pt-16 lg:py-0 overflow-hidden">
         
-        {/* =========================================================
-            VERSION ORDI (DESKTOP)
-           ========================================================= */}
-       
-
-       
-        
-        {/* =========================================================
-            CONTENU CENTRAL (TEXTE)
-           ========================================================= */}
-        <div className="w-full max-w-2xl lg:max-w-md xl:max-w-2xl 2xl:max-w-4xl relative z-30 mb-8 lg:mb-12 mx-auto transition-all duration-300"> 
+        {/* CONTENU CENTRAL (Légère parallaxe inverse pour la profondeur) */}
+        <div 
+          className="w-full max-w-xl lg:max-w-md xl:max-w-xl 2xl:max-w-3xl relative z-30 mb-6 lg:mb-8 mx-auto transition-all duration-300"
+          style={{ transform: `translateY(${offsetY * 0.1}px)` }}
+        > 
             
-            <div data-aos="fade-down" className="mb-4 md:mb-6 inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white border border-gray-200 shadow-sm dark:bg-white/5 dark:border-white/10 dark:shadow-none backdrop-blur-sm text-xs md:text-sm font-medium text-hermes-primary dark:text-hermes-secondary">
-              <span className="relative flex h-2 w-2">
+            <div data-aos="fade-down" className="mb-3 md:mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm dark:bg-white/5 dark:border-white/10 dark:shadow-none backdrop-blur-sm text-[10px] md:text-xs font-medium text-hermes-primary dark:text-hermes-secondary">
+              <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-hermes-secondary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-hermes-secondary"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-hermes-secondary"></span>
               </span>
               Association Étudiante Officielle
             </div>
 
-            <h1 data-aos="zoom-in" className="text-4xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold tracking-tight mb-4 md:mb-6 leading-tight text-slate-900 dark:text-white drop-shadow-sm transition-all duration-300">
-            Un relais pour <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-hermes-primary dark:to-hermes-secondary">tous</span>, <br />
-            une parole pour <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-violet-500 dark:from-hermes-secondary dark:to-hermes-accent">chacun</span>.
+            <h1 data-aos="zoom-in" className="text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold tracking-tight mb-3 md:mb-4 leading-tight text-slate-900 dark:text-white drop-shadow-sm transition-all duration-300">
+              Un relais pour <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-hermes-primary dark:to-hermes-secondary">tous</span>, <br />
+              une parole pour <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-violet-500 dark:from-hermes-secondary dark:to-hermes-accent">chacun</span>.
             </h1>
 
-            <p data-aos="fade-up" data-aos-delay="200" className="text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-gray-600 dark:text-gray-300 max-w-xl lg:max-w-sm xl:max-w-xl 2xl:max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed font-medium px-2">
-            Hermès t'accompagne, t'informe et te défend au quotidien. 
-            Le cœur battant de la vie étudiante sur le campus.
+            <p data-aos="fade-up" data-aos-delay="200" className="text-xs md:text-sm lg:text-sm xl:text-base 2xl:text-lg text-gray-600 dark:text-gray-300 max-w-lg lg:max-w-xs xl:max-w-lg 2xl:max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed font-medium px-2">
+              Hermès t'accompagne, t'informe et te défend au quotidien. 
+              Le cœur battant de la vie étudiante sur le campus.
             </p>
             
             <div className="flex justify-center w-full" data-aos="fade-up" data-aos-delay="300">
@@ -105,41 +115,44 @@ function HomePage() {
                 href="https://www.instagram.com/hermes_by_nle/?igsh=MTZmaTk1amtjOTZudA%3D%3D#" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group relative px-6 py-3 md:px-8 md:py-4 xl:px-10 xl:py-5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full font-bold text-white text-sm md:text-base xl:text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center gap-3 overflow-hidden shadow-violet-200 dark:shadow-none"
+                className="group relative px-5 py-2.5 md:px-6 md:py-3.5 xl:px-8 xl:py-4 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full font-bold text-white text-xs md:text-sm xl:text-base transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center gap-2 overflow-hidden shadow-violet-200 dark:shadow-none"
                 >
                 <div className="absolute inset-0 bg-white/20 skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
-                <FaInstagram className="text-lg md:text-xl xl:text-2xl" />
+                <FaInstagram className="text-base md:text-lg xl:text-xl" />
                 <span>Rejoins-nous sur Insta</span>
                 <FaArrowRight className="group-hover:translate-x-2 transition-transform hidden md:block" />
                 </a>
             </div>
         </div>
 
-      
+        {/* --- FOND MONTAGNE (EFFET PARALLAXE ACCENTUÉ) --- */}
+        <div 
+          className="absolute top-0 left-0 w-full z-10 pointer-events-none"
+          style={{ 
+            transform: `translateY(${8 + offsetY * 0.4}px)`,
+            transition: 'transform 0.1s ease-out' 
+          }}
+        >
+          <img 
+            src={MountainBg} 
+            alt="Alpes Background" 
+            className="w-full h-[25vh] md:h-auto object-cover object-[center_30%] opacity-90 dark:opacity-40 dark:grayscale-[30%] transition-all duration-500" 
+          />
+          <div className="absolute bottom-0 left-0 w-full h-16 z-20 bg-gradient-to-t from-slate-50 dark:from-hermes-dark to-transparent"></div>
+        </div>
 
-
-        {/* --- FOND MONTAGNE --- */}
-  <div className="absolute top-0 left-0 w-full z-10 pointer-events-none translate-y-12">
-   <img 
-     src={MountainBg} 
-     alt="Alpes Background" 
-     className="w-full h-[30vh] md:h-auto object-cover object-[center_30%] opacity-90 dark:opacity-40 dark:grayscale-[30%] transition-all duration-500" 
-   />
-   {/* J'ai ajouté 'z-20' pour être sûr qu'il passe par dessus l'image */}
-   <div className="absolute bottom-0 left-0 w-full h-24 z-20 bg-gradient-to-t from-slate-50 dark:from-hermes-dark to-transparent"></div>
-</div>
         {/* --- FLÈCHE DE SCROLL --- */}
-        <div className="hidden lg:block absolute bottom-6 xl:bottom-8 left-1/2 -translate-x-1/2 z-40 animate-bounce cursor-pointer">
+        <div className="hidden lg:block absolute bottom-4 xl:bottom-6 left-1/2 -translate-x-1/2 z-40 animate-bounce cursor-pointer">
             <a href="#actions" aria-label="Défiler vers le bas" className="text-slate-700 dark:text-white hover:text-hermes-primary transition-colors drop-shadow-lg">
-                <FaArrowDown size={28} className="xl:w-8 xl:h-8" />
+                <FaArrowDown size={24} className="xl:w-7 xl:h-7" />
             </a>
         </div>
 
       </section>
 
       {/* --- AUTRES SECTIONS --- */}
-      <div className="space-y-24 md:space-y-32 pb-24 pt-12 relative z-10 container mx-auto px-4">
-        <div id="actions" className="scroll-mt-24 md:scroll-mt-32"><SectionActions /></div>
+      <div className="space-y-16 md:space-y-24 pb-16 pt-8 relative z-10 container mx-auto px-4">
+        <div id="actions" className="scroll-mt-20 md:scroll-mt-24"><SectionActions /></div>
         <SectionBlog />
         <SectionPartenaires />
         <SectionActus />

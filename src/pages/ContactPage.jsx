@@ -85,8 +85,11 @@ function ContactPage() {
         <meta name="description" content="Contactez l'association Hermes." />
       </Helmet>
       <div className="section-content">
+                <header className="contact-page-header">
+
         <h1>{titre}</h1>
         <p>{sousTitre}</p>
+        </header>
 
         <div className="contact-info-container">
           <div className="contact-info-item">

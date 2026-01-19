@@ -30,8 +30,15 @@
   display: flex;
   gap: 0.5rem;
 }
+
+.dark .newsletter-benefits li {
+  /* --- MODIFICATION ICI --- */
+
+  color: #ffffff;
+  
+}
 .newsletter-benefits li strong {
-  color: #003366;
+  color: #2563EB;
 }
 
 /* 4. Colonne de droite (Formulaire) - NE CHANGE PAS */
@@ -55,6 +62,12 @@
   font-weight: 500;
   color: #555;
   text-align: left;
+}
+
+.dark .newsletter-label {
+  
+  color: #ffffff;
+  
 }
 .newsletter-input {
   width: 100%;

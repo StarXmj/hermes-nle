@@ -33,9 +33,11 @@ function BlogPage() {
       </Helmet>
 
       <div className="section-content">
+              <header className="actus-page-header">
+
         <h1>Le Blog</h1>
         <p>Conseils, retours d'expérience et focus sur la vie associative.</p>
-
+</header>
         {loading ? (
           <p>Chargement...</p>
         ) : articles.length > 0 ? (

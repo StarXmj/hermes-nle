@@ -28,6 +28,12 @@
   color: #555;
   text-decoration: none;
 }
+
+.dark .admin-back-link {
+  
+  color: #fff;
+  
+}
 .admin-back-link:hover {
   color: #0056b3;
 }
@@ -48,6 +54,12 @@
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dark .admin-row {
+  
+  background-color: #0f172a;
+  
 }
 
 .admin-row-info {
@@ -179,6 +191,12 @@ input:checked + .slider:before {
   margin-top: 0.5rem;
   font-style: italic;
   line-height: 1.4;
+}
+
+.dark .admin-row-metadata {
+  
+  color: #fff;
+  
 }
 .admin-row-metadata span {
   white-space: nowrap;

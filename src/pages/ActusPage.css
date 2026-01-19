@@ -12,9 +12,14 @@
   background-color: #f9f9f9;
 }
 
+.dark .actus-page-header {
+  
+  background-color: #0f172a;
+}
+
 .actus-page-header h1 {
   font-size: 3rem;
-  color: #003366;
+  color: #2563EB;
   margin-bottom: 1rem;
 }
 

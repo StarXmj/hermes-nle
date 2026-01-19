@@ -32,6 +32,12 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   transition: transform 0.2s, box-shadow 0.2s;
 }
+
+.dark .admin-nav-card {
+  
+  background-color: #0f172a;
+  
+}
 .admin-nav-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
@@ -43,9 +49,10 @@
 }
 
 .admin-nav-card h3 {
-  color: #003366;
+  color: #0056b3;
   margin: 0.5rem 0;
 }
+
 
 .admin-nav-card p {
   font-size: 0.95rem;
