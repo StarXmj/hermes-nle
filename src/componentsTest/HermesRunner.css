@@ -85,24 +85,6 @@
 }
 @keyframes scrollUp { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 
-/* Contenu Menu */
-.intro-screen {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    width: 90%;
-    height: 85%;
-    max-width: 1200px;
-    gap: 20px;
-}
-
-.intro-content {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    gap: 20px;
-}
-
 /* Colonne Gauche (Leaderboard) */
 .intro-lb-container {
     flex: 1;

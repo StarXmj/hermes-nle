@@ -33,13 +33,13 @@ export const BIOMES = {
 export const BIOME_SEQUENCE = [
   
   
-  { type: BIOMES.NORMAL,   duration: 1000 }, // Le test d'amitié !
+  //{ type: BIOMES.NORMAL,   duration: 1000 }, // Le test d'amitié !
  
-  { type: BIOMES.DIONYSOS, duration: 1200 },
-  { type: BIOMES.PHILOTES, duration: 1400 },
-  { type: BIOMES.HADES,    duration: 900  },
-  { type: BIOMES.INVERTED, duration: 1000 },
-  { type: BIOMES.HADES,    duration: 900  }, 
+  //{ type: BIOMES.DIONYSOS, duration: 1200 },
+  //{ type: BIOMES.PHILOTES, duration: 1400 },
+  //{ type: BIOMES.HADES,    duration: 900  },
+  //{ type: BIOMES.INVERTED, duration: 1000 },
+  //{ type: BIOMES.HADES,    duration: 900  }, 
   { type: BIOMES.FLAPPY,   duration: 1500 } ,
    { type: BIOMES.ARES,     duration: 1300 }
 ];

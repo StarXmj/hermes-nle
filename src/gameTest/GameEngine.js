@@ -4,6 +4,7 @@ import { Background } from './Background';
 import { InputHandler } from './InputHandler';
 import { GAME_CONFIG, BIOMES, BIOME_SEQUENCE } from './constants';
 import { spriteManager } from './SpriteManager';
+
 export class GameEngine {
   constructor(canvas, callbacks) {
     this.canvas = canvas;
@@ -44,7 +45,6 @@ export class GameEngine {
     this.score = 0;
     this.running = true;
     
-    // Initialisation Séquence Biome
     this.biomeSequenceIndex = 0;
     this.currentBiome = BIOME_SEQUENCE[0].type;
     this.biomeDurationTarget = BIOME_SEQUENCE[0].duration;
@@ -57,14 +57,13 @@ export class GameEngine {
   loop = () => {
     if (!this.running) return;
 
-    // Clear écran complet
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
 
     this.update();
-    this.draw();
+    this.draw(); // C'est ici que tout se dessine
     
     if (this.score % 10 < 1) {
         this.callbacks.onUpdateUI({
@@ -76,19 +75,16 @@ export class GameEngine {
   }
 
   update() {
-    // Transition
     if (this.transitionAlpha > 0) {
         this.transitionAlpha -= 0.02; 
         if(this.transitionAlpha < 0) this.transitionAlpha = 0;
     }
 
-    // Gestion Biomes
     this.biomeTimer++;
     if (this.biomeTimer > this.biomeDurationTarget) {
         this.nextBiome();
     }
 
-    // Physique
     const worldSpeed = this.speed;
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
@@ -115,60 +111,32 @@ export class GameEngine {
       this.transitionAlpha = 1.0;
   }
 
+  // ✅ CORRIGÉ : Cette méthode ne fait QUE des calculs (plus de dessin ici)
   checkCollisions() {
     const pBox = this.player.getHitbox();
     let ghostBox = null;
     
-    // Récupérer la hitbox fantôme seulement en Philotes
-    this.level.entities.forEach(ent => {
-        // On délègue le dessin au manager qui choisit la bonne image selon le biome
-        spriteManager.drawObstacle(this.ctx, ent, this.currentBiome);
-    });
-
-    // 2. JOUEUR (Utilise le SpriteManager)
-    // On dessine le joueur
-    // 2. JOUEUR (Utilise le SpriteManager)
-    spriteManager.drawPlayer(
-        this.ctx, 
-        this.player.x, 
-        this.player.y, 
-        this.player.width, 
-        this.player.height, 
-        this.player.isSliding,
-        this.player.jumpCount > 0 // ✅ On passe true si on saute (détecté par jumpCount ou vy)
-    );
-
-    // 3. FANTÔME PHILOTES
     if (this.currentBiome === BIOMES.PHILOTES) {
-        const p = this.player;
-        const ghostY = p.y - 120; // Récupère la constante GHOST_OFFSET_Y si tu l'as exportée, sinon 120
-
-        // Lien magique
-        this.ctx.beginPath();
-        this.ctx.moveTo(p.x + p.width/2, p.y);
-        this.ctx.lineTo(p.x + p.width/2, ghostY + p.height);
-        this.ctx.strokeStyle = 'rgba(255, 105, 180, 0.5)';
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.stroke();
-        this.ctx.setLineDash([]);
-
-        // Dessin du fantôme (Joueur semi-transparent)
-        this.ctx.save();
-        this.ctx.globalAlpha = 0.5; // Transparence
-        // On applique un filtre rose si possible ou juste l'image standard
-        spriteManager.drawPlayer(this.ctx, p.x, ghostY, p.width, p.height, p.isSliding);
-        this.ctx.restore();
+        if (this.player.getGhostHitbox) {
+            ghostBox = this.player.getGhostHitbox();
+        } else {
+            const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
+            ghostBox = {
+                x: this.player.x + 8,
+                y: ghostY + 5,
+                width: this.player.width - 16,
+                height: this.player.height - 10
+            };
+        }
     }
 
     for (let ent of this.level.entities) {
-        // 1. Collision Joueur
         if (this.isColliding(pBox, ent)) {
             this.gameOver();
             return;
         }
-        // 2. Collision Fantôme
         if (ghostBox && this.isColliding(ghostBox, ent)) {
-            this.gameOver(); // Si le fantôme meurt, tu meurs
+            this.gameOver();
             return;
         }
     }
@@ -196,7 +164,7 @@ export class GameEngine {
     this.ctx.rect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     this.ctx.clip();
 
-    // --- EFFET DIONYSOS (Caméra Ivre) ---
+    // --- EFFET DIONYSOS ---
     if (this.currentBiome === BIOMES.DIONYSOS) {
         const cx = GAME_CONFIG.CANVAS_WIDTH / 2;
         const cy = GAME_CONFIG.CANVAS_HEIGHT / 2;
@@ -207,10 +175,10 @@ export class GameEngine {
         this.ctx.translate(-cx, -cy);
     }
 
-    // --- DESSIN PRINCIPAL ---
+    // 1. DESSIN DU FOND (SPRITES)
     this.background.draw(this.ctx);
     
-    // Sol / Plafond
+    // 2. SOL / PLAFOND (PHYSIQUE)
     this.ctx.fillStyle = '#222';
     if (this.currentBiome !== BIOMES.INVERTED) {
         this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
@@ -219,77 +187,108 @@ export class GameEngine {
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
     }
 
-    this.level.draw(this.ctx);
-    this.player.draw(this.ctx);
+    // 3. OBSTACLES (SPRITES)
+    this.level.entities.forEach(ent => {
+        spriteManager.drawObstacle(this.ctx, ent, this.currentBiome);
+    });
 
-    // ✅ VISUEL PHILOTES : LE FANTÔME (C'est ici qu'il se dessine)
+    // 4. JOUEUR (SPRITE)
+    spriteManager.drawPlayer(
+        this.ctx, 
+        this.player.x, 
+        this.player.y, 
+        this.player.width, 
+        this.player.height, 
+        this.player.isSliding,
+        this.player.jumpCount > 0
+    );
+
+    // 5. FANTÔME (SPRITE - PHILOTES)
     if (this.currentBiome === BIOMES.PHILOTES) {
-        const p = this.player;
-        // On utilise la config pour la hauteur
-        const ghostY = p.y - GAME_CONFIG.GHOST_OFFSET_Y;
-
-        // Lien
+        const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
+        
+        // Lien visuel
         this.ctx.beginPath();
-        this.ctx.moveTo(p.x + p.width/2, p.y);
-        this.ctx.lineTo(p.x + p.width/2, ghostY + p.height);
+        this.ctx.moveTo(this.player.x + this.player.width/2, this.player.y);
+        this.ctx.lineTo(this.player.x + this.player.width/2, ghostY + this.player.height);
         this.ctx.strokeStyle = 'rgba(255, 105, 180, 0.5)';
         this.ctx.lineWidth = 2;
         this.ctx.setLineDash([5, 5]);
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // Corps du Fantôme
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Plus opaque pour bien le voir
-        this.ctx.fillRect(p.x, ghostY, p.width, p.height);
-        
-        // Yeux
-        this.ctx.fillStyle = '#ff1493';
-        this.ctx.fillRect(p.x + 10, ghostY + 15, 6, 6);
-        this.ctx.fillRect(p.x + 24, ghostY + 15, 6, 6);
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.5; 
+        spriteManager.drawPlayer(this.ctx, this.player.x, ghostY, this.player.width, this.player.height, this.player.isSliding, this.player.jumpCount > 0);
+        this.ctx.restore();
     }
 
     // --- OVERLAYS VISUELS ---
-
-    // Ares (Rouge)
     if (this.currentBiome === BIOMES.ARES) {
         this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     }
-    
-    // Dionysos (Violet)
-    if (this.currentBiome === BIOMES.DIONYSOS) {
-        this.ctx.fillStyle = 'rgba(142, 68, 173, 0.15)';
-        this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
-    }
-
-    // Hades (Brouillard Noir)
     if (this.currentBiome === BIOMES.HADES) {
         const pCenterX = this.player.x + 20;
         const pCenterY = this.player.y + 30;
         const gradient = this.ctx.createRadialGradient(pCenterX, pCenterY, 120, pCenterX, pCenterY, 450);
         gradient.addColorStop(0, 'rgba(0,0,0,0)');   
-        gradient.addColorStop(0.3, 'rgba(0,0,0,0.4)');
-        gradient.addColorStop(1, 'rgba(0,0,0,0.98)');   
+        gradient.addColorStop(1, 'rgba(0,0,0,0.95)');   
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
-        // Yeux rouges
-        this.ctx.fillStyle = 'red';
-        this.ctx.fillRect(this.player.x + 25, this.player.y + 10, 4, 4);
     }
-
-    // Transition (Flash Blanc)
     if (this.transitionAlpha > 0) {
         this.ctx.fillStyle = `rgba(255, 255, 255, ${this.transitionAlpha})`;
         this.ctx.fillRect(0,0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
-        
-        if (this.transitionAlpha > 0.5) {
-            this.ctx.fillStyle = '#000';
-            this.ctx.font = "bold 40px Courier";
-            this.ctx.textAlign = "center";
-            this.ctx.fillText(`ZONE: ${this.currentBiome}`, GAME_CONFIG.CANVAS_WIDTH/2, GAME_CONFIG.CANVAS_HEIGHT/2);
-            this.ctx.textAlign = "left";
-        }
     }
+
+    // ============================================================
+    // 🛠️ MODE DEBUG : HITBOXES TRANSPARENTES
+    // ============================================================
+    // Mets à 'false' pour désactiver l'affichage des zones de collision
+    const DEBUG_MODE = true; 
+
+    if (DEBUG_MODE) {
+        this.ctx.save();
+        this.ctx.lineWidth = 2;
+
+        // A. HITBOX JOUEUR (VERT)
+        // On récupère la vraie hitbox utilisée pour les calculs
+        const pBox = this.player.getHitbox ? this.player.getHitbox() : { x: this.player.x, y: this.player.y, width: this.player.width, height: this.player.height };
+        
+        this.ctx.strokeStyle = '#00FF00'; // Contour Vert fluo
+        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'; // Fond Vert transparent
+        this.ctx.fillRect(pBox.x, pBox.y, pBox.width, pBox.height);
+        this.ctx.strokeRect(pBox.x, pBox.y, pBox.width, pBox.height);
+
+        // B. HITBOX OBSTACLES (ROUGE)
+        this.ctx.strokeStyle = '#FF0000'; // Contour Rouge
+        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Fond Rouge transparent
+        this.level.entities.forEach(ent => {
+             this.ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
+             this.ctx.strokeRect(ent.x, ent.y, ent.width, ent.height);
+        });
+
+        // C. HITBOX FANTÔME (BLEU - Philotes)
+        if (this.currentBiome === BIOMES.PHILOTES) {
+             let ghostBox = null;
+             if (this.player.getGhostHitbox) {
+                 ghostBox = this.player.getGhostHitbox();
+             } else {
+                 const ghostOffset = GAME_CONFIG.GHOST_OFFSET_Y || 120;
+                 ghostBox = { x: this.player.x + 8, y: this.player.y - ghostOffset + 5, width: this.player.width - 16, height: this.player.height - 10 };
+             }
+             
+             if (ghostBox) {
+                 this.ctx.strokeStyle = '#00FFFF'; // Cyan
+                 this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                 this.ctx.fillRect(ghostBox.x, ghostBox.y, ghostBox.width, ghostBox.height);
+                 this.ctx.strokeRect(ghostBox.x, ghostBox.y, ghostBox.width, ghostBox.height);
+             }
+        }
+        this.ctx.restore();
+    }
+    // ============================================================
 
     this.ctx.restore();
   }
