@@ -50,8 +50,13 @@ function ActusPage() {
       <Helmet><title>Toutes les Actualités</title></Helmet>
       
       <header className="actus-page-header">
-        <h1>Actualités du Campus</h1>
-        <p>Restez informés de tout ce qu'il se passe à l'UPPA.</p>
+        
+       
+
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+          <span className="text-hermes-primary">Actualités</span>
+         <p>Restez informés de tout ce qu'il se passe à l'UPPA.</p>
+        </h1>
         
         <div className="filter-buttons">
           <button className={`filter-btn ${filter === 'future' ? 'active' : ''}`} onClick={() => setFilter('future')}>À venir / En cours</button>

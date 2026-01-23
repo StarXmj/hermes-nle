@@ -1,5 +1,6 @@
 .blog-page-header h1 {
-  font-size: 3rem;
-  color: #2563EB;
-  margin-bottom: 1rem;
+  font-size: 3rem; /* Titre plus gros */
+  font-weight: 800;
+  margin-bottom: 1.5rem;
 }
+

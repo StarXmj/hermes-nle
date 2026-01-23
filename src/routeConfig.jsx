@@ -22,6 +22,8 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 // Imports Statiques (pour les pages "lourdes" ou critiques si besoin)
 import AssoMatchPage from './pages/AssoMatchPage';
 import HermesRunnerPage from './pages/HermesRunnerPage'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
+import TestGame from './componentsTest/HermesRunner'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
+
 
 // --- NOUVEAU : PAGES MULTIJOUEUR (HUB) ---
 const HostLobbyPage = lazy(() => import('./pages/hub/HostLobbyPage'));
@@ -228,6 +230,12 @@ export const appRoutes = [
   {
     path: '/runner',
     element: <HermesRunnerPage />,
+    name: 'Hermes Runner',
+    category: 'main',
+  },
+  {
+    path: '/test',
+    element: <TestGame />,
     name: 'Hermes Runner',
     category: 'main',
   },

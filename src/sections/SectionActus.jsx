@@ -68,7 +68,9 @@ function SectionActus() {
   return (
     <section id="actualites" className="page-section">
       <div className="section-content">
-        <h2>Actu & Événements Fac</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+          Actu & Événements <span className="text-hermes-primary">Fac</span>
+        </h2>
         <p>Restez informés de ce qu'il se passe sur le campus.</p>
 
         {loading ? (
@@ -118,8 +120,8 @@ function SectionActus() {
           </p>
           
         )}
-        <div style={{textAlign: 'center', marginTop: '2rem'}}>
-  <a href="/actualites" className="cta-button secondary">
+        <div className="actions-links">
+  <a href="/actualites" className="cta-button">
     Voir toutes les actualités
   </a>
 </div>

@@ -109,6 +109,7 @@
   line-height: 1.5;
   margin-bottom: 0;
   flex-grow: 1; /* Pousse le contenu en bas */
+   text-align: left; 
 }
 
 .dark .actu-card.no-image .actu-card-content p 

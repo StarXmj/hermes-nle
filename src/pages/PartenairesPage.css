@@ -1,22 +1,45 @@
 /* src/pages/PartenairesPage.css */
 
-/* 1. On supprime tous les anciens styles .partenaires-carousel */
-
-/* 2. On ajoute le style de la liste verticale */
-.partenaires-page-header h1 {
-  font-size: 3rem;
-  color: #2563EB;
-  margin-bottom: 1rem;
+.page-section {
+  padding: 4rem 1rem;
+  min-height: 80vh;
+  background-color: #f8fafc; /* Fond très léger pour contraste */
 }
 
+.dark .page-section {
+  background-color: #0f172a;
+}
+
+.partenaires-page-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.partenaires-page-header h1 {
+  font-size: 3rem; /* Titre plus gros */
+  font-weight: 800;
+ 
+  margin-bottom: 1.5rem;
+}
+
+
+
+
+
+/* LISTE EN COLONNE UNIQUE (LARGE) */
 .partenaires-list {
-  display: flex;
-  flex-direction: column; /* Affichage vertical */
-  gap: 1.5rem; /* Espace entre chaque carte */
-  margin-top: 3rem;
-  
-  /* On centre la liste et on limite sa largeur pour la lisibilité */
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  display: grid;
+  grid-template-columns: 1fr; /* Une seule colonne */
+  gap: 4rem; /* Grand espace entre les cartes */
+  max-width: 900px; /* Largeur optimale pour la lecture */
+  margin: 0 auto; /* Centré */
+  padding-bottom: 4rem;
+}
+
+/* Mobile : on garde les marges */
+@media (max-width: 640px) {
+  .partenaires-list {
+    gap: 3rem;
+    padding: 0 0.5rem;
+  }
 }

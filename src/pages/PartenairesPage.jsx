@@ -1,7 +1,7 @@
 // src/pages/PartenairesPage.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import PartnerCardList from '../components/PartnerCardList.jsx';
+import PartnerCardList from '../components/PartnerCardGrid.jsx';
 import { Helmet } from 'react-helmet-async';
 import './PartenairesPage.css';
 
@@ -51,8 +51,11 @@ function PartenairesPage() {
       <div className="section-content">
         <header className="partenaires-page-header">
 
-        <h1>Nos Partenaires</h1>
+      
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+         Nos <span className="text-hermes-primary">Partenaires</span>
         <p>Découvrez tous les partenaires qui s'engagent pour la vie étudiante à nos côtés.</p>
+        </h1>
         </header>
         {loading ? (
           <p>Chargement...</p>

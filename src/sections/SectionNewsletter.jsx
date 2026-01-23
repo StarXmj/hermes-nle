@@ -41,7 +41,10 @@ function SectionNewsletter() {
           
           {/* Colonne de gauche (Infos) */}
           <div className="newsletter-info">
-            <h2>S'inscrire à notre newsletter</h2>
+           
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+          S'inscrire à notre  <span className="text-hermes-primary">newsletter</span>
+        </h2>
             <p>Ne manquez aucune info importante, aucun bon plan, ni aucun événement !</p>
             
             <ul className="newsletter-benefits">

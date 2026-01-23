@@ -98,15 +98,14 @@ function Navbar() {
         </div>
         
         <ul className="flex flex-col gap-6 text-lg overflow-y-auto">
-          <li><Link to="/" onClick={handleScrollToTop} className="block text-gray-700 dark:text-gray-300 hover:text-hermes-primary font-medium">Accueil</Link></li>
-          {['C\'est quoi ?', 'Évènements', 'Actualités', 'Partenaires', 'Blog', 'Contact'].map((item, idx) => {
-             const path = `/${item.toLowerCase().replace(/ /g, '').replace('?', '').replace('\'', '')}`;
-             return (
-               <li key={idx}>
-                 <Link to={path} onClick={toggleDrawer} className="block text-gray-700 dark:text-gray-300 hover:text-hermes-primary font-medium">{item}</Link>
-               </li>
-             )
-          })}
+          <li><Link to="/" onClick={handleScrollToTop} className={navLinkClass('/')}>Accueil</Link></li>
+            <li><Link to="/about" className={navLinkClass('/about')}>C'est quoi ?</Link></li>
+            <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
+            <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
+            <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
+            <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
+            <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
+           
         </ul>
       </div>
     </>

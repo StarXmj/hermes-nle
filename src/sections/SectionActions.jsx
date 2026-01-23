@@ -41,7 +41,9 @@ function SectionActions() {
   return (
     <section className="page-section">
       <div className="section-content">
-        <h2>Nos Évènements</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+          Nos <span className="text-hermes-primary">Évènements</span>
+        </h2>
         <p>Découvrez ce que nous faisons pour animer le campus.</p>
 
         {/* 8. On ajoute un indicateur de chargement */}

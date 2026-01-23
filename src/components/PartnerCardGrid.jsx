@@ -1,48 +1,64 @@
 // src/components/PartnerCardGrid.jsx
 import React from 'react';
 import './PartnerCardGrid.css'; 
-import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa'; 
-// 1. Import de l'utilitaire d'optimisation
+import { FaMapMarkerAlt, FaGlobe, FaInfoCircle } from 'react-icons/fa'; 
 import { getOptimizedImageUrl } from '../utils';
 
 function PartnerCardGrid({ partenaire }) {
-  // 2. On optimise l'URL du logo (300px est suffisant pour la grille)
-  const optimizedLogo = getOptimizedImageUrl(partenaire.logo, 300);
+  const optimizedLogo = getOptimizedImageUrl(partenaire.logo, 400);
 
   return (
-    <div className="partner-card-grid" data-aos="zoom-in">
-      <div className="partner-logo-container">
-        {/* 3. On utilise la version optimisée */}
-        <img 
-          src={optimizedLogo} 
-          alt={partenaire.nom} 
-          className="partner-logo" 
-          loading="lazy"
-        />
-      </div>
-      <div className="partner-content">
-        <h3>{partenaire.nom}</h3>
-        <p>{partenaire.description}</p>
-        <div className="partner-hover-links">
-          <a 
-            href={partenaire.lienAdresse} 
-            className="partner-link" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            <FaMapMarkerAlt size={12} /> Google Maps
-          </a>
-          <a 
-            href={partenaire.lienSite} 
-            className="partner-link" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            <FaExternalLinkAlt size={12} /> Voir le site
-          </a>
+    <article className="partner-card-modern" data-aos="fade-up">
+      {/* HEADER : LOGO */}
+      <div className="partner-card-header">
+        <div className="img-wrapper">
+          <img 
+            src={optimizedLogo} 
+            alt={`Logo ${partenaire.nom}`} 
+            className="partner-logo-img" 
+            loading="lazy"
+          />
         </div>
       </div>
-    </div>
+
+      {/* BODY : CONTENU */}
+      <div className="partner-card-body">
+        <h3 className="partner-title">{partenaire.nom}</h3>
+        
+        {/* On affiche l'histoire, ou la description en fallback */}
+        <p className="partner-history">
+          {partenaire.histoire || partenaire.description || "Un partenaire de confiance pour les étudiants."}
+        </p>
+
+        {/* FOOTER : ACTIONS */}
+        <div className="partner-actions">
+          {partenaire.lienAdresse && (
+            <a 
+              href={partenaire.lienAdresse} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="action-btn secondary"
+              title="Voir sur Google Maps"
+            >
+              <FaMapMarkerAlt /> <span>Localiser</span>
+            </a>
+          )}
+          
+          {partenaire.lienSite && (
+            <a 
+              href={partenaire.lienSite} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="action-btn primary"
+              title="Visiter le site web"
+            >
+              <FaGlobe /> <span>Site Web</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }
+
 export default PartnerCardGrid;
