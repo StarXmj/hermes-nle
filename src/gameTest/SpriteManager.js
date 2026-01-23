@@ -1,8 +1,8 @@
 import { GAME_CONFIG, BIOMES } from './constants';
 
 // Imports des images du joueur (si elles sont dans src)
-import runImg from './hermes-run1.png'; 
-import jumpImg from './hermes-jump.gif'; 
+import runImg from './hermes-run.gif'; 
+
 
 class SpriteManager {
   constructor() {
@@ -15,7 +15,7 @@ class SpriteManager {
             speed: 100
         },
         jump: {
-            src: jumpImg,
+            src: runImg,
             frames: 1,
             speed: 0
         }
