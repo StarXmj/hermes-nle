@@ -1,12 +1,12 @@
 export const GAME_CONFIG = {
   // --- PHYSIQUE ---
-  GRAVITY: 0.6,
+  GRAVITY: 0.55,
   FLAPPY_GRAVITY: 0.5,     
   JUMP_FORCE: -12,
   FLAPPY_JUMP_FORCE: -7,   
   
   // --- VITESSE ---
-  SPEED_START: 4,       // Avant: 6
+  SPEED_START: 3.5,       // Avant: 6
   SPEED_MAX: 16,          // Avant: 20
   SPEED_INCREMENT: 0.0005,// Avant: 0.0015 (Monte beaucoup moins vite)
   
@@ -38,6 +38,7 @@ export const BIOME_SEQUENCE = [
   { type: BIOMES.DIONYSOS, duration: 1000 }, 
   { type: BIOMES.NORMAL,   duration: 1500 },
   { type: BIOMES.HADES,    duration: 750  }, 
+  { type: BIOMES.INVERTED, duration: 1000 },
   { type: BIOMES.NORMAL,   duration: 1500 },
   { type: BIOMES.FLAPPY,   duration: 1000 }, 
   { type: BIOMES.NORMAL,   duration: 1500 },

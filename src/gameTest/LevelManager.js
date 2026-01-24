@@ -104,7 +104,7 @@ export class LevelManager {
               def = ENTITY_TYPES.HIGH;
               finalHeight = 40; 
               finalType = 'harpy';
-              const heightFromGround = this.randomInt(90, 110);
+              const heightFromGround = this.randomInt(55, 85);
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - heightFromGround;
           }
       }
@@ -119,7 +119,7 @@ export class LevelManager {
               def = ENTITY_TYPES.HIGH;
               finalHeight = 40;
               finalType = 'harpy';
-              yPos = GAME_CONFIG.GROUND_HEIGHT + this.randomInt(80, 100);
+              yPos = GAME_CONFIG.GROUND_HEIGHT + this.randomInt(50, 70);
           }
       }
       // 3. BIOME FLAPPY
@@ -149,7 +149,7 @@ export class LevelManager {
 
       // --- CALCUL DU GAP (Difficulté Simplifiée) ---
       // Plus "reactionFrames" est grand, plus il y a d'espace entre les obstacles
-      let reactionFrames = (biome === BIOMES.FLAPPY) ? 60 : 90; // Était 35 : 60 (Beaucoup plus d'espace)
+      let reactionFrames = (biome === BIOMES.FLAPPY) ? 60 : 100; // Était 35 : 60 (Beaucoup plus d'espace)
       
       if (biome === BIOMES.HADES) reactionFrames = 120; // Était 90
       if (biome === BIOMES.ARES) reactionFrames = 110;  // Était 80
