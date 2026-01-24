@@ -25,7 +25,6 @@
     align-items: baseline; 
     gap: 15px;
     
-    /* SECURITÉ TOTALE CONTRE LES CADRES */
     background: transparent !important;
     border: none !important;
     outline: none !important;
@@ -34,18 +33,15 @@
     margin: 0 !important;
 }
 
-/* SCORE : Blanc pur, ombre noire simple pour lisibilité */
 .score-simple {
     font-size: 3.5rem;      
     font-weight: 900;     
     color: #fff;
     line-height: 1;
     letter-spacing: -1px;
-    /* Suppression de tout effet de halo/contour jaune potentiel */
     text-shadow: 3px 3px 0 #000; 
 }
 
-/* BIOME : Couleur du texte uniquement, ombre noire */
 .biome-simple {
     font-size: 1.2rem;    
     font-weight: 800;
@@ -54,26 +50,29 @@
     text-shadow: 2px 2px 0 #000;
 }
 
-/* --- ÉCRAN BLOCAGE PORTRAIT (CSS PUR - FIABLE) --- */
+/* --- ÉCRAN BLOCAGE PORTRAIT (CRITIQUE) --- */
 .orientation-lock {
-    /* PAR DÉFAUT : CACHÉ (Le jeu fonctionne) */
-    display: none;
+    /* Caché par défaut en paysage */
+    display: none !important;
     
-    /* Style de l'overlay */
     position: fixed; 
     inset: 0;
-    width: 100vw; height: 100vh;
+    width: 100vw !important; 
+    height: 100vh !important;
     background: #000; 
-    z-index: 2147483647; /* Toujours au-dessus de tout */
+    
+    /* Z-INDEX MAXIMUM POSSIBLE */
+    z-index: 2147483647; 
     
     flex-direction: column; 
     justify-content: center; 
     align-items: center;
     color: #DAA520; 
     text-align: center;
+    padding: 20px;
 }
 
-/* LA RÈGLE D'OR : Si l'écran est plus haut que large (Portrait) -> ON AFFICHE */
+/* DÉTECTION PORTRAIT STRICTE */
 @media screen and (orientation: portrait) {
     .orientation-lock {
         display: flex !important;
@@ -102,7 +101,8 @@
     font-size: 5vw; color: #DAA520; font-weight: 900; letter-spacing: -2px;
     margin: 0 0 10px 0; text-shadow: 0 0 30px rgba(218, 165, 32, 0.4);
 }
-.greek-start-button.pulse { animation: pulseBtn 2s infinite; }
+.greek-start-button.pulse { animation: pulseBtn 2s infinite; cursor: pointer; border: none; padding: 20px 40px; background: #DAA520; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; }
+
 @keyframes pulseBtn {
     0% { transform: scale(1); box-shadow: 0 0 20px rgba(218, 165, 32, 0.2); }
     50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(218, 165, 32, 0.5); }
@@ -133,14 +133,18 @@
 
 .menu-right { flex: 1; height: 100%; background: rgba(20, 20, 20, 0.8); border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; }
 .leaderboard-section { display: flex; flex-direction: column; height: 100%; }
-.lb-header { text-align: center; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-.lb-tabs { display: flex; gap: 10px; margin: 10px 0; }
-.lb-tabs button { flex: 1; background: #111; color: #666; border: none; padding: 8px; cursor: pointer; font-weight: bold; }
-.lb-tabs button.active { background: #333; color: #DAA520; }
+.lb-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.lb-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+.lb-tabs button { flex: 1; background: #111; color: #666; border: 1px solid #333; padding: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem; }
+.lb-tabs button.active { background: #333; color: #DAA520; border-color: #DAA520; }
 .lb-list { flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-.lb-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.9rem; color: #aaa; }
-.lb-list li.me { color: #DAA520; font-weight: bold; }
-.lb-list .rank { width: 25px; opacity: 0.5; }
+.lb-list li { display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 0.9rem; color: #aaa; }
+.lb-list li:last-child { border-bottom: none; }
+.lb-list li.me { color: #DAA520; font-weight: bold; background: rgba(218, 165, 32, 0.1); }
+.lb-list .rank { width: 30px; opacity: 0.5; font-style: italic; }
+.lb-list .name { flex-grow: 1; text-align: left; padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-list .score { font-family: monospace; font-size: 1rem; }
+.lb-list li.empty { justify-content: center; color: #555; font-style: italic; padding-top: 50px; }
 
 .gameover-overlay { position: fixed; inset: 0; background: rgba(10, 0, 0, 0.9); z-index: 150; display: flex; justify-content: center; align-items: center; }
 .gameover-content { text-align: center; color: #fff; animation: popIn 0.3s ease-out; }

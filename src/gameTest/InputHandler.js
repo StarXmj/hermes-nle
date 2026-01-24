@@ -10,8 +10,11 @@ export class InputHandler {
       space: false
     };
     
-    // ✅ DÉTECTION IMMÉDIATE DU MOBILE (Sans attendre le touch)
-    this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    // ✅ DÉTECTION STRICTE DU MOBILE
+    // On vérifie si l'appareil est tactile ET si c'est un appareil mobile (Android, iOS, etc.)
+    // Cela évite que les PC portables tactiles soient considérés comme des téléphones.
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    this.isTouchDevice = isMobileUA && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
     
     // Pour les marqueurs visuels (les ronds sous les doigts)
     this.touches = []; 
@@ -20,13 +23,13 @@ export class InputHandler {
     this.keydownListener = (e) => this.handleKey(e, true);
     this.keyupListener = (e) => this.handleKey(e, false);
     this.touchstartListener = (e) => this.handleTouch(e, true);
-    this.touchmoveListener = (e) => this.handleTouch(e, true); // Ajout du move
+    this.touchmoveListener = (e) => this.handleTouch(e, true); 
     this.touchendListener = (e) => this.handleTouch(e, false);
 
     window.addEventListener('keydown', this.keydownListener);
     window.addEventListener('keyup', this.keyupListener);
     
-    // Support tactile
+    // Support tactile (actif même sur PC hybride pour permettre de jouer, mais le tuto sera Clavier)
     window.addEventListener('touchstart', this.touchstartListener, { passive: false });
     window.addEventListener('touchmove', this.touchmoveListener, { passive: false });
     window.addEventListener('touchend', this.touchendListener);
@@ -43,24 +46,19 @@ export class InputHandler {
   handleTouch(e, state) {
     if(e.cancelable) e.preventDefault();
     
-    // On met à jour la liste des touches actives pour le rendu visuel
     this.touches = [];
     
-    // Si state est true (start ou move), on analyse les touches actives
-    if (state && e.touches.length > 0) { // Utiliser e.touches pour l'état actuel global
+    if (state && e.touches.length > 0) { 
         const width = window.innerWidth;
         
-        // Reset des clés avant de vérifier
         this.keys.up = false;
         this.keys.down = false;
 
         for (let i = 0; i < e.touches.length; i++) {
             const t = e.touches[i];
-            
-            // Stockage pour le GameEngine (dessin des ronds)
             this.touches.push({ x: t.clientX, y: t.clientY });
 
-            // Logique Gauche (Slide) / Droite (Saut)
+            // GAUCHE = GLISSER (Down), DROITE = SAUTER (Up)
             if (t.clientX > width / 2) {
                 this.keys.up = true;
             } else {
@@ -68,7 +66,6 @@ export class InputHandler {
             }
         }
     } else {
-        // Si plus aucun doigt (touchend avec 0 touches restantes)
         if (e.touches.length === 0) {
             this.keys.up = false;
             this.keys.down = false;

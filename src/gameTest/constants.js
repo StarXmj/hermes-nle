@@ -32,15 +32,17 @@ export const BIOMES = {
 };
 
 export const BIOME_SEQUENCE = [
-  { type: BIOMES.NORMAL,   duration: 1000 }, 
-  //{ type: BIOMES.PHILOTES, duration: 1200 }, 
-  //{ type: BIOMES.DIONYSOS, duration: 1200 }, 
-  //{ type: BIOMES.HADES,    duration: 900  }, 
-  //{ type: BIOMES.INVERTED, duration: 1000 }, 
-  //{ type: BIOMES.HADES,    duration: 900  }, 
-  //{ type: BIOMES.NORMAL,   duration: 300  }, 
-  { type: BIOMES.FLAPPY,   duration: 1500 }, 
+  { type: BIOMES.NORMAL,   duration: 1500 }, 
+  { type: BIOMES.INVERTED, duration: 1000 }, 
+  { type: BIOMES.NORMAL,   duration: 1500 }, 
+  { type: BIOMES.DIONYSOS, duration: 1000 }, 
+  { type: BIOMES.NORMAL,   duration: 1500 },
+  { type: BIOMES.HADES,    duration: 750  }, 
+  { type: BIOMES.NORMAL,   duration: 1500 },
+  { type: BIOMES.FLAPPY,   duration: 1000 }, 
+  { type: BIOMES.NORMAL,   duration: 1500 },
   { type: BIOMES.ARES,     duration: 1300 }  
+  
 ];
 
 export const ENTITY_TYPES = {

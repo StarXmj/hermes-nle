@@ -54,8 +54,6 @@ export class GameEngine {
     this.biomeDurationTarget = BIOME_SEQUENCE[0].duration;
     this.biomeTimer = 0;
     this.transitionAlpha = 0; 
-
-    // TIMER DE SÉCURITÉ (Start Time)
     this.gameStartTime = Date.now();
   }
 
@@ -96,14 +94,12 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
-    // Vent
     if (this.speed > 16) {
         if (Math.random() < 0.1 + (this.speed - 16) * 0.02) {
              particleManager.createSpeedLine(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
         }
     }
 
-    // MODE SÉCURITÉ (3 secondes)
     const isSafeMode = (Date.now() - this.gameStartTime) < 3000;
 
     this.background.update(worldSpeed, this.currentBiome);
@@ -134,7 +130,6 @@ export class GameEngine {
     let ghostBox = null;
 
     if (this.currentBiome === BIOMES.FLAPPY) {
-        // ✅ CORRECTIF FLAPPY : La mort est tout en bas de l'écran, pas sur le sol surélevé
         if (this.player.y + this.player.height > GAME_CONFIG.CANVAS_HEIGHT) {
             this.gameOver();
             return;
@@ -183,12 +178,10 @@ export class GameEngine {
 
   draw() {
     this.ctx.save();
-    
     this.ctx.beginPath();
     this.ctx.rect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     this.ctx.clip();
 
-    // Transformations DIONYSOS
     if (this.currentBiome === BIOMES.DIONYSOS) {
         const cx = GAME_CONFIG.CANVAS_WIDTH / 2;
         const cy = GAME_CONFIG.CANVAS_HEIGHT / 2;
@@ -199,36 +192,27 @@ export class GameEngine {
         this.ctx.translate(-cx, -cy);
     }
 
-    // 1. FOND
     this.background.draw(this.ctx, this.currentBiome); 
    
-    // ✅ CORRECTIF : Ne PAS dessiner le sol ni le plafond en mode FLAPPY
     if (this.currentBiome !== BIOMES.FLAPPY) {
         this.ctx.fillStyle = '#222';
-        
-        // Sol Standard
         if (this.currentBiome !== BIOMES.INVERTED) {
             this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
         }
-        
-        // Plafond (Seulement pour Inverted)
         if (this.currentBiome === BIOMES.INVERTED) {
             this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
         }
     }
 
-    // 2. OBSTACLES
     this.level.entities.forEach(ent => {
         spriteManager.drawObstacle(this.ctx, ent, this.currentBiome);
     });
 
-    // 3. JOUEUR
     spriteManager.drawPlayer(
         this.ctx, this.player.x, this.player.y, this.player.width, this.player.height, 
         this.player.isSliding, this.player.jumpCount > 0, this.currentBiome 
     );
 
-    // 4. FANTÔME (PHILOTES)
     if (this.currentBiome === BIOMES.PHILOTES) {
         const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
         this.ctx.save();
@@ -237,10 +221,8 @@ export class GameEngine {
         this.ctx.restore();
     }
 
-    // 5. PARTICULES
     particleManager.draw(this.ctx);
 
-    // 6. OVERLAYS VISUELS
     if (this.currentBiome === BIOMES.ARES) {
         this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -261,21 +243,17 @@ export class GameEngine {
 
     this.ctx.restore(); 
 
-    // --- INTERFACE / TUTOS ---
-
     const isSafeMode = (Date.now() - this.gameStartTime) < 3000;
 
-    // TUTO DE DÉPART
+    // TUTO DE DÉPART (Seulement si score < 50 ou début)
     if (this.running && (isSafeMode || this.score < 50) && this.currentBiome !== BIOMES.FLAPPY) {
         this.drawStartTutorial();
     }
 
-    // TUTO FLAPPY
     if (this.running && this.currentBiome === BIOMES.FLAPPY && this.biomeTimer < 300) {
         this.drawFlappyTutorial();
     }
 
-    // MARQUEURS DE DOIGTS
     if (this.input.isTouchDevice) {
         this.drawTouchMarkers();
     }
@@ -291,24 +269,20 @@ export class GameEngine {
       this.ctx.textAlign = 'center';
       this.ctx.shadowColor = 'black';
       this.ctx.shadowBlur = 4;
-
       this.ctx.font = `bold ${30 * dpr}px Arial`;
       this.ctx.fillStyle = '#FFFFFF';
       
       const actionText = this.input.isTouchDevice ? "TAP POUR STABILISER" : "ESPACE POUR STABILISER";
       this.ctx.fillText(actionText, w / 2, h * 0.3);
-
       this.ctx.font = `bold ${24 * dpr}px Arial`;
       this.ctx.fillStyle = '#FF4444'; 
       this.ctx.fillText("ATTENTION : LE SOL EST MORTEL !", w / 2, h * 0.5);
-
       this.ctx.restore();
   }
 
   drawStartTutorial() {
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      
       const w = this.canvas.width;
       const h = this.canvas.height;
       const dpr = window.devicePixelRatio || 1;
@@ -320,14 +294,16 @@ export class GameEngine {
       this.ctx.font = `bold ${28 * dpr}px Arial`;
       this.ctx.fillText("ÉVITE LES OBSTACLES", w / 2, h * 0.15); 
 
+      // ✅ C'EST ICI : Si isTouchDevice est vrai (donc téléphone), on affiche "Gauche/Droite"
       if (this.input.isTouchDevice) {
-          // TUTO MOBILE
+          // GAUCHE (Bleu léger)
           this.ctx.fillStyle = 'rgba(52, 152, 219, 0.2)'; 
           this.ctx.fillRect(0, 0, w/2, h);
-
+          // DROITE (Rouge léger)
           this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
           this.ctx.fillRect(w/2, 0, w/2, h);
 
+          // Ligne séparatrice
           this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
           this.ctx.lineWidth = 4;
           this.ctx.beginPath();
@@ -335,17 +311,18 @@ export class GameEngine {
           this.ctx.lineTo(w/2, h);
           this.ctx.stroke();
 
+          // TEXTE TACTILE
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${24 * dpr}px Arial`;
-          this.ctx.fillText("GAUCHE : GLISSER", w * 0.25, h * 0.5);
+          this.ctx.fillText("GAUCHE : S’ACCROUPIR", w * 0.25, h * 0.5);
           this.ctx.fillText("DROITE : SAUTER", w * 0.75, h * 0.5);
 
       } else {
-          // Tuto PC
+          // ✅ TUTO PC (CLAVIER)
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${20 * dpr}px Arial`;
           this.ctx.fillText("ESPACE / ↑ : SAUTER", w / 2, h * 0.4);
-          this.ctx.fillText("↓ : GLISSER", w / 2, h * 0.6);
+          this.ctx.fillText("↓ : S’ACCROUPIR", w / 2, h * 0.6);
       }
       this.ctx.restore();
   }
@@ -361,7 +338,6 @@ export class GameEngine {
       touches.forEach(t => {
           const x = t.x * dpr;
           const y = t.y * dpr;
-
           this.ctx.beginPath();
           this.ctx.arc(x, y, 30 * dpr, 0, Math.PI * 2);
           this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
@@ -378,7 +354,6 @@ export class GameEngine {
                   const angle = -Math.PI / 2 + (i * 0.5); 
                   const dotX = x + Math.cos(angle) * (40 * dpr);
                   const dotY = y + Math.sin(angle) * (40 * dpr);
-                  
                   this.ctx.beginPath();
                   this.ctx.arc(dotX, dotY, 6 * dpr, 0, Math.PI * 2);
                   this.ctx.fill();
@@ -393,7 +368,6 @@ export class GameEngine {
              this.ctx.fill();
           }
       });
-
       this.ctx.restore();
   }
 
