@@ -3,82 +3,75 @@ import { supabase } from '../supabaseClient';
 
 export function useGameAuth() {
   const [player, setPlayer] = useState(null);
+  // ✅ INITIALISATION SÉCURISÉE AVEC TABLEAUX VIDES
   const [leaderboardAllTime, setLeaderboardAllTime] = useState([]);
-  const [leaderboardMonthly, setLeaderboardMonthly] = useState([]);
+  const [leaderboardMonthly, setLeaderboardMonthly] = useState([]); 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null); // C'est ici que le message d'erreur est stocké
+  const [error, setError] = useState(null);
 
-  // ... (Le useEffect et le Realtime restent inchangés) ...
   useEffect(() => {
     const savedPlayer = localStorage.getItem('hermes_player');
     if (savedPlayer) {
-      setPlayer(JSON.parse(savedPlayer));
+      try {
+        setPlayer(JSON.parse(savedPlayer));
+      } catch (e) {
+        console.error("Erreur parsing player", e);
+      }
     }
     fetchLeaderboards();
-
-    const channel = supabase
-      .channel('leaderboard_updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'arcade_scores' }, () => {
-          fetchLeaderboards();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
   }, []);
-  
+
   const fetchLeaderboards = async () => {
-      // ... (Code existant inchangé) ...
-      const { data: allTime } = await supabase
+    // 1. Classement Général
+    const { data: allTime, error: errorAllTime } = await supabase
       .from('arcade_players')
       .select('pseudo, best_score')
       .order('best_score', { ascending: false })
       .limit(1000);
-    if (allTime) setLeaderboardAllTime(allTime);
+    
+    // ✅ SÉCURITÉ : On s'assure que c'est un tableau
+    if (allTime && Array.isArray(allTime)) {
+        setLeaderboardAllTime(allTime);
+    } else {
+        setLeaderboardAllTime([]); // Jamais undefined
+    }
 
+    // 2. Classement Mensuel
     try {
-        const { data: monthly } = await supabase.rpc('get_monthly_leaderboard');
-        if (monthly) setLeaderboardMonthly(monthly);
-        else setLeaderboardMonthly(allTime ? allTime.slice(0, 50) : []);
+        const { data: monthly, error: errorRPC } = await supabase.rpc('get_monthly_leaderboard');
+        
+        if (!errorRPC && monthly && Array.isArray(monthly)) {
+            setLeaderboardMonthly(monthly);
+        } else {
+            // Fallback sur le général (ou vide) si le RPC échoue
+            setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
+        }
     } catch (e) {
-        setLeaderboardMonthly(allTime ? allTime.slice(0, 50) : []);
+        console.warn("Leaderboard mensuel indisponible, fallback.", e);
+        setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
     }
   };
 
-  // --- INSCRIPTION AMÉLIORÉE ---
   const register = async (email, pseudo, password, newsletterOptin) => {
     setLoading(true);
-    setError(null); // On efface les anciennes erreurs
-    
-    // Validation basique avant d'envoyer
+    setError(null);
     if (password.length < 6) {
         setError("Le mot de passe doit faire au moins 6 caractères.");
         setLoading(false);
         return { success: false };
     }
-
     try {
       const { data, error } = await supabase.rpc('register_arcade_player', {
-        p_email: email,
-        p_pseudo: pseudo,
-        p_password: password,
-        p_newsletter: newsletterOptin
+        p_email: email, p_pseudo: pseudo, p_password: password, p_newsletter: newsletterOptin
       });
-
       if (error) throw error;
-
       saveSession(data);
       return { success: true };
-
     } catch (err) {
-      console.warn("Erreur inscription:", err);
-      
-      // Détection précise des erreurs SQL
-      if (err.message && err.message.includes('déjà utilisé')) {
-         setError("Ce Pseudo ou cet Email existe déjà. Essayez de vous connecter !");
-      } else if (err.code === '23505') { // Code Postgres pour 'Unique Violation'
+      if (err.message?.includes('déjà utilisé') || err.code === '23505') {
          setError("Ce Pseudo ou Email est déjà pris.");
       } else {
-         setError("Une erreur est survenue. Vérifiez votre connexion.");
+         setError("Erreur lors de l'inscription.");
       }
       return { success: false };
     } finally {
@@ -86,41 +79,31 @@ export function useGameAuth() {
     }
   };
 
-  // --- LOGIN AMÉLIORÉ ---
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.rpc('login_arcade_player', {
-        p_email: email,
-        p_password: password
-      });
-
-      if (error) throw error;
-      if (!data) throw new Error("Identifiants incorrects."); // Cas théorique
-      
+      const { data, error } = await supabase.rpc('login_arcade_player', { p_email: email, p_password: password });
+      if (error || !data) throw new Error("Identifiants incorrects.");
       saveSession(data);
       return { success: true };
     } catch (err) {
-      console.error("Erreur login:", err);
-      // On reste vague pour la sécurité, ou précis selon le besoin
-      setError("Email inconnu ou mot de passe incorrect.");
+      setError("Email ou mot de passe incorrect.");
       return { success: false };
     } finally {
       setLoading(false);
     }
   };
 
-  // ... (Reste du fichier: saveScore, saveSession, logout inchangés) ...
   const saveScore = async (newScore) => {
-      if (!player) return;
-      await supabase.from('arcade_scores').insert([{ player_id: player.id, score: newScore, pseudo: player.pseudo }]);
-      if (newScore > (player.best_score || 0)) {
-        const updatedPlayer = { ...player, best_score: newScore };
-        saveSession(updatedPlayer);
-        await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', player.id);
-      }
-      fetchLeaderboards();
+    if (!player) return;
+    await supabase.from('arcade_scores').insert([{ player_id: player.id, score: newScore, pseudo: player.pseudo }]);
+    if (newScore > (player.best_score || 0)) {
+      const updatedPlayer = { ...player, best_score: newScore };
+      saveSession(updatedPlayer);
+      await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', player.id);
+    }
+    fetchLeaderboards();
   };
 
   const saveSession = (data) => {

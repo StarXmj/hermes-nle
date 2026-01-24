@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GameEngine } from '../gameTest/GameEngine';
 import { useGameAuth } from '../hooks/useGameAuth';
 import './HermesRunner.css'; 
-// ✅ AJOUT DES ICÔNES EYE ET EYESLASH
-import { FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, FaTimes, FaExpand, FaCrown, FaHourglassHalf, FaSignOutAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; 
+import { FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, FaTimes, FaExpand, FaCrown, FaHourglassHalf, FaSignOutAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-// ... (BIOME_COLORS, STATIC_ICONS, getTimeUntilEndOfMonth inchangés) ...
 const BIOME_COLORS = {
     'NORMAL': { color: '#FFD700', label: 'OLYMPE' },
     'HADES': { color: '#FF4444', label: 'ENFERS' },
@@ -34,22 +32,17 @@ const getTimeUntilEndOfMonth = () => {
 };
 
 function HermesRunnerPage() {
-  // ... (States existants) ...
   const [gameStatus, setGameStatus] = useState('intro'); 
   const [score, setScore] = useState(0);
   const [currentBiome, setCurrentBiome] = useState('NORMAL');
   const [hasEnteredFullScreen, setHasEnteredFullScreen] = useState(false);
   
-  // On récupère "error" depuis le hook auth
   const { player, leaderboardAllTime, leaderboardMonthly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
   
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('register');
   const [authForm, setAuthForm] = useState({ email: '', pseudo: '', password: '', newsletter: true });
-  
-  // ✅ NOUVEAU STATE POUR L'OEIL
   const [showPassword, setShowPassword] = useState(false);
-
   const [leaderboardTab, setLeaderboardTab] = useState('season');
   const [timeLeft, setTimeLeft] = useState(getTimeUntilEndOfMonth());
   
@@ -57,7 +50,6 @@ function HermesRunnerPage() {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
 
-  // ... (UseEffects resize/game loop/fullscreen inchangés) ...
   useEffect(() => {
     const handleResize = () => { if(engineRef.current) engineRef.current.resize(); };
     window.addEventListener('resize', handleResize);
@@ -80,14 +72,11 @@ function HermesRunnerPage() {
     return () => { if (engineRef.current) engineRef.current.destroy(); };
   }, [gameStatus, player]); 
 
-  const enterImmersion = async () => {
+  const enterImmersion = () => {
       const elem = document.documentElement;
-      try {
-          if (elem.requestFullscreen) await elem.requestFullscreen();
-          else if (elem.webkitRequestFullscreen) await elem.webkitRequestFullscreen();
-          else if (elem.msRequestFullscreen) await elem.msRequestFullscreen();
-      } catch (err) { console.warn("Fullscreen denied", err); } 
-      finally { setHasEnteredFullScreen(true); setTimeout(() => window.dispatchEvent(new Event('resize')), 500); }
+      if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
+      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      setHasEnteredFullScreen(true);
   };
 
   const startGame = () => { setGameStatus('playing'); };
@@ -97,33 +86,34 @@ function HermesRunnerPage() {
       let res;
       if (authMode === 'register') res = await register(authForm.email, authForm.pseudo, authForm.password, authForm.newsletter);
       else res = await login(authForm.email, authForm.password);
-      
       if (res && res.success) {
           setShowAuthModal(false);
-          // Reset le form et l'état mot de passe
           setAuthForm({ email: '', pseudo: '', password: '', newsletter: true });
-          setShowPassword(false);
           if (gameStatus === 'gameover' && score > 0) saveScore(score);
       }
   };
 
-  const openModal = (mode, e) => { 
-      if(e) e.stopPropagation(); 
-      setAuthMode(mode); 
-      setShowAuthModal(true); 
-      setShowPassword(false); // Reset visibility
-  };
+  const openModal = (mode, e) => { if(e) e.stopPropagation(); setAuthMode(mode); setShowAuthModal(true); setShowPassword(false); };
 
   const currentBiomeData = BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL'];
 
+  // ✅ FONCTION D'AFFICHAGE ROBUSTE (CRASH FIX)
   const renderLeaderboardList = () => {
-      const currentList = leaderboardTab === 'season' 
-          ? (Array.isArray(leaderboardMonthly) ? leaderboardMonthly : []) 
-          : (Array.isArray(leaderboardAllTime) ? leaderboardAllTime : []);
+      // 1. Sélection de la liste brute
+      let rawList = leaderboardTab === 'season' ? leaderboardMonthly : leaderboardAllTime;
+      
+      // 2. Sécurité absolue : Si undefined ou null, on force un tableau vide
+      if (!rawList || !Array.isArray(rawList)) {
+          rawList = [];
+      }
 
-      if (currentList.length === 0) return <li className="empty">Aucun score enregistré... Soyez le premier !</li>;
+      // 3. Gestion cas vide
+      if (rawList.length === 0) {
+          return <li className="empty">Chargement ou aucun score...</li>;
+      }
 
-      return currentList.slice(0, 10).map((l, i) => (
+      // 4. Affichage (Safe Map)
+      return rawList.slice(0, 10).map((l, i) => (
           <li key={i} className={player && player.pseudo === l.pseudo ? 'me' : ''}>
               <span className="rank">#{i+1}</span>
               <span className="name">{l.pseudo || 'Anonyme'}</span>
@@ -134,14 +124,12 @@ function HermesRunnerPage() {
 
   return (
     <div className="greek-runner-container">
-      {/* 1. Blocage Portrait */}
       <div className="orientation-lock">
         <div className="rotate-phone-animation"><FaMobileAlt size={80} className="phone-icon" /></div>
         <h2>TOURNEZ VOTRE ÉCRAN</h2>
         <p>L'aventure Hermès se vit à l'horizontale.</p>
       </div>
 
-      {/* 2. Accueil Immersif */}
       {!hasEnteredFullScreen && (
           <div className="immersion-start-screen">
             <h1 className="greek-title-giant">HERMES QUEST</h1>
@@ -153,10 +141,8 @@ function HermesRunnerPage() {
           </div>
       )}
 
-      {/* Canvas Jeu */}
       <canvas ref={canvasRef} className="game-canvas" />
 
-      {/* 3. HUD */}
       {gameStatus === 'playing' && (
         <div className="greek-hud-score">
             <span className="score-simple">{Math.floor(score)}</span>
@@ -164,7 +150,6 @@ function HermesRunnerPage() {
         </div>
       )}
 
-      {/* 4. Menu Principal */}
       {hasEnteredFullScreen && gameStatus === 'intro' && (
           <div className="greek-overlay">
             <div className="waterfall-bg">
@@ -209,6 +194,7 @@ function HermesRunnerPage() {
                             <button className={leaderboardTab === 'season' ? 'active' : ''} onClick={() => setLeaderboardTab('season')}>{currentMonthName}</button>
                             <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={() => setLeaderboardTab('alltime')}>TOP LÉGENDE</button>
                         </div>
+                        {/* ✅ UTILISATION DE LA FONCTION SAFE */}
                         <ul className="lb-list">{renderLeaderboardList()}</ul>
                     </div>
                 </div>
@@ -216,7 +202,6 @@ function HermesRunnerPage() {
           </div>
       )}
 
-      {/* Game Over Screen */}
       {gameStatus === 'gameover' && (
           <div className="gameover-overlay">
             <div className="gameover-content">
@@ -234,58 +219,22 @@ function HermesRunnerPage() {
           </div>
       )}
 
-      {/* --- AUTH MODAL (Mise à jour avec Œil et Erreurs) --- */}
       {showAuthModal && (
             <div className="auth-modal-overlay" onMouseDown={e => e.stopPropagation()}>
                 <div className="auth-modal">
                   <FaTimes className="close-btn" onClick={(e) => { e.stopPropagation(); setShowAuthModal(false); }} />
                     <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
-                    
-                    {/* 🔴 AFFICHAGE DE L'ERREUR */}
                     {authError && <div className="auth-error-message">{authError}</div>}
-
                     <form onSubmit={handleAuthSubmit}>
-                        {authMode === 'register' && (
-                            <input 
-                                type="text" 
-                                placeholder="Pseudo" 
-                                required 
-                                value={authForm.pseudo} 
-                                onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} 
-                            />
-                        )}
-                        <input 
-                            type="email" 
-                            placeholder="Email" 
-                            required 
-                            value={authForm.email} 
-                            onChange={e=>setAuthForm({...authForm, email:e.target.value})} 
-                        />
-                        
-                        {/* 👁️ CHAMP MOT DE PASSE AVEC ICÔNE */}
+                        {authMode === 'register' && <input type="text" placeholder="Pseudo" required value={authForm.pseudo} onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} />}
+                        <input type="email" placeholder="Email" required value={authForm.email} onChange={e=>setAuthForm({...authForm, email:e.target.value})} />
                         <div className="password-input-wrapper">
-                            <input 
-                                type={showPassword ? "text" : "password"} 
-                                placeholder="Mot de passe" 
-                                required 
-                                value={authForm.password} 
-                                onChange={e=>setAuthForm({...authForm, password:e.target.value})} 
-                            />
-                            <span 
-                                className="toggle-password-icon" 
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </span>
+                            <input type={showPassword ? "text" : "password"} placeholder="Mot de passe" required value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})} />
+                            <span className="toggle-password-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</span>
                         </div>
-
-                        <button type="submit" className="greek-btn-primary" disabled={authLoading}>
-                            {authLoading ? '...' : (authMode === 'login' ? 'GO!' : 'VALIDER')}
-                        </button>
+                        <button type="submit" className="greek-btn-primary" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'VALIDER')}</button>
                     </form>
-                    <p className="switch-auth" onClick={() => { setAuthMode(authMode==='login'?'register':'login'); setShowPassword(false); }}>
-                        {authMode === 'login' ? "Créer un compte" : "J'ai déjà un compte"}
-                    </p>
+                    <p className="switch-auth" onClick={() => { setAuthMode(authMode==='login'?'register':'login'); setShowPassword(false); }}>{authMode === 'login' ? "Créer un compte" : "J'ai déjà un compte"}</p>
                 </div>
             </div>
       )}
