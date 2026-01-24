@@ -1,4 +1,4 @@
-import { particleManager } from './ParticleManager'; // ✅ IMPORT
+import { particleManager } from './ParticleManager'; 
 
 export class InputHandler {
   constructor() {
@@ -9,11 +9,18 @@ export class InputHandler {
       right: false,
       space: false
     };
+    
+    // ✅ DÉTECTION IMMÉDIATE DU MOBILE (Sans attendre le touch)
+    this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    
+    // Pour les marqueurs visuels (les ronds sous les doigts)
+    this.touches = []; 
 
     // Binding des événements
     this.keydownListener = (e) => this.handleKey(e, true);
     this.keyupListener = (e) => this.handleKey(e, false);
     this.touchstartListener = (e) => this.handleTouch(e, true);
+    this.touchmoveListener = (e) => this.handleTouch(e, true); // Ajout du move
     this.touchendListener = (e) => this.handleTouch(e, false);
 
     window.addEventListener('keydown', this.keydownListener);
@@ -21,7 +28,9 @@ export class InputHandler {
     
     // Support tactile
     window.addEventListener('touchstart', this.touchstartListener, { passive: false });
+    window.addEventListener('touchmove', this.touchmoveListener, { passive: false });
     window.addEventListener('touchend', this.touchendListener);
+    window.addEventListener('touchcancel', this.touchendListener);
   }
 
   handleKey(e, state) {
@@ -33,56 +42,46 @@ export class InputHandler {
 
   handleTouch(e, state) {
     if(e.cancelable) e.preventDefault();
+    
+    // On met à jour la liste des touches actives pour le rendu visuel
+    this.touches = [];
+    
+    // Si state est true (start ou move), on analyse les touches actives
+    if (state && e.touches.length > 0) { // Utiliser e.touches pour l'état actuel global
+        const width = window.innerWidth;
+        
+        // Reset des clés avant de vérifier
+        this.keys.up = false;
+        this.keys.down = false;
 
-    if (state) {
-        // Pour chaque doigt qui touche l'écran
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const t = e.changedTouches[i];
-            const touchX = t.clientX;
-            const touchY = t.clientY; // On récupère Y pour l'effet visuel
+        for (let i = 0; i < e.touches.length; i++) {
+            const t = e.touches[i];
             
-            // ✅ VFX : Ripple à l'endroit du touch (coordonnées écran, pas canvas)
-            // Comme le canvas est plein écran ou centré, on peut mapper directement ou ajuster
-            // Astuce: On envoie au ParticleManager, mais il dessine dans le canvas.
-            // On doit convertir les coords écran -> coords canvas si le canvas est scalé.
-            // Pour simplifier ici, on suppose que le canvas prend tout l'écran ou on passe les coords brutes
-            // et on ajustera dans GameEngine si besoin.
-            
-            // NOTE : Pour que ça s'affiche au bon endroit dans le jeu, il faut tenir compte 
-            // de la transformation du canvas dans GameEngine.js.
-            // On va stocker ça dans une liste temporaire "touchEvents" que le GameEngine lira.
-            this.lastTouchX = touchX;
-            this.lastTouchY = touchY;
-            this.newTouch = true;
+            // Stockage pour le GameEngine (dessin des ronds)
+            this.touches.push({ x: t.clientX, y: t.clientY });
 
-            const screenMiddle = window.innerWidth / 2;
-            if (touchX > screenMiddle) {
+            // Logique Gauche (Slide) / Droite (Saut)
+            if (t.clientX > width / 2) {
                 this.keys.up = true;
-                this.keys.down = false;
             } else {
                 this.keys.down = true;
-                this.keys.up = false;
             }
         }
     } else {
-        this.keys.up = false;
-        this.keys.down = false;
+        // Si plus aucun doigt (touchend avec 0 touches restantes)
+        if (e.touches.length === 0) {
+            this.keys.up = false;
+            this.keys.down = false;
+        }
     }
-  }
-
-  // ✅ Méthode pour récupérer et consommer le dernier touch (pour le VFX)
-  popTouch() {
-      if (this.newTouch) {
-          this.newTouch = false;
-          return { x: this.lastTouchX, y: this.lastTouchY };
-      }
-      return null;
   }
 
   cleanup() {
     window.removeEventListener('keydown', this.keydownListener);
     window.removeEventListener('keyup', this.keyupListener);
     window.removeEventListener('touchstart', this.touchstartListener);
+    window.removeEventListener('touchmove', this.touchmoveListener);
     window.removeEventListener('touchend', this.touchendListener);
+    window.removeEventListener('touchcancel', this.touchendListener);
   }
 }

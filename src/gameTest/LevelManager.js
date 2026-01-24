@@ -14,7 +14,7 @@ export class LevelManager {
     this.projectileTimer = 0;
   }
 
-  update(speed, biome) {
+  update(speed, biome, canSpawn = true) {
     // 1. Mise à jour des positions
     for (let i = this.entities.length - 1; i >= 0; i--) {
       let ent = this.entities[i];
@@ -32,6 +32,9 @@ export class LevelManager {
     
     this.lastSpawnX -= speed;
 
+    // SÉCURITÉ : Si on est dans les 3 premières secondes, on arrête ici
+    if (!canSpawn) return;
+
     // 2. Spawn des obstacles classiques
     if (this.lastSpawnX < GAME_CONFIG.CANVAS_WIDTH - this.minGap) {
         this.trySpawnObstacle(biome, speed);
@@ -40,10 +43,6 @@ export class LevelManager {
     // 3. Spawn des Projectiles (ARES)
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
-        
-        // ✅ MODIFICATION : Spawn beaucoup moins fréquent
-        // Avant : random * 40 + 40 (toutes les 0.6s à 1.3s)
-        // Après : random * 100 + 100 (toutes les 1.6s à 3.3s)
         if (this.projectileTimer > Math.random() * 100 + 100) {
             this.spawnProjectile();
             this.projectileTimer = 0;
@@ -124,30 +123,35 @@ export class LevelManager {
       }
       // 3. BIOME FLAPPY
       else if (biome === BIOMES.FLAPPY) {
-           if (rand < 0.5) {
+           if (rand < 0.4) { // Un peu moins de sol, plus de plafond
+               // Obstacles du SOL
                def = ENTITY_TYPES.GROUND;
-               finalHeight = this.randomInt(60, 100);
+               finalHeight = this.randomInt(80, 150); // Plus grands aussi
                finalType = 'column';
-               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - finalHeight;
+               yPos = GAME_CONFIG.CANVAS_HEIGHT - finalHeight;
            } else {
+               // ✅ PLAFOND : Uniquement CHAÎNE ou COLONNE DES DIEUX
                if (Math.random() < 0.5) {
                    def = ENTITY_TYPES.CHAIN;
-                   finalHeight = this.randomInt(60, 120); 
+                   // Très longue chaîne pour forcer à descendre
+                   finalHeight = this.randomInt(100, 250); 
                    finalType = 'chain';
                } else {
-                   def = ENTITY_TYPES.CEILING;
-                   finalHeight = this.randomInt(50, 80);
-                   finalType = 'stalactite';
+                   // Colonne divine (remplace la stalactite)
+                   def = ENTITY_TYPES.CEILING_COLUMN;
+                   finalHeight = this.randomInt(100, 250);
+                   finalType = 'column';
                }
-               yPos = GAME_CONFIG.GROUND_HEIGHT;
+               yPos = 0; // Ancré au plafond
            }
       }
 
       // --- CALCUL DU GAP (Difficulté) ---
-      let reactionFrames = (biome === BIOMES.FLAPPY) ? 40 : 60; 
-      if (biome === BIOMES.HADES) reactionFrames = 90; 
+      // ✅ MODIFICATION : Réduction du temps de réaction pour Flappy (Plus dense/nombreux)
+      // Passage de 40 à 30 frames
+      let reactionFrames = (biome === BIOMES.FLAPPY) ? 35 : 60; 
       
-      // ✅ MODIFICATION : Plus d'espace pour ARES car il y a déjà des projectiles
+      if (biome === BIOMES.HADES) reactionFrames = 90; 
       if (biome === BIOMES.ARES) reactionFrames = 80; 
 
       this.minGap = (speed * reactionFrames) + (Math.random() * 200); 
@@ -172,11 +176,17 @@ export class LevelManager {
       ctx.fillStyle = ent.color;
       
       if (ent.type === 'projectile') {
+          ctx.save();
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = '#FF0000';
+          
           ctx.beginPath();
           ctx.moveTo(ent.x, ent.y);
           ctx.lineTo(ent.x + ent.width, ent.y);
           ctx.lineTo(ent.x + ent.width/2, ent.y + ent.height + 15); 
           ctx.fill();
+          
+          ctx.restore();
       } else {
           ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
       }

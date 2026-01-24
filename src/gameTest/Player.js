@@ -1,4 +1,5 @@
 import { GAME_CONFIG, BIOMES } from './constants';
+import { particleManager } from './ParticleManager'; // ✅ IMPORT AJOUTÉ
 
 export class Player {
   constructor() {
@@ -19,7 +20,7 @@ export class Player {
     this.currentBiome = BIOMES.NORMAL;
     this.jumpPressedBefore = false;
 
-    // ✅ NOUVEAU : État de sécurité pour Flappy
+    // État de sécurité pour Flappy
     this.flappySafetyActive = false;
     this.flappyStartTime = 0;
   }
@@ -37,7 +38,7 @@ export class Player {
         this.y = GAME_CONFIG.GROUND_HEIGHT; 
 
     } else if (biome === BIOMES.FLAPPY) {
-        // ✅ NOUVEAU : On place le joueur au milieu et on active la sécurité
+        // On place le joueur au milieu et on active la sécurité
         this.y = (GAME_CONFIG.CANVAS_HEIGHT / 2) - (this.height / 2);
         this.flappySafetyActive = true;
         this.flappyStartTime = Date.now();
@@ -57,7 +58,16 @@ export class Player {
           if (biome !== BIOMES.INVERTED) {
               this.y += this.originalHeight / 2; 
           }
+          // ✅ EFFET : Début de glissade (Burst)
+          particleManager.createSlideDust(this.x + this.width / 2, this.y + this.height);
       }
+      
+      // ✅ EFFET : Traînée continue pendant la glissade (1 chance sur 5 par frame)
+      if (Math.random() > 0.8) {
+           const dustY = biome === BIOMES.INVERTED ? this.y : this.y + this.height;
+           particleManager.createSlideDust(this.x, dustY);
+      }
+
     } else {
       if (this.isSliding) {
           this.isSliding = false;
@@ -68,7 +78,10 @@ export class Player {
       }
     }
 
-    // 2. PHYSIQUE
+    // 2. PHYSIQUE & PARTICULES DE COURSE
+    // Si on est au sol (vy === 0) et qu'on ne glisse pas, on génère un peu de poussière
+    // On le fait dans les méthodes update spécifiques pour être sûr d'être au sol
+    
     switch (biome) {
         case BIOMES.NORMAL:
         case BIOMES.HADES:
@@ -96,6 +109,16 @@ export class Player {
     if (input.keys.up && !this.jumpPressedBefore) {
         if (this.jumpCount < this.maxJumps) {
             this.vy = GAME_CONFIG.JUMP_FORCE;
+            
+            // ✅ EFFET : Gestion des particules de saut
+            if (this.jumpCount === 0) {
+                // Premier saut : Nuage de poussière sous les pieds
+                particleManager.createJumpEffect(this.x + this.width / 2, this.y + this.height);
+            } else {
+                // Double saut : Explosion magique/dorée
+                particleManager.createDoubleJumpEffect(this.x + this.width / 2, this.y + this.height);
+            }
+            
             this.jumpCount++;
         }
     }
@@ -105,9 +128,20 @@ export class Player {
     if (this.y < groundY) {
         this.vy += GAME_CONFIG.GRAVITY;
     } else {
+        // Atterrissage ou course au sol
+        if (this.vy > 0) { 
+            // Si on atterrit (vy était positif juste avant le reset), petit nuage
+            particleManager.createDust(this.x + this.width / 2, this.y + this.height);
+        }
+        
         this.vy = 0;
         this.jumpCount = 0;
         this.y = groundY;
+
+        // ✅ EFFET : Poussière de course (Random pour ne pas spammer)
+        if (!this.isSliding && Math.random() > 0.9) {
+             particleManager.createDust(this.x, this.y + this.height);
+        }
     }
     this.jumpPressedBefore = input.keys.up;
   }
@@ -116,6 +150,14 @@ export class Player {
     if (input.keys.up && !this.jumpPressedBefore) {
         if (this.jumpCount < this.maxJumps) {
             this.vy = -GAME_CONFIG.JUMP_FORCE; 
+            
+            // ✅ EFFET : Saut inversé (particules au plafond, donc à this.y)
+            if (this.jumpCount === 0) {
+                particleManager.createJumpEffect(this.x + this.width / 2, this.y);
+            } else {
+                particleManager.createDoubleJumpEffect(this.x + this.width / 2, this.y);
+            }
+
             this.jumpCount++;
         }
     }
@@ -127,34 +169,37 @@ export class Player {
         this.vy = 0;
         this.jumpCount = 0;
         this.y = ceilingY;
+
+        // ✅ EFFET : Poussière de course au plafond
+        if (!this.isSliding && Math.random() > 0.9) {
+             particleManager.createDust(this.x, this.y);
+        }
     }
     this.jumpPressedBefore = input.keys.up;
   }
 
   updateFlappy(input) {
-    // ✅ GESTION DE LA SÉCURITÉ AU DÉMARRAGE
+    // GESTION DE LA SÉCURITÉ AU DÉMARRAGE
     if (this.flappySafetyActive) {
-        // 1. Désactivation par Action utilisateur (Saut)
         if (input.keys.up && !this.jumpPressedBefore) {
             this.flappySafetyActive = false;
-            // On laisse le code standard s'exécuter pour appliquer l'impulsion immédiatement
         } 
-        // 2. Désactivation par Temps (2 secondes)
         else if (Date.now() - this.flappyStartTime > 2000) {
             this.flappySafetyActive = false;
         } 
-        // 3. Maintien en position (Si toujours actif)
         else {
             this.y = (GAME_CONFIG.CANVAS_HEIGHT / 2) - (this.height / 2);
             this.vy = 0;
-            this.jumpPressedBefore = input.keys.up; // Important pour éviter le spam à la sortie
-            return; // On sort ici pour ne pas appliquer la gravité
+            this.jumpPressedBefore = input.keys.up; 
+            return; 
         }
     }
 
     // --- PHYSIQUE STANDARD FLAPPY ---
     if (input.keys.up && !this.jumpPressedBefore) {
         this.vy = GAME_CONFIG.FLAPPY_JUMP_FORCE;
+        // ✅ EFFET : Petit "pouf" blanc derrière le joueur en mode Flappy
+        particleManager.createJumpEffect(this.x, this.y + this.height / 2);
     }
     this.y += this.vy;
     this.vy += GAME_CONFIG.FLAPPY_GRAVITY;
@@ -162,8 +207,6 @@ export class Player {
     const ceilingY = GAME_CONFIG.GROUND_HEIGHT;
 
     if (this.y < ceilingY) { this.y = ceilingY; this.vy = 0; }
-    
-    // Note: Plus de limite au sol (c'est la mort)
     
     this.jumpPressedBefore = input.keys.up;
   }

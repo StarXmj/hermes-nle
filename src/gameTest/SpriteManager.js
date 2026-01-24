@@ -23,11 +23,11 @@ class SpriteManager {
         // ✅ NOUVEAU : Séquence pour le mode FLAPPY
         fly: {
             // Assurez-vous d'avoir le dossier /images/fly-hermes/hermes-fly-1.png, etc.
-            base: 'fly-hermes/hermes-fly', 
-            count: 4,  // Mettez le bon nombre de frames
-            startAt: 1,
-            ext: '.png',
-            speed: 120
+            base: 'run-hermes/hermes-run',  
+            count: 12,            
+            startAt: 1,          
+            ext: '.png',         
+            speed: 80
         }
     };
 

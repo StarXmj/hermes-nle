@@ -4,6 +4,7 @@ import { Background } from './Background';
 import { InputHandler } from './InputHandler';
 import { GAME_CONFIG, BIOMES, BIOME_SEQUENCE } from './constants';
 import { spriteManager } from './SpriteManager';
+import { particleManager } from './ParticleManager';
 
 export class GameEngine {
   constructor(canvas, callbacks) {
@@ -29,17 +30,20 @@ export class GameEngine {
       this.canvas.height = height * dpr;
       this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
       this.ctx.scale(dpr, dpr);
-      const scale = Math.min(width / GAME_CONFIG.CANVAS_WIDTH, height / GAME_CONFIG.CANVAS_HEIGHT);
-      const offsetX = (width - GAME_CONFIG.CANVAS_WIDTH * scale) / 2;
-      const offsetY = (height - GAME_CONFIG.CANVAS_HEIGHT * scale) / 2;
+      
+      this.gameScale = Math.min(width / GAME_CONFIG.CANVAS_WIDTH, height / GAME_CONFIG.CANVAS_HEIGHT);
+      const offsetX = (width - GAME_CONFIG.CANVAS_WIDTH * this.gameScale) / 2;
+      const offsetY = (height - GAME_CONFIG.CANVAS_HEIGHT * this.gameScale) / 2;
+      
       this.ctx.translate(offsetX, offsetY);
-      this.ctx.scale(scale, scale);
+      this.ctx.scale(this.gameScale, this.gameScale);
   }
 
   reset() {
     this.background = new Background(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     this.player = new Player();
     this.level = new LevelManager();
+    particleManager.clear();
     
     this.speed = GAME_CONFIG.SPEED_START;
     this.score = 0;
@@ -50,6 +54,9 @@ export class GameEngine {
     this.biomeDurationTarget = BIOME_SEQUENCE[0].duration;
     this.biomeTimer = 0;
     this.transitionAlpha = 0; 
+
+    // TIMER DE SÉCURITÉ (Start Time)
+    this.gameStartTime = Date.now();
   }
 
   start() { this.loop(); }
@@ -63,7 +70,7 @@ export class GameEngine {
     this.ctx.restore();
 
     this.update();
-    this.draw(); // C'est ici que tout se dessine
+    this.draw(); 
     
     if (this.score % 10 < 1) {
         this.callbacks.onUpdateUI({
@@ -89,8 +96,20 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
-this.background.update(worldSpeed, this.currentBiome);    this.level.update(worldSpeed, this.currentBiome);
+    // Vent
+    if (this.speed > 16) {
+        if (Math.random() < 0.1 + (this.speed - 16) * 0.02) {
+             particleManager.createSpeedLine(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+        }
+    }
+
+    // MODE SÉCURITÉ (3 secondes)
+    const isSafeMode = (Date.now() - this.gameStartTime) < 3000;
+
+    this.background.update(worldSpeed, this.currentBiome);
+    this.level.update(worldSpeed, this.currentBiome, !isSafeMode);
     this.player.update(this.input, this.currentBiome);
+    particleManager.update(); 
 
     this.checkCollisions();
   }
@@ -110,16 +129,13 @@ this.background.update(worldSpeed, this.currentBiome);    this.level.update(worl
       this.transitionAlpha = 1.0;
   }
 
-  // ✅ CORRIGÉ : Cette méthode ne fait QUE des calculs (plus de dessin ici)
   checkCollisions() {
     const pBox = this.player.getHitbox();
     let ghostBox = null;
 
     if (this.currentBiome === BIOMES.FLAPPY) {
-        const groundLevel = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - this.player.height;
-        
-        // Si le joueur touche la lave (avec une marge de tolérance de 5px pour être juste)
-        if (this.player.y > groundLevel + 5) {
+        // ✅ CORRECTIF FLAPPY : La mort est tout en bas de l'écran, pas sur le sol surélevé
+        if (this.player.y + this.player.height > GAME_CONFIG.CANVAS_HEIGHT) {
             this.gameOver();
             return;
         }
@@ -138,8 +154,6 @@ this.background.update(worldSpeed, this.currentBiome);    this.level.update(worl
             };
         }
     }
-
-    
 
     for (let ent of this.level.entities) {
         if (this.isColliding(pBox, ent)) {
@@ -170,12 +184,11 @@ this.background.update(worldSpeed, this.currentBiome);    this.level.update(worl
   draw() {
     this.ctx.save();
     
-    // Clip Zone de Jeu
     this.ctx.beginPath();
     this.ctx.rect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     this.ctx.clip();
 
-    // --- EFFET DIONYSOS ---
+    // Transformations DIONYSOS
     if (this.currentBiome === BIOMES.DIONYSOS) {
         const cx = GAME_CONFIG.CANVAS_WIDTH / 2;
         const cy = GAME_CONFIG.CANVAS_HEIGHT / 2;
@@ -185,87 +198,49 @@ this.background.update(worldSpeed, this.currentBiome);    this.level.update(worl
         this.ctx.scale(s, s);
         this.ctx.translate(-cx, -cy);
     }
-    // ✅ MODIFICATION : Rendu du sol
-    if (this.currentBiome === BIOMES.FLAPPY) {
-        // EFFET LAVE (Danger !)
-        const grad = this.ctx.createLinearGradient(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, 0, GAME_CONFIG.CANVAS_HEIGHT);
-        grad.addColorStop(0, '#e74c3c'); // Rouge vif
-        grad.addColorStop(0.5, '#d35400'); // Orange feu
-        grad.addColorStop(1, '#c0392b'); // Rouge sombre
-        
-        this.ctx.fillStyle = grad;
-        this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
-        
-        // On dessine aussi le plafond normalement
-        this.ctx.fillStyle = '#222';
-        this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
 
-    } else {
-        // SOL STANDARD (Sûr)
+    // 1. FOND
+    this.background.draw(this.ctx, this.currentBiome); 
+   
+    // ✅ CORRECTIF : Ne PAS dessiner le sol ni le plafond en mode FLAPPY
+    if (this.currentBiome !== BIOMES.FLAPPY) {
         this.ctx.fillStyle = '#222';
+        
+        // Sol Standard
         if (this.currentBiome !== BIOMES.INVERTED) {
             this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
         }
+        
+        // Plafond (Seulement pour Inverted)
         if (this.currentBiome === BIOMES.INVERTED) {
             this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
         }
     }
 
-    // 1. DESSIN DU FOND (SPRITES)
-this.background.draw(this.ctx, this.currentBiome);    
-    // 2. SOL / PLAFOND (PHYSIQUE)
-    this.ctx.fillStyle = '#222';
-    if (this.currentBiome !== BIOMES.INVERTED) {
-        this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
-    }
-    if (this.currentBiome === BIOMES.INVERTED || this.currentBiome === BIOMES.FLAPPY) {
-        this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
-    }
-
-    // 3. OBSTACLES (SPRITES)
+    // 2. OBSTACLES
     this.level.entities.forEach(ent => {
         spriteManager.drawObstacle(this.ctx, ent, this.currentBiome);
     });
 
-    // 4. JOUEUR (SPRITE)
-    // ... (début de la méthode draw inchangé)
-
-    // 4. DESSIN DU JOUEUR (AVEC BIOME)
+    // 3. JOUEUR
     spriteManager.drawPlayer(
-        this.ctx, 
-        this.player.x, 
-        this.player.y, 
-        this.player.width, 
-        this.player.height, 
-        this.player.isSliding,
-        this.player.jumpCount > 0,
-        this.currentBiome // ✅ IMPORTANT : On passe le biome pour l'inversion
+        this.ctx, this.player.x, this.player.y, this.player.width, this.player.height, 
+        this.player.isSliding, this.player.jumpCount > 0, this.currentBiome 
     );
 
-    // 5. DESSIN DU FANTÔME (PHILOTES)
+    // 4. FANTÔME (PHILOTES)
     if (this.currentBiome === BIOMES.PHILOTES) {
         const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
-        
-        // Lien visuel
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.player.x + this.player.width/2, this.player.y);
-        this.ctx.lineTo(this.player.x + this.player.width/2, ghostY + this.player.height);
-        this.ctx.strokeStyle = 'rgba(255, 105, 180, 0.5)';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.stroke();
-        this.ctx.setLineDash([]);
-
         this.ctx.save();
         this.ctx.globalAlpha = 0.5; 
-        // On passe aussi le biome au fantôme
         spriteManager.drawPlayer(this.ctx, this.player.x, ghostY, this.player.width, this.player.height, this.player.isSliding, this.player.jumpCount > 0, this.currentBiome);
         this.ctx.restore();
     }
 
-    // ... (reste du fichier inchangé)
+    // 5. PARTICULES
+    particleManager.draw(this.ctx);
 
-    // --- OVERLAYS VISUELS ---
+    // 6. OVERLAYS VISUELS
     if (this.currentBiome === BIOMES.ARES) {
         this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -284,55 +259,142 @@ this.background.draw(this.ctx, this.currentBiome);
         this.ctx.fillRect(0,0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     }
 
-    // ============================================================
-    // 🛠️ MODE DEBUG : HITBOXES TRANSPARENTES
-    // ============================================================
-    // Mets à 'false' pour désactiver l'affichage des zones de collision
-    const DEBUG_MODE = true; 
+    this.ctx.restore(); 
 
-    if (DEBUG_MODE) {
-        this.ctx.save();
-        this.ctx.lineWidth = 2;
+    // --- INTERFACE / TUTOS ---
 
-        // A. HITBOX JOUEUR (VERT)
-        // On récupère la vraie hitbox utilisée pour les calculs
-        const pBox = this.player.getHitbox ? this.player.getHitbox() : { x: this.player.x, y: this.player.y, width: this.player.width, height: this.player.height };
-        
-        this.ctx.strokeStyle = '#00FF00'; // Contour Vert fluo
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'; // Fond Vert transparent
-        this.ctx.fillRect(pBox.x, pBox.y, pBox.width, pBox.height);
-        this.ctx.strokeRect(pBox.x, pBox.y, pBox.width, pBox.height);
+    const isSafeMode = (Date.now() - this.gameStartTime) < 3000;
 
-        // B. HITBOX OBSTACLES (ROUGE)
-        this.ctx.strokeStyle = '#FF0000'; // Contour Rouge
-        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Fond Rouge transparent
-        this.level.entities.forEach(ent => {
-             this.ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
-             this.ctx.strokeRect(ent.x, ent.y, ent.width, ent.height);
-        });
-
-        // C. HITBOX FANTÔME (BLEU - Philotes)
-        if (this.currentBiome === BIOMES.PHILOTES) {
-             let ghostBox = null;
-             if (this.player.getGhostHitbox) {
-                 ghostBox = this.player.getGhostHitbox();
-             } else {
-                 const ghostOffset = GAME_CONFIG.GHOST_OFFSET_Y || 120;
-                 ghostBox = { x: this.player.x + 8, y: this.player.y - ghostOffset + 5, width: this.player.width - 16, height: this.player.height - 10 };
-             }
-             
-             if (ghostBox) {
-                 this.ctx.strokeStyle = '#00FFFF'; // Cyan
-                 this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
-                 this.ctx.fillRect(ghostBox.x, ghostBox.y, ghostBox.width, ghostBox.height);
-                 this.ctx.strokeRect(ghostBox.x, ghostBox.y, ghostBox.width, ghostBox.height);
-             }
-        }
-        this.ctx.restore();
+    // TUTO DE DÉPART
+    if (this.running && (isSafeMode || this.score < 50) && this.currentBiome !== BIOMES.FLAPPY) {
+        this.drawStartTutorial();
     }
-    // ============================================================
 
-    this.ctx.restore();
+    // TUTO FLAPPY
+    if (this.running && this.currentBiome === BIOMES.FLAPPY && this.biomeTimer < 300) {
+        this.drawFlappyTutorial();
+    }
+
+    // MARQUEURS DE DOIGTS
+    if (this.input.isTouchDevice) {
+        this.drawTouchMarkers();
+    }
+  }
+
+  drawFlappyTutorial() {
+      this.ctx.save();
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      this.ctx.textAlign = 'center';
+      this.ctx.shadowColor = 'black';
+      this.ctx.shadowBlur = 4;
+
+      this.ctx.font = `bold ${30 * dpr}px Arial`;
+      this.ctx.fillStyle = '#FFFFFF';
+      
+      const actionText = this.input.isTouchDevice ? "TAP POUR STABILISER" : "ESPACE POUR STABILISER";
+      this.ctx.fillText(actionText, w / 2, h * 0.3);
+
+      this.ctx.font = `bold ${24 * dpr}px Arial`;
+      this.ctx.fillStyle = '#FF4444'; 
+      this.ctx.fillText("ATTENTION : LE SOL EST MORTEL !", w / 2, h * 0.5);
+
+      this.ctx.restore();
+  }
+
+  drawStartTutorial() {
+      this.ctx.save();
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      this.ctx.textAlign = 'center';
+      this.ctx.shadowColor = 'black';
+      this.ctx.shadowBlur = 4;
+      this.ctx.fillStyle = '#FFD700'; 
+      this.ctx.font = `bold ${28 * dpr}px Arial`;
+      this.ctx.fillText("ÉVITE LES OBSTACLES", w / 2, h * 0.15); 
+
+      if (this.input.isTouchDevice) {
+          // TUTO MOBILE
+          this.ctx.fillStyle = 'rgba(52, 152, 219, 0.2)'; 
+          this.ctx.fillRect(0, 0, w/2, h);
+
+          this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
+          this.ctx.fillRect(w/2, 0, w/2, h);
+
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          this.ctx.lineWidth = 4;
+          this.ctx.beginPath();
+          this.ctx.moveTo(w/2, 0);
+          this.ctx.lineTo(w/2, h);
+          this.ctx.stroke();
+
+          this.ctx.fillStyle = '#FFFFFF';
+          this.ctx.font = `bold ${24 * dpr}px Arial`;
+          this.ctx.fillText("GAUCHE : GLISSER", w * 0.25, h * 0.5);
+          this.ctx.fillText("DROITE : SAUTER", w * 0.75, h * 0.5);
+
+      } else {
+          // Tuto PC
+          this.ctx.fillStyle = '#FFFFFF';
+          this.ctx.font = `bold ${20 * dpr}px Arial`;
+          this.ctx.fillText("ESPACE / ↑ : SAUTER", w / 2, h * 0.4);
+          this.ctx.fillText("↓ : GLISSER", w / 2, h * 0.6);
+      }
+      this.ctx.restore();
+  }
+
+  drawTouchMarkers() {
+      const touches = this.input.touches;
+      if (!touches || touches.length === 0) return;
+
+      this.ctx.save();
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
+      const dpr = window.devicePixelRatio || 1;
+
+      touches.forEach(t => {
+          const x = t.x * dpr;
+          const y = t.y * dpr;
+
+          this.ctx.beginPath();
+          this.ctx.arc(x, y, 30 * dpr, 0, Math.PI * 2);
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          this.ctx.lineWidth = 3 * dpr;
+          this.ctx.stroke();
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          this.ctx.fill();
+
+          const jumpsLeft = this.player.maxJumps - this.player.jumpCount;
+          
+          if (jumpsLeft > 0) {
+              this.ctx.fillStyle = '#00FF00'; 
+              for (let i = 0; i < jumpsLeft; i++) {
+                  const angle = -Math.PI / 2 + (i * 0.5); 
+                  const dotX = x + Math.cos(angle) * (40 * dpr);
+                  const dotY = y + Math.sin(angle) * (40 * dpr);
+                  
+                  this.ctx.beginPath();
+                  this.ctx.arc(dotX, dotY, 6 * dpr, 0, Math.PI * 2);
+                  this.ctx.fill();
+                  this.ctx.stroke(); 
+              }
+          } else {
+             this.ctx.fillStyle = '#FF0000';
+             const dotX = x + Math.cos(-Math.PI/2) * (40 * dpr);
+             const dotY = y + Math.sin(-Math.PI/2) * (40 * dpr);
+             this.ctx.beginPath();
+             this.ctx.arc(dotX, dotY, 4 * dpr, 0, Math.PI * 2);
+             this.ctx.fill();
+          }
+      });
+
+      this.ctx.restore();
   }
 
   destroy() {
