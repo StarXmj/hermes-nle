@@ -315,13 +315,13 @@ export class GameEngine {
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${24 * dpr}px Arial`;
           this.ctx.fillText("GAUCHE : S’ACCROUPIR", w * 0.25, h * 0.5);
-          this.ctx.fillText("DROITE : SAUTER", w * 0.75, h * 0.5);
+          this.ctx.fillText("DROITE : Saut / Double appui : Double saut", w * 0.75, h * 0.5);
 
       } else {
           // ✅ TUTO PC (CLAVIER)
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${20 * dpr}px Arial`;
-          this.ctx.fillText("ESPACE / ↑ : SAUTER", w / 2, h * 0.4);
+          this.ctx.fillText("ESPACE / ↑ : SAUTER/Double ↑ : Double Saut", w / 2, h * 0.4);
           this.ctx.fillText("↓ : S’ACCROUPIR", w / 2, h * 0.6);
       }
       this.ctx.restore();

@@ -40,10 +40,11 @@ export class LevelManager {
         this.trySpawnObstacle(biome, speed);
     }
 
-    // 3. Spawn des Projectiles (ARES)
+    // 3. Spawn des Projectiles (ARES) - Moins fréquent
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
-        if (this.projectileTimer > Math.random() * 100 + 100) {
+        // Augmentation du délai aléatoire pour moins de projectiles (150-300 frames au lieu de 100-200)
+        if (this.projectileTimer > Math.random() * 150 + 150) {
             this.spawnProjectile();
             this.projectileTimer = 0;
         }
@@ -146,13 +147,12 @@ export class LevelManager {
            }
       }
 
-      // --- CALCUL DU GAP (Difficulté) ---
-      // ✅ MODIFICATION : Réduction du temps de réaction pour Flappy (Plus dense/nombreux)
-      // Passage de 40 à 30 frames
-      let reactionFrames = (biome === BIOMES.FLAPPY) ? 35 : 60; 
+      // --- CALCUL DU GAP (Difficulté Simplifiée) ---
+      // Plus "reactionFrames" est grand, plus il y a d'espace entre les obstacles
+      let reactionFrames = (biome === BIOMES.FLAPPY) ? 60 : 90; // Était 35 : 60 (Beaucoup plus d'espace)
       
-      if (biome === BIOMES.HADES) reactionFrames = 90; 
-      if (biome === BIOMES.ARES) reactionFrames = 80; 
+      if (biome === BIOMES.HADES) reactionFrames = 120; // Était 90
+      if (biome === BIOMES.ARES) reactionFrames = 110;  // Était 80
 
       this.minGap = (speed * reactionFrames) + (Math.random() * 200); 
 

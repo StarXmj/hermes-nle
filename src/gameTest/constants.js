@@ -6,9 +6,9 @@ export const GAME_CONFIG = {
   FLAPPY_JUMP_FORCE: -7,   
   
   // --- VITESSE ---
-  SPEED_START: 6,
-  SPEED_MAX: 20,
-  SPEED_INCREMENT: 0.0015,
+  SPEED_START: 4,       // Avant: 6
+  SPEED_MAX: 16,          // Avant: 20
+  SPEED_INCREMENT: 0.0005,// Avant: 0.0015 (Monte beaucoup moins vite)
   
   // --- DIMENSIONS ---
   CANVAS_WIDTH: 800,
