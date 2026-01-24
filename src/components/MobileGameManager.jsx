@@ -14,37 +14,54 @@ const MobileGameManager = () => {
     useEffect(() => {
         const checkOrientation = () => {
             setIsPortrait(window.innerHeight > window.innerWidth);
+            // Si on passe en paysage, on tente de scroller pour cacher la barre (Hack iOS)
+            if (window.innerWidth > window.innerHeight) {
+                window.scrollTo(0, 1);
+            }
         };
         
-        // Écouter le redimensionnement (rotation)
         window.addEventListener('resize', checkOrientation);
-        return () => window.removeEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+        return () => {
+            window.removeEventListener('resize', checkOrientation);
+            window.removeEventListener('orientationchange', checkOrientation);
+        };
     }, []);
 
     const enterImmersion = () => {
-        // 1. Demander le Plein Écran (Cache la barre URL)
+        // 1. Demander le Plein Écran (Android / PC)
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.log(err));
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
-            elem.webkitRequestFullscreen();
+            elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen(); // Safari (parfois inactif sur iPhone, mais on tente)
         }
+        
+        // 2. Hack iOS : Scroller pour essayer de cacher la barre d'adresse
+        setTimeout(() => {
+            window.scrollTo(0, 1);
+        }, 100);
+
+        // 3. Valider l'état (Pour faire disparaître ce menu)
         setIsFullscreen(true);
 
-        // 2. Tenter de verrouiller l'orientation (Android seulement)
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(err => console.log("Verrouillage orientation non supporté"));
+        // 4. Verrouillage orientation (Android uniquement - Crash safe)
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {});
+            }
+        } catch (e) {
+            // Ignorer sur iOS qui ne supporte pas le lock
         }
     };
 
-    // Si on n'est pas sur une page de jeu, on ne fait rien
     if (!isGamePage) return null;
 
-    // SCÉNARIO 1 : En Portrait -> On bloque tout avec un rideau noir
+    // SCÉNARIO 1 : En Portrait -> Rideau noir bloquant
     if (isPortrait) {
         return (
             <div style={{
-                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100dvh', // ✅ dvh ici aussi
                 backgroundColor: '#000', zIndex: 999999,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 color: 'white', textAlign: 'center', padding: '20px'
@@ -64,16 +81,17 @@ const MobileGameManager = () => {
         );
     }
 
-    // SCÉNARIO 2 : En Paysage mais pas Plein Écran -> Bouton pour cacher la barre
-    if (!isFullscreen && !document.fullscreenElement) { // Check double sécurité
+    // SCÉNARIO 2 : Paysage mais pas encore "activé" par le joueur
+    // On affiche ce bouton sur iOS aussi pour garantir que l'utilisateur est prêt
+    if (!isFullscreen && !document.fullscreenElement) { 
         return (
             <div style={{
-                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100dvh', // ✅ dvh
                 backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 999998,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 color: '#DAA520'
             }}>
-                <h1 style={{marginBottom: '30px'}}>PRÊT À ENTRER ?</h1>
+                <h1 style={{marginBottom: '30px'}}>MODE IMMERSIF</h1>
                 <button 
                     onClick={enterImmersion}
                     style={{
@@ -85,12 +103,14 @@ const MobileGameManager = () => {
                 >
                     <FaExpand /> LANCER LE JEU
                 </button>
-                <p style={{marginTop: '20px', color: '#fff', opacity: 0.7}}>Cela masquera la barre de navigation</p>
+                <p style={{marginTop: '20px', color: '#fff', opacity: 0.7, fontSize: '0.9rem'}}>
+                    (Touchez pour optimiser l'écran)
+                </p>
             </div>
         );
     }
 
-    return null; // Tout est bon, on laisse voir le jeu
+    return null; 
 };
 
 export default MobileGameManager;
