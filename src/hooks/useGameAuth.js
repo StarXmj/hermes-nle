@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 export function useGameAuth() {
   const [player, setPlayer] = useState(null);
   
-  // ✅ 1. SÉCURITÉ : Initialisation avec des tableaux vides pour éviter le crash .map()
+  // ✅ 1. SÉCURITÉ : Initialisation avec des tableaux vides
   const [leaderboardAllTime, setLeaderboardAllTime] = useState([]);
   const [leaderboardMonthly, setLeaderboardMonthly] = useState([]); 
   
@@ -25,8 +25,7 @@ export function useGameAuth() {
     // B. Premier chargement des scores
     fetchLeaderboards();
 
-    // ✅ 2. TEMPS RÉEL (RESTITUTÉ)
-    // On écoute tout changement sur la table 'arcade_scores'
+    // ✅ 2. TEMPS RÉEL
     const channel = supabase
       .channel('leaderboard_updates')
       .on(
@@ -38,12 +37,11 @@ export function useGameAuth() {
         },
         (payload) => {
           console.log('⚡ Score détecté en temps réel ! Mise à jour...');
-          fetchLeaderboards(); // On recharge immédiatement les listes
+          fetchLeaderboards(); // On recharge les listes
         }
       )
       .subscribe();
 
-    // Nettoyage à la fermeture du composant
     return () => {
       supabase.removeChannel(channel);
     };
@@ -71,7 +69,7 @@ export function useGameAuth() {
         if (!errorRPC && monthly && Array.isArray(monthly)) {
             setLeaderboardMonthly(monthly);
         } else {
-            // Si le RPC échoue, on affiche une version tronquée du général pour ne pas laisser vide
+            // Fallback safe
             setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
         }
     } catch (e) {
@@ -101,13 +99,14 @@ export function useGameAuth() {
       if (error) throw error;
 
       saveSession(data);
-      return { success: true };
+      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate)
+      return { success: true, user: data };
 
     } catch (err) {
       if (err.message?.includes('déjà utilisé') || err.code === '23505') {
          setError("Ce Pseudo ou Email est déjà pris.");
       } else {
-         setError("Erreur lors de l'inscription. Vérifiez vos données.");
+         setError("Erreur lors de l'inscription.");
       }
       return { success: false };
     } finally {
@@ -127,7 +126,8 @@ export function useGameAuth() {
       if (error || !data) throw new Error("Identifiants incorrects.");
       
       saveSession(data);
-      return { success: true };
+      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate)
+      return { success: true, user: data };
     } catch (err) {
       setError("Email ou mot de passe incorrect.");
       return { success: false };
@@ -136,22 +136,26 @@ export function useGameAuth() {
     }
   };
 
-  const saveScore = async (newScore) => {
-    if (!player) return;
+  // ✅ ACCEPTE "playerOverride" POUR SAUVEGARDER AVANT MAJ DU STATE
+  const saveScore = async (newScore, playerOverride = null) => {
+    // On prend soit le joueur qu'on force (celui qui vient de s'inscrire), soit le state actuel
+    const targetPlayer = playerOverride || player;
     
-    // Sauvegarde du score -> Cela déclenchera le "Temps Réel" pour tous les autres joueurs connectés
+    if (!targetPlayer) return;
+    
+    // Insertion historique
     await supabase.from('arcade_scores').insert([{ 
-      player_id: player.id, score: newScore, pseudo: player.pseudo 
+      player_id: targetPlayer.id, score: newScore, pseudo: targetPlayer.pseudo 
     }]);
 
-    // Mise à jour du record personnel si nécessaire
-    if (newScore > (player.best_score || 0)) {
-      const updatedPlayer = { ...player, best_score: newScore };
+    // Mise à jour record personnel
+    if (newScore > (targetPlayer.best_score || 0)) {
+      const updatedPlayer = { ...targetPlayer, best_score: newScore };
       saveSession(updatedPlayer);
-      await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', player.id);
+      await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', targetPlayer.id);
     }
     
-    // Mise à jour locale immédiate pour le joueur courant
+    // Update local immédiat
     fetchLeaderboards();
   };
 

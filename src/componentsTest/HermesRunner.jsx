@@ -84,12 +84,24 @@ function HermesRunnerPage() {
   const handleAuthSubmit = async (e) => {
       e.preventDefault(); e.stopPropagation();
       let res;
-      if (authMode === 'register') res = await register(authForm.email, authForm.pseudo, authForm.password, authForm.newsletter);
-      else res = await login(authForm.email, authForm.password);
+      
+      if (authMode === 'register') {
+          res = await register(authForm.email, authForm.pseudo, authForm.password, authForm.newsletter);
+      } else {
+          res = await login(authForm.email, authForm.password);
+      }
+      
       if (res && res.success) {
           setShowAuthModal(false);
           setAuthForm({ email: '', pseudo: '', password: '', newsletter: true });
-          if (gameStatus === 'gameover' && score > 0) saveScore(score);
+          
+          // ✅ FIX CRITIQUE : Si le jeu est fini et qu'on a un score, on le sauvegarde
+          // en utilisant DIRECTEMENT l'utilisateur récupéré (res.user)
+          // sans attendre que le state React se mette à jour.
+          if (gameStatus === 'gameover' && score > 0) {
+              console.log("Sauvegarde du score post-auth pour :", res.user.pseudo);
+              saveScore(score, res.user);
+          }
       }
   };
 
