@@ -1,64 +1,66 @@
 import { GAME_CONFIG, BIOMES } from './constants';
 
-// ==========================================
-// ✅ IMPORT DU SPRITE SHEET
-// Assure-toi que "new-hermes-run.png" est dans "src/gameTest/"
-import runSheetImg from './hermes-run.gif'; 
-import jumpImg from './hermes-tiger-run.gif'; 
-// ==========================================
-
 class SpriteManager {
   constructor() {
     this.sprites = {};
     
+    // CONFIGURATION DES SÉQUENCES
     this.playerConfig = {
         run: {
-            // ✅ On passe juste le chemin (la variable importée)
-            src: runSheetImg, 
-            frames: 6,      
-            speed: 100      
+            base: 'run-hermes/hermes-run',  
+            count: 12,            
+            startAt: 1,          
+            ext: '.png',         
+            speed: 80
         },
         jump: {
-            // Fallback si pas d'image de saut
-            src: jumpImg || runSheetImg,
-            frames: 1, 
-            speed: 0
+            base: 'jump-hermes/hermes-jump',  
+            count: 10,            
+            startAt: 2,          
+            ext: '.png',         
+            speed: 100           
+        },
+        // ✅ NOUVEAU : Séquence pour le mode FLAPPY
+        fly: {
+            // Assurez-vous d'avoir le dossier /images/fly-hermes/hermes-fly-1.png, etc.
+            base: 'fly-hermes/hermes-fly', 
+            count: 4,  // Mettez le bon nombre de frames
+            startAt: 1,
+            ext: '.png',
+            speed: 120
         }
     };
 
     this.initSprites();
   }
 
-  // ✅ CORRECTION : La méthode est maintenant DANS la classe
   loadImage(filename) {
       const img = new Image();
-      
-      // Si filename est une chaîne (chemin importé ou URL), on l'utilise.
-      // Sinon, on cherche dans /images/ (pour les obstacles)
-      if (typeof filename === 'string' && (filename.startsWith('/') || filename.startsWith('http') || filename.startsWith('data:'))) {
-          img.src = filename;
-      } else {
-          // Tu as demandé de chercher dans /images/ pour les fichiers manuels
-          img.src = `/images/${filename}`;
-      }
-      
+      const path = filename.startsWith('/') ? filename : `/images/${filename}`;
+      img.src = path;
       img.isReady = false; 
-      img.isError = false;
-
       img.onload = () => { img.isReady = true; };
-      img.onerror = () => { 
-          // console.warn(`⚠️ Image introuvable : ${img.src}`);
-          img.isError = true;
-      };
       return img;
   }
 
-  initSprites() {
-    // 1. JOUEUR (Chargement via les imports)
-    this.sprites.player_run = this.loadImage(this.playerConfig.run.src);
-    this.sprites.player_jump = this.loadImage(this.playerConfig.jump.src);
+  loadSequence(config) {
+      const frames = [];
+      const start = (config.startAt !== undefined) ? config.startAt : 0;
+      for (let i = 0; i < config.count; i++) {
+          const index = start + i;
+          const filename = `${config.base}-${index}${config.ext}`;
+          frames.push(this.loadImage(filename));
+      }
+      return frames;
+  }
 
-    // 2. OBSTACLES (Chargement via dossier public/images/)
+  initSprites() {
+    // 1. JOUEUR
+    this.sprites.player_run = this.loadSequence(this.playerConfig.run);
+    this.sprites.player_jump = this.loadSequence(this.playerConfig.jump);
+    this.sprites.player_fly  = this.loadSequence(this.playerConfig.fly); // ✅ Chargement Flappy
+
+    // 2. OBSTACLES
     this.sprites.column = this.loadImage('column.png');
     this.sprites.amphora = this.loadImage('amphora.png');
     this.sprites.shield = this.loadImage('shield.png');
@@ -71,47 +73,62 @@ class SpriteManager {
     this.sprites.cloud = this.loadImage('cloud.png');
   }
 
-  drawPlayer(ctx, x, y, width, height, isSliding, isJumping) {
-    let spriteObj = this.sprites.player_run;
+  drawPlayer(ctx, x, y, width, height, isSliding, isJumping, biome) {
+    let sequence = this.sprites.player_run;
     let config = this.playerConfig.run;
 
-    // Gestion du saut
-    if (isJumping && this.sprites.player_jump.isReady && !this.sprites.player_jump.isError) {
-        spriteObj = this.sprites.player_jump;
+    // Choix de l'animation
+    if (biome === BIOMES.FLAPPY) {
+        // ✅ Mode Avion
+        sequence = this.sprites.player_fly;
+        config = this.playerConfig.fly;
+    } else if (isJumping) {
+        // Mode Saut
+        sequence = this.sprites.player_jump;
         config = this.playerConfig.jump;
     }
 
-    // Fallback Doré (Si l'image n'est pas chargée)
-    if (!spriteObj.isReady || spriteObj.isError || spriteObj.naturalWidth === 0) {
+    // Calcul Frame
+    let frameIndex = 0;
+    if (config.count > 1) {
+        frameIndex = Math.floor(Date.now() / config.speed) % config.count;
+    }
+    const currentImg = sequence[frameIndex];
+
+    // Fallback
+    if (!currentImg || !currentImg.isReady) {
         ctx.fillStyle = '#FFD700'; 
         ctx.fillRect(x, y, width, height);
         return; 
     }
 
-    // --- CALCUL DE L'ANIMATION ---
-    let frameIndex = 0;
-    if (config.frames > 1) {
-        frameIndex = Math.floor(Date.now() / config.speed) % config.frames;
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+
+    // --- ORIENTATION & BIOME ---
+    if (biome === BIOMES.INVERTED) {
+        ctx.scale(1, -1);
     }
 
-    // Calcul de la découpe
-    const frameWidthSource = spriteObj.naturalWidth / config.frames;
-    const frameHeightSource = spriteObj.naturalHeight;
-    const sx = frameIndex * frameWidthSource; 
+    // --- ✅ AURA LUMINEUSE (Bleue & Grande) ---
+    // Bleu Cyan électrique (0, 255, 255) ou Bleu Roi (0, 100, 255)
+    ctx.shadowColor = "rgba(0, 200, 255, 1)"; 
+    ctx.shadowBlur = 25; // Très grand flou pour être visible
+    // Astuce : On dessine parfois 2 fois pour intensifier l'aura si le fond est noir
     
-    // Dessin
+    // DESSIN
+    // Pas de scale(-1, 1) car vous avez dit qu'il était bien orienté maintenant.
+    
     if (isSliding) {
-        ctx.drawImage(spriteObj, sx, 0, frameWidthSource, frameHeightSource, x, y + height/4, width, height/2);
+        ctx.drawImage(currentImg, -width/2, -height/2, width, height);
     } else {
-        ctx.drawImage(
-            spriteObj, 
-            sx, 0, frameWidthSource, frameHeightSource, 
-            x, y, width, height
-        );
+        ctx.drawImage(currentImg, -width/2, -height/2, width, height);
     }
+
+    ctx.shadowBlur = 0; // Reset
+    ctx.restore();
   }
 
-  // --- DESSIN OBSTACLES ---
   drawObstacle(ctx, ent, biome) {
       let img = this.sprites.column; 
       let shapeType = 'rect';
@@ -126,11 +143,44 @@ class SpriteManager {
       }
       
       if (biome === BIOMES.ARES && ent.drawType === 'column') img = this.sprites.column_broken;
+      
+      // ✅ LOGIQUE PICS (Stalagmite/Stalactite)
+      // Stalagmite = Pic qui monte du sol. Stalactite = Pic qui descend du plafond.
       if (biome === BIOMES.HADES && ent.drawType === 'column') { img = this.sprites.stalagmite; shapeType = 'triangleUp'; }
       if (ent.type === 'projectile') { img = this.sprites.spear; shapeType = 'triangleUp'; }
 
-      if (img && img.isReady && !img.isError) {
-          ctx.drawImage(img, ent.x, ent.y, ent.width, ent.height);
+      if (img && img.isReady) {
+          ctx.save();
+          ctx.translate(ent.x + ent.width / 2, ent.y + ent.height / 2);
+
+          let scaleX = 1;
+          let scaleY = 1;
+
+          if (ent.drawType === 'harpy') {
+              const flyOffset = Math.sin(Date.now() / 200) * 5;
+              ctx.translate(0, flyOffset);
+              scaleX = -1; 
+          }
+
+          // ✅ CORRECTION BIOME INVERSÉ (PICS AU PLAFOND)
+          if (biome === BIOMES.INVERTED) {
+              scaleY = -1; // On inverse tout le monde
+              
+              // EXCEPTION : Si c'est un pic au sol (qui se retrouve au plafond),
+              // et que l'image pointe vers le haut (stalagmite), en inversant Y elle pointe vers le bas.
+              // C'est CORRECT pour un pic au plafond.
+              
+              // MAIS si c'est une "stalactite" (déjà pointe vers le bas),
+              // en inversant Y elle pointerait vers le haut.
+              // Si vous voyez une mauvaise orientation, c'est ici qu'on force :
+              if (ent.drawType === 'stalactite') {
+                  scaleY = 1; // On annule l'inversion pour garder la pointe vers le bas (si besoin)
+              }
+          }
+
+          ctx.scale(scaleX, scaleY);
+          ctx.drawImage(img, -ent.width / 2, -ent.height / 2, ent.width, ent.height);
+          ctx.restore();
       } else {
           this.drawGeometricFallback(ctx, ent, shapeType);
       }
@@ -144,8 +194,6 @@ class SpriteManager {
           ctx.beginPath(); ctx.moveTo(ent.x, ent.y + ent.height); ctx.lineTo(ent.x + ent.width, ent.y + ent.height); ctx.lineTo(ent.x + ent.width/2, ent.y); ctx.fill();
       } else if (shapeType === 'triangleDown') {
           ctx.beginPath(); ctx.moveTo(ent.x, ent.y); ctx.lineTo(ent.x + ent.width, ent.y); ctx.lineTo(ent.x + ent.width/2, ent.y + ent.height); ctx.fill();
-      } else if (shapeType === 'line') {
-          ctx.fillRect(ent.x + ent.width/2 - 2, ent.y, 4, ent.height);
       } else {
           ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
       }

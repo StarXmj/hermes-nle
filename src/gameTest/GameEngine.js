@@ -89,8 +89,7 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
-    this.background.update(worldSpeed);
-    this.level.update(worldSpeed, this.currentBiome);
+this.background.update(worldSpeed, this.currentBiome);    this.level.update(worldSpeed, this.currentBiome);
     this.player.update(this.input, this.currentBiome);
 
     this.checkCollisions();
@@ -115,6 +114,16 @@ export class GameEngine {
   checkCollisions() {
     const pBox = this.player.getHitbox();
     let ghostBox = null;
+
+    if (this.currentBiome === BIOMES.FLAPPY) {
+        const groundLevel = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - this.player.height;
+        
+        // Si le joueur touche la lave (avec une marge de tolérance de 5px pour être juste)
+        if (this.player.y > groundLevel + 5) {
+            this.gameOver();
+            return;
+        }
+    }
     
     if (this.currentBiome === BIOMES.PHILOTES) {
         if (this.player.getGhostHitbox) {
@@ -129,6 +138,8 @@ export class GameEngine {
             };
         }
     }
+
+    
 
     for (let ent of this.level.entities) {
         if (this.isColliding(pBox, ent)) {
@@ -174,10 +185,34 @@ export class GameEngine {
         this.ctx.scale(s, s);
         this.ctx.translate(-cx, -cy);
     }
+    // ✅ MODIFICATION : Rendu du sol
+    if (this.currentBiome === BIOMES.FLAPPY) {
+        // EFFET LAVE (Danger !)
+        const grad = this.ctx.createLinearGradient(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, 0, GAME_CONFIG.CANVAS_HEIGHT);
+        grad.addColorStop(0, '#e74c3c'); // Rouge vif
+        grad.addColorStop(0.5, '#d35400'); // Orange feu
+        grad.addColorStop(1, '#c0392b'); // Rouge sombre
+        
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
+        
+        // On dessine aussi le plafond normalement
+        this.ctx.fillStyle = '#222';
+        this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
+
+    } else {
+        // SOL STANDARD (Sûr)
+        this.ctx.fillStyle = '#222';
+        if (this.currentBiome !== BIOMES.INVERTED) {
+            this.ctx.fillRect(0, GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
+        }
+        if (this.currentBiome === BIOMES.INVERTED) {
+            this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.GROUND_HEIGHT);
+        }
+    }
 
     // 1. DESSIN DU FOND (SPRITES)
-    this.background.draw(this.ctx);
-    
+this.background.draw(this.ctx, this.currentBiome);    
     // 2. SOL / PLAFOND (PHYSIQUE)
     this.ctx.fillStyle = '#222';
     if (this.currentBiome !== BIOMES.INVERTED) {
@@ -193,6 +228,9 @@ export class GameEngine {
     });
 
     // 4. JOUEUR (SPRITE)
+    // ... (début de la méthode draw inchangé)
+
+    // 4. DESSIN DU JOUEUR (AVEC BIOME)
     spriteManager.drawPlayer(
         this.ctx, 
         this.player.x, 
@@ -200,10 +238,11 @@ export class GameEngine {
         this.player.width, 
         this.player.height, 
         this.player.isSliding,
-        this.player.jumpCount > 0
+        this.player.jumpCount > 0,
+        this.currentBiome // ✅ IMPORTANT : On passe le biome pour l'inversion
     );
 
-    // 5. FANTÔME (SPRITE - PHILOTES)
+    // 5. DESSIN DU FANTÔME (PHILOTES)
     if (this.currentBiome === BIOMES.PHILOTES) {
         const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
         
@@ -219,9 +258,12 @@ export class GameEngine {
 
         this.ctx.save();
         this.ctx.globalAlpha = 0.5; 
-        spriteManager.drawPlayer(this.ctx, this.player.x, ghostY, this.player.width, this.player.height, this.player.isSliding, this.player.jumpCount > 0);
+        // On passe aussi le biome au fantôme
+        spriteManager.drawPlayer(this.ctx, this.player.x, ghostY, this.player.width, this.player.height, this.player.isSliding, this.player.jumpCount > 0, this.currentBiome);
         this.ctx.restore();
     }
+
+    // ... (reste du fichier inchangé)
 
     // --- OVERLAYS VISUELS ---
     if (this.currentBiome === BIOMES.ARES) {

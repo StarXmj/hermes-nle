@@ -18,45 +18,49 @@ export class Player {
     
     this.currentBiome = BIOMES.NORMAL;
     this.jumpPressedBefore = false;
+
+    // ✅ NOUVEAU : État de sécurité pour Flappy
+    this.flappySafetyActive = false;
+    this.flappyStartTime = 0;
   }
 
   setBiome(biome) {
     this.currentBiome = biome;
     this.vy = 0; 
     
-    // Reset taille si on était en train de glisser pendant la transition
     this.isSliding = false;
     this.height = this.originalHeight;
     
-    // TP au bon endroit
+    // TP au bon endroit selon le biome
     if (biome === BIOMES.INVERTED) {
         // Collé au plafond
         this.y = GAME_CONFIG.GROUND_HEIGHT; 
+
+    } else if (biome === BIOMES.FLAPPY) {
+        // ✅ NOUVEAU : On place le joueur au milieu et on active la sécurité
+        this.y = (GAME_CONFIG.CANVAS_HEIGHT / 2) - (this.height / 2);
+        this.flappySafetyActive = true;
+        this.flappyStartTime = Date.now();
+
     } else {
-        // Collé au sol
+        // Collé au sol (Normal, Hades, Ares, etc.)
         this.y = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - this.height;
     }
   }
 
   update(input, biome) {
-    // 1. GESTION GLISSADE (Compatible Normal, Hades ET Inverted)
-    // On exclut FLAPPY car on vole, pas besoin de glisser
+    // 1. GESTION GLISSADE
     if (input.keys.down && biome !== BIOMES.FLAPPY) {
       if (!this.isSliding) {
           this.isSliding = true;
           this.height = this.originalHeight / 2;
-          
-          // AJUSTEMENT DE POSITION
           if (biome !== BIOMES.INVERTED) {
-              // NORMAL/HADES : On compense pour que les pieds restent au sol
               this.y += this.originalHeight / 2; 
           }
-          // INVERTED : Pas besoin de toucher Y, car Y est le point d'ancrage au plafond
       }
     } else {
       if (this.isSliding) {
           this.isSliding = false;
-          // RELÈVEMENT
           if (biome !== BIOMES.INVERTED) {
               this.y -= this.originalHeight / 2;
           }
@@ -68,9 +72,9 @@ export class Player {
     switch (biome) {
         case BIOMES.NORMAL:
         case BIOMES.HADES:
-        case BIOMES.DIONYSOS: // ✅ AJOUT : Physique normale
-        case BIOMES.ARES: // ✅ AJOUT : Physique normale pour la guerre
-        case BIOMES.PHILOTES: // ✅ AJOUT : Physique normale
+        case BIOMES.DIONYSOS: 
+        case BIOMES.ARES: 
+        case BIOMES.PHILOTES: 
             this.updateNormal(input);
             break;
             
@@ -87,8 +91,6 @@ export class Player {
             break;
     }
   }
-
-  
 
   updateNormal(input) {
     if (input.keys.up && !this.jumpPressedBefore) {
@@ -111,20 +113,14 @@ export class Player {
   }
 
   updateInverted(input) {
-    // Saut vers le BAS (Force positive)
     if (input.keys.up && !this.jumpPressedBefore) {
         if (this.jumpCount < this.maxJumps) {
-            this.vy = -GAME_CONFIG.JUMP_FORCE; // Inverse la force du saut
+            this.vy = -GAME_CONFIG.JUMP_FORCE; 
             this.jumpCount++;
         }
     }
-
     this.y += this.vy;
-
-    // Le "Sol" est le Plafond (Y = Ground Height)
     const ceilingY = GAME_CONFIG.GROUND_HEIGHT;
-    
-    // Gravité inversée (Tire vers le HAUT, donc négatif)
     if (this.y > ceilingY) {
         this.vy -= GAME_CONFIG.GRAVITY; 
     } else {
@@ -136,21 +132,43 @@ export class Player {
   }
 
   updateFlappy(input) {
+    // ✅ GESTION DE LA SÉCURITÉ AU DÉMARRAGE
+    if (this.flappySafetyActive) {
+        // 1. Désactivation par Action utilisateur (Saut)
+        if (input.keys.up && !this.jumpPressedBefore) {
+            this.flappySafetyActive = false;
+            // On laisse le code standard s'exécuter pour appliquer l'impulsion immédiatement
+        } 
+        // 2. Désactivation par Temps (2 secondes)
+        else if (Date.now() - this.flappyStartTime > 2000) {
+            this.flappySafetyActive = false;
+        } 
+        // 3. Maintien en position (Si toujours actif)
+        else {
+            this.y = (GAME_CONFIG.CANVAS_HEIGHT / 2) - (this.height / 2);
+            this.vy = 0;
+            this.jumpPressedBefore = input.keys.up; // Important pour éviter le spam à la sortie
+            return; // On sort ici pour ne pas appliquer la gravité
+        }
+    }
+
+    // --- PHYSIQUE STANDARD FLAPPY ---
     if (input.keys.up && !this.jumpPressedBefore) {
         this.vy = GAME_CONFIG.FLAPPY_JUMP_FORCE;
     }
     this.y += this.vy;
     this.vy += GAME_CONFIG.FLAPPY_GRAVITY;
 
-    const groundY = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - this.height;
     const ceilingY = GAME_CONFIG.GROUND_HEIGHT;
 
-    if (this.y > groundY) { this.y = groundY; this.vy = 0; }
     if (this.y < ceilingY) { this.y = ceilingY; this.vy = 0; }
+    
+    // Note: Plus de limite au sol (c'est la mort)
     
     this.jumpPressedBefore = input.keys.up;
   }
 
+  // ... (draw, getHitbox, getGhostHitbox restent inchangés)
   draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.shadowBlur = 10;
@@ -174,21 +192,10 @@ export class Player {
       };
   }
   
-getGhostHitbox() {
-      // Le fantôme est exactement au même X, mais Y décalé vers le haut
+  getGhostHitbox() {
       return {
           x: this.x + 8,
           y: (this.y - GAME_CONFIG.GHOST_OFFSET_Y) + 5,
-          width: this.width - 16,
-          height: this.height - 10
-      };
-  }
-
-  // (getHitbox classique reste inchangée)
-  getHitbox() {
-      return {
-          x: this.x + 8,
-          y: this.y + 5,
           width: this.width - 16,
           height: this.height - 10
       };

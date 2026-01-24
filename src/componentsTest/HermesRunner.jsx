@@ -183,12 +183,14 @@ function HermesRunnerPage() {
       <canvas ref={canvasRef} className="game-canvas" />
 
       {/* 3. HUD (Visible uniquement en jeu) */}
+     {/* 3. HUD (Visible uniquement en jeu) */}
       {gameStatus === 'playing' && (
         <div className="greek-hud-score">
-            <span className="score-label">GLOIRE</span>
-            <span className="score-value">{score}</span>
-            <br/>
-            <span className="biome-indicator">ZONE: {currentBiome}</span>
+            <div className="score-line">
+                <span className="score-value">{Math.floor(score)}</span>
+                <span className="score-label">DRACHMES</span>
+            </div>
+            <span className="biome-indicator">{currentBiome}</span>
         </div>
       )}
 

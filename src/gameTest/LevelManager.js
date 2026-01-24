@@ -5,8 +5,6 @@ export class LevelManager {
     this.entities = [];
     this.lastSpawnX = 0;
     this.minGap = 0;
-
-    // Timer spécifique pour la pluie de projectiles d'Ares
     this.projectileTimer = 0;
   }
 
@@ -21,15 +19,12 @@ export class LevelManager {
     for (let i = this.entities.length - 1; i >= 0; i--) {
       let ent = this.entities[i];
       
-      // Déplacement horizontal standard (tout le monde recule)
       ent.x -= speed;
       
-      // NOUVEAU : Déplacement vertical pour les projectiles
       if (ent.type === 'projectile') {
           ent.y += ent.speedY;
       }
 
-      // Nettoyage si hors écran (gauche OU bas)
       if (ent.x + ent.width < 0 || ent.y > GAME_CONFIG.CANVAS_HEIGHT || ent.markedForDeletion) {
         this.entities.splice(i, 1);
       }
@@ -37,46 +32,41 @@ export class LevelManager {
     
     this.lastSpawnX -= speed;
 
-    // 2. Spawn des obstacles classiques (Sol/Plafond) - Géré par le Gap
+    // 2. Spawn des obstacles classiques
     if (this.lastSpawnX < GAME_CONFIG.CANVAS_WIDTH - this.minGap) {
         this.trySpawnObstacle(biome, speed);
     }
 
-    // 3. NOUVEAU : Spawn des Projectiles (Uniquement en ARES)
+    // 3. Spawn des Projectiles (ARES)
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
-        // Spawn toutes les 40 à 80 frames (rythme soutenu)
-        if (this.projectileTimer > Math.random() * 40 + 40) {
+        
+        // ✅ MODIFICATION : Spawn beaucoup moins fréquent
+        // Avant : random * 40 + 40 (toutes les 0.6s à 1.3s)
+        // Après : random * 100 + 100 (toutes les 1.6s à 3.3s)
+        if (this.projectileTimer > Math.random() * 100 + 100) {
             this.spawnProjectile();
             this.projectileTimer = 0;
         }
     }
   }
 
-  // Nouvelle méthode dédiée aux projectiles tombants
   spawnProjectile() {
       const def = ENTITY_TYPES.PROJECTILE;
-      // Apparaît à une position X aléatoire devant le joueur
-      // entre le milieu de l'écran et la droite
       const randomX = GAME_CONFIG.CANVAS_WIDTH * 0.5 + Math.random() * (GAME_CONFIG.CANVAS_WIDTH * 0.5);
       
       this.entities.push({
           x: randomX,
-          y: -100, // Commence au-dessus de l'écran
+          y: -100, 
           width: def.width,
           height: def.height,
           color: def.color,
           type: def.type,
-          speedY: def.speedY, // Vitesse de chute
+          speedY: def.speedY, 
           markedForDeletion: false
       });
-      // Note : On ne touche pas à lastSpawnX ici, car les projectiles sont indépendants du rythme au sol
   }
 
-  // L'ancienne méthode trySpawn renommée pour plus de clarté
-  // Dans src/game/LevelManager.js
-
-  // Helper pour avoir un entier aléatoire entre min et max
   randomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
   }
@@ -88,56 +78,43 @@ export class LevelManager {
       let def = null;
       let yPos = 0;
       let finalHeight = 0;
-      let finalType = 'obstacle'; // par défaut
+      let finalType = 'obstacle'; 
 
-      // --- LOGIQUE DE SÉLECTION ET TAILLE ---
-
-      // 1. BIOMES CLASSIQUES (Normal, Ares, Dionysos)
+      // 1. BIOMES CLASSIQUES
       if (biome === BIOMES.NORMAL || biome === BIOMES.HADES || biome === BIOMES.DIONYSOS || biome === BIOMES.ARES || biome === BIOMES.PHILOTES) {
           
           if (rand < 0.65) { 
-              // === SOL (65% de chance) ===
               const subRand = Math.random();
-              
               if (subRand < 0.4) {
-                  // VASE (Petit) : 30px à 45px
                   def = ENTITY_TYPES.AMPHORA;
                   finalHeight = this.randomInt(30, 45);
-                  finalType = 'amphora'; // Pour le SpriteManager
+                  finalType = 'amphora'; 
               } else if (subRand < 0.7) {
-                  // BOUCLIER (Moyen) : 40px à 50px
                   def = ENTITY_TYPES.SHIELD;
                   finalHeight = this.randomInt(40, 50);
                   finalType = 'shield';
               } else {
-                  // COLONNE (Grand) : 50px à 75px
                   def = ENTITY_TYPES.GROUND;
                   finalHeight = this.randomInt(50, 75);
                   finalType = 'column';
               }
-              
-              // Calcule Y en fonction de la hauteur aléatoire choisie
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - finalHeight;
 
           } else {
-              // === AÉRIEN / HARPIE (35% de chance) ===
               def = ENTITY_TYPES.HIGH;
-              finalHeight = 40; // Taille fixe pour les ennemis volants
+              finalHeight = 40; 
               finalType = 'harpy';
-              // Hauteur de vol : entre 90 et 110px du sol (pour forcer glissade)
               const heightFromGround = this.randomInt(90, 110);
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - heightFromGround;
           }
       }
-      
       // 2. BIOME INVERTED
       else if (biome === BIOMES.INVERTED) {
-          // Même logique mais Y inversé
           if (rand < 0.6) {
-              def = ENTITY_TYPES.GROUND; // Stalactite inversée
+              def = ENTITY_TYPES.GROUND; 
               finalHeight = this.randomInt(50, 80);
               finalType = 'stalactite';
-              yPos = GAME_CONFIG.GROUND_HEIGHT; // Collé au plafond
+              yPos = GAME_CONFIG.GROUND_HEIGHT; 
           } else {
               def = ENTITY_TYPES.HIGH;
               finalHeight = 40;
@@ -145,20 +122,17 @@ export class LevelManager {
               yPos = GAME_CONFIG.GROUND_HEIGHT + this.randomInt(80, 100);
           }
       }
-      
       // 3. BIOME FLAPPY
       else if (biome === BIOMES.FLAPPY) {
            if (rand < 0.5) {
-               // Obstacle SOL
                def = ENTITY_TYPES.GROUND;
                finalHeight = this.randomInt(60, 100);
                finalType = 'column';
                yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - finalHeight;
            } else {
-               // Obstacle PLAFOND (Chaînes ou Piques)
                if (Math.random() < 0.5) {
                    def = ENTITY_TYPES.CHAIN;
-                   finalHeight = this.randomInt(60, 120); // Chaînes longues
+                   finalHeight = this.randomInt(60, 120); 
                    finalType = 'chain';
                } else {
                    def = ENTITY_TYPES.CEILING;
@@ -169,11 +143,13 @@ export class LevelManager {
            }
       }
 
-      // --- CRÉATION ---
-      
-      // Ajustement Gap selon difficulté
+      // --- CALCUL DU GAP (Difficulté) ---
       let reactionFrames = (biome === BIOMES.FLAPPY) ? 40 : 60; 
       if (biome === BIOMES.HADES) reactionFrames = 90; 
+      
+      // ✅ MODIFICATION : Plus d'espace pour ARES car il y a déjà des projectiles
+      if (biome === BIOMES.ARES) reactionFrames = 80; 
+
       this.minGap = (speed * reactionFrames) + (Math.random() * 200); 
 
       if (def) {
@@ -181,10 +157,10 @@ export class LevelManager {
               x: GAME_CONFIG.CANVAS_WIDTH,
               y: yPos,
               width: def.width,
-              height: finalHeight, // ✅ La taille aléatoire est appliquée ici
+              height: finalHeight, 
               color: def.color,
               type: def.type,
-              drawType: finalType, // ✅ Nouveau champ pour dire au SpriteManager quoi dessiner
+              drawType: finalType, 
               markedForDeletion: false
           });
           this.lastSpawnX = GAME_CONFIG.CANVAS_WIDTH;
@@ -196,11 +172,9 @@ export class LevelManager {
       ctx.fillStyle = ent.color;
       
       if (ent.type === 'projectile') {
-          // Dessin d'une lance/flèche (pointe vers le bas)
           ctx.beginPath();
           ctx.moveTo(ent.x, ent.y);
           ctx.lineTo(ent.x + ent.width, ent.y);
-          // Pointe
           ctx.lineTo(ent.x + ent.width/2, ent.y + ent.height + 15); 
           ctx.fill();
       } else {
