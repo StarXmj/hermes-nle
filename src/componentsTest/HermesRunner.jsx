@@ -6,7 +6,6 @@ import './HermesRunner.css';
 import { FaArrowLeft, FaRedo, FaSignOutAlt, FaTrophy, FaCalendarAlt, FaHome, FaMobileAlt, FaTimes, FaExpand } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-// Couleurs Néon pour les Biomes
 const BIOME_COLORS = {
     'NORMAL': { color: '#FFD700', label: 'OLYMPE' },
     'HADES': { color: '#FF4444', label: 'ENFERS' },
@@ -39,14 +38,8 @@ function HermesRunnerPage() {
   const [currentBiome, setCurrentBiome] = useState('NORMAL');
   const [hasEnteredFullScreen, setHasEnteredFullScreen] = useState(false);
   
-  // ✅ CORRECTION BLOCAGE : Initialisation précise
-  const [isPortrait, setIsPortrait] = useState(() => {
-      // On vérifie directement les dimensions au chargement
-      if (typeof window !== 'undefined') {
-          return window.innerHeight > window.innerWidth;
-      }
-      return false;
-  });
+  // NOTE : On ne gère plus isPortrait en JS pour l'affichage du lock screen
+  // C'est le CSS @media (orientation: portrait) qui s'en charge.
 
   const { player, leaderboardAllTime, leaderboardMonthly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
   
@@ -60,20 +53,13 @@ function HermesRunnerPage() {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
 
-  // ✅ DÉTECTION ORIENTATION ROBUSTE
+  // Resize pour le moteur de jeu uniquement
   useEffect(() => {
     const handleResize = () => {
-      // Si la hauteur est plus grande que la largeur = PORTRAIT = BLOCAGE
-      const isVert = window.innerHeight > window.innerWidth;
-      setIsPortrait(isVert);
-      
       if(engineRef.current) engineRef.current.resize();
     };
     
     window.addEventListener('resize', handleResize);
-    // On force une vérification après un petit délai pour gérer l'apparition de la barre d'adresse mobile
-    setTimeout(handleResize, 100);
-    
     const timer = setInterval(() => setTimeLeft(getTimeUntilEndOfMonth()), 60000); 
     return () => {
         window.removeEventListener('resize', handleResize);
@@ -81,7 +67,6 @@ function HermesRunnerPage() {
     };
   }, []);
 
-  // Moteur de jeu
   useEffect(() => {
     if (gameStatus === 'playing' && canvasRef.current) {
         engineRef.current = new GameEngine(canvasRef.current, {
@@ -149,22 +134,19 @@ function HermesRunnerPage() {
   );
 
   return (
-    <div className={`greek-runner-container ${isPortrait ? 'portrait-mode' : 'landscape-mode'}`}>
+    <div className="greek-runner-container">
       
-      {/* 1. BLOCAGE PORTRAIT (RENDU CONDITIONNEL JS) */}
-      {/* Si isPortrait est faux, cette div n'existe pas dans le DOM, donc impossible de bloquer */}
-      {isPortrait && (
-          <div className="orientation-lock">
-            <div className="rotate-phone-animation">
-                <FaMobileAlt size={80} className="phone-icon" />
-            </div>
-            <h2 style={{marginTop: 20}}>TOURNEZ VOTRE ÉCRAN</h2>
-            <p>L'aventure ne peut se vivre qu'à l'horizontale</p>
-          </div>
-      )}
+      {/* 1. BLOCAGE PORTRAIT (Toujours dans le DOM, géré par CSS) */}
+      <div className="orientation-lock">
+        <div className="rotate-phone-animation">
+            <FaMobileAlt size={80} className="phone-icon" />
+        </div>
+        <h2 style={{marginTop: 20}}>TOURNEZ VOTRE ÉCRAN</h2>
+        <p>L'aventure ne peut se vivre qu'à l'horizontale</p>
+      </div>
 
       {/* 2. ACCUEIL IMMERSIF */}
-      {!hasEnteredFullScreen && !isPortrait && (
+      {!hasEnteredFullScreen && (
           <div className="immersion-start-screen">
             <h1 className="greek-title-giant">HERMES QUEST</h1>
             <p>Prêt à défier les Dieux ?</p>
@@ -178,8 +160,8 @@ function HermesRunnerPage() {
       {/* CANVAS */}
       <canvas ref={canvasRef} className="game-canvas" />
 
-      {/* 3. HUD (MODIFIÉ : PLUS DE CONTOUR JAUNE) */}
-      {gameStatus === 'playing' && !isPortrait && (
+      {/* 3. HUD (NETTOYÉ) */}
+      {gameStatus === 'playing' && (
         <div className="greek-hud-score">
             <span className="score-simple">{Math.floor(score)}</span>
             <span className="biome-simple" style={{ color: currentBiomeData.color }}>
@@ -189,7 +171,7 @@ function HermesRunnerPage() {
       )}
 
       {/* MENU */}
-      {hasEnteredFullScreen && gameStatus === 'intro' && !isPortrait && (
+      {hasEnteredFullScreen && gameStatus === 'intro' && (
           <div className="greek-overlay">
             <div className="waterfall-bg">
                 {[...Array(5)].map((_, i) => (
@@ -231,7 +213,7 @@ function HermesRunnerPage() {
       )}
 
       {/* GAME OVER */}
-      {gameStatus === 'gameover' && !isPortrait && (
+      {gameStatus === 'gameover' && (
           <div className="gameover-overlay">
             <div className="gameover-content">
                 <h1 className="title-death">CHUTE D'ICARE</h1>

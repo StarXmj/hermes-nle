@@ -20,16 +20,10 @@ const PoleEvenementielPage = lazy(() => import('./pages/PoleEvenementielPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Imports Statiques (pour les pages "lourdes" ou critiques si besoin)
-import AssoMatchPage from './pages/AssoMatchPage';
-import HermesRunnerPage from './pages/HermesRunnerPage'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
-import TestGame from './componentsTest/HermesRunner'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
+import RunnerGame from './componentsTest/HermesRunner'; // Votre version Solo (assurez-vous que le fichier est bien à cet endroit)
 
 
 // --- NOUVEAU : PAGES MULTIJOUEUR (HUB) ---
-const HostLobbyPage = lazy(() => import('./pages/hub/HostLobbyPage'));
-const PlayerJoinPage = lazy(() => import('./pages/hub/PlayerJoinPage'));
-const PlayerLobbyPage = lazy(() => import('./pages/hub/PlayerLobbyPage'));
-const MultiplayerRunner = lazy(() => import('./pages/multiplayer/MultiplayerRunner'));
 
 // Pages Auth
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -129,30 +123,10 @@ export const appRoutes = [
 
   // --- MODE MULTIJOUEUR (NOUVELLES ROUTES) ---
   // Ces routes sont 'hidden' pour ne pas encombrer le menu principal
-  {
-    path: '/host',
-    element: <HostLobbyPage />,
-    name: 'Hôte Session',
-    category: 'hidden',
-  },
-  {
-    path: '/join',
-    element: <PlayerJoinPage />,
-    name: 'Rejoindre',
-    category: 'hidden',
-  },
-  {
-    path: '/lobby',
-    element: <PlayerLobbyPage />,
-    name: 'Salle d\'attente',
-    category: 'hidden',
-  },
-  {
-    path: '/multiplayer-run',
-    element: <MultiplayerRunner />,
-    name: 'Jeu Multi',
-    category: 'hidden',
-  },
+  
+ 
+ 
+  
 
   // --- Pages Publiques (Navigation Principale) ---
   {
@@ -221,21 +195,11 @@ export const appRoutes = [
     name: 'Contact',
     category: 'main',
   },
-  {
-    path: '/asso-match',
-    element: <AssoMatchPage />,
-    name: 'Le Match des Assos',
-    category: 'main',
-  },
+  
+  
   {
     path: '/runner',
-    element: <HermesRunnerPage />,
-    name: 'Hermes Runner',
-    category: 'main',
-  },
-  {
-    path: '/test',
-    element: <TestGame />,
+    element: <RunnerGame />,
     name: 'Hermes Runner',
     category: 'main',
   },
