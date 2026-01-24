@@ -25,7 +25,7 @@ export function useGameAuth() {
     // B. Premier chargement des scores
     fetchLeaderboards();
 
-    // ✅ 2. TEMPS RÉEL
+    // ✅ 2. TEMPS RÉEL (Abonnement aux nouveaux scores)
     const channel = supabase
       .channel('leaderboard_updates')
       .on(
@@ -55,7 +55,7 @@ export function useGameAuth() {
       .order('best_score', { ascending: false })
       .limit(1000);
     
-    // Vérification de sécurité
+    // Vérification de sécurité (toujours un tableau)
     if (allTime && Array.isArray(allTime)) {
         setLeaderboardAllTime(allTime);
     } else {
@@ -69,7 +69,7 @@ export function useGameAuth() {
         if (!errorRPC && monthly && Array.isArray(monthly)) {
             setLeaderboardMonthly(monthly);
         } else {
-            // Fallback safe
+            // Fallback safe si RPC échoue
             setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
         }
     } catch (e) {
@@ -99,7 +99,7 @@ export function useGameAuth() {
       if (error) throw error;
 
       saveSession(data);
-      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate)
+      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate dans HermesRunner)
       return { success: true, user: data };
 
     } catch (err) {
@@ -126,7 +126,7 @@ export function useGameAuth() {
       if (error || !data) throw new Error("Identifiants incorrects.");
       
       saveSession(data);
-      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate)
+      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate dans HermesRunner)
       return { success: true, user: data };
     } catch (err) {
       setError("Email ou mot de passe incorrect.");
@@ -136,12 +136,15 @@ export function useGameAuth() {
     }
   };
 
-  // ✅ ACCEPTE "playerOverride" POUR SAUVEGARDER AVANT MAJ DU STATE
+  // ✅ ACCEPTE "playerOverride" POUR SAUVEGARDER AVANT LA MISE À JOUR DU STATE
   const saveScore = async (newScore, playerOverride = null) => {
     // On prend soit le joueur qu'on force (celui qui vient de s'inscrire), soit le state actuel
     const targetPlayer = playerOverride || player;
     
-    if (!targetPlayer) return;
+    if (!targetPlayer) {
+        console.warn("Impossible de sauvegarder : aucun joueur identifié.");
+        return;
+    }
     
     // Insertion historique
     await supabase.from('arcade_scores').insert([{ 
