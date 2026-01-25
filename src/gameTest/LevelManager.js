@@ -149,10 +149,10 @@ export class LevelManager {
 
       // --- CALCUL DU GAP (Difficulté Simplifiée) ---
       // Plus "reactionFrames" est grand, plus il y a d'espace entre les obstacles
-      let reactionFrames = (biome === BIOMES.FLAPPY) ? 60 : 100; // Était 35 : 60 (Beaucoup plus d'espace)
+      let reactionFrames = (biome === BIOMES.FLAPPY) ? 50 : 65; // Était 35 : 60 (Beaucoup plus d'espace)
       
-      if (biome === BIOMES.HADES) reactionFrames = 120; // Était 90
-      if (biome === BIOMES.ARES) reactionFrames = 110;  // Était 80
+      if (biome === BIOMES.HADES) reactionFrames = 100; // Était 90
+      if (biome === BIOMES.ARES) reactionFrames = 100;  // Était 80
 
       this.minGap = (speed * reactionFrames) + (Math.random() * 200); 
 

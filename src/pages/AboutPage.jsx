@@ -1,126 +1,71 @@
-// src/pages/AboutPage.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import MemberCard from '../components/MemberCard';
 import FaqItem from '../components/FaqItem';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom'; 
-
-import { 
-  FaBullhorn, FaPenNib, FaCalendarAlt, 
-  FaUsers 
-} from 'react-icons/fa';
+import { FaBullhorn, FaPenNib, FaCalendarAlt, FaUsers } from 'react-icons/fa';
 import './AboutPage.css';
-
-// Fonctions utilitaires pour le tri
-const getBureauRank = (role) => {
-  if (!role) return 99;
-  const r = role.toLowerCase();
-  // Ordre strict : Président > VP > Secrétaire > Trésorier
-  if (r.includes('président') && !r.includes('vice')) return 1;
-  if (r.includes('vice')) return 2;
-  if (r.includes('secrétaire')) return 3;
-  if (r.includes('trésorier')) return 4;
-  return 99; // Pas dans le bureau principal
-};
-
-const getPoleCategory = (role) => {
-  if (!role) return null;
-  const r = role.toLowerCase();
-  // Détection des mots clés pour les pôles
-  if (r.includes('communication') || r.includes('com')) return 'communication';
-  if (r.includes('rédaction') || r.includes('redac')) return 'redaction';
-  if (r.includes('événementiel') || r.includes('event')) return 'evenementiel';
-  return null;
-};
 
 function AboutPage() {
   const [membres, setMembres] = useState([]);
   const [faqItems, setFaqItems] = useState([]);
-  const [loadingMembres, setLoadingMembres] = useState(true);
-  const [loadingFaq, setLoadingFaq] = useState(true);
-
-  // États dérivés pour l'affichage
-  const [bureauMembers, setBureauMembers] = useState([]);
-  const [poleMembers, setPoleMembers] = useState({ communication: [], redaction: [], evenementiel: [] });
+  const [loading, setLoading] = useState(true);
 
   // --- Chargement des données ---
   useEffect(() => {
-    async function loadMembres() {
-      const { data, error } = await supabase
+    async function loadData() {
+      setLoading(true);
+      
+      // 1. Charger les membres avec la nouvelle logique de tri (colonne 'ordre')
+      // Plus besoin de filtrer "manuellement" le bureau, la base de données fait foi.
+      const { data: dataMembres, error: errorMembres } = await supabase
         .from('membres')
         .select('*')
-        .eq('status', 'publié');
+        .eq('status', 'publié')
+        .order('ordre', { ascending: true }); // Le président (1) en premier, etc.
 
-      if (error) {
-        console.error('Erreur chargement membres:', error);
+      if (!errorMembres) {
+        setMembres(dataMembres);
       } else {
-        setMembres(data);
-        
-        // 1. Filtrer et Trier le Bureau
-        const bureau = data
-          .filter(m => getBureauRank(m.role) < 99)
-          .sort((a, b) => getBureauRank(a.role) - getBureauRank(b.role));
-        setBureauMembers(bureau);
-
-        // 2. Filtrer les Responsables de Pôle
-        const poles = { communication: [], redaction: [], evenementiel: [] };
-        data.forEach(m => {
-          const category = getPoleCategory(m.role);
-          if (category && poles[category]) {
-            poles[category].push(m);
-          }
-        });
-        setPoleMembers(poles);
+        console.error("Erreur chargement membres:", errorMembres);
       }
-      setLoadingMembres(false);
+
+      // 2. Charger la FAQ
+      const { data: dataFaq, error: errorFaq } = await supabase
+        .from('faq')
+        .select('*')
+        .eq('status', 'publié')
+        .order('date_creat', { ascending: true });
+
+      if (!errorFaq) {
+        setFaqItems(dataFaq);
+      }
+      
+      setLoading(false);
     }
-    loadMembres();
+
+    loadData();
     
-    // Abonnement temps réel
-    const channel = supabase.channel('membres-public').on('postgres_changes', { event: '*', schema: 'public', table: 'membres' }, loadMembres).subscribe();
-    
-    // Chargement FAQ
-    async function loadFaq() {
-      const { data, error } = await supabase.from('faq').select('*').eq('status', 'publié').order('date_creat', { ascending: true });
-      if (!error) setFaqItems(data);
-      setLoadingFaq(false);
-    }
-    loadFaq();
+    // Abonnement temps réel pour mise à jour immédiate si on change un membre
+    const channel = supabase.channel('public-about')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'membres' }, loadData)
+      .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Petit composant interne pour afficher un responsable dans une carte
-  const PoleResponsable = ({ members }) => {
-    if (!members || members.length === 0) return null;
-    return (
-      <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e0e0e0', paddingTop: '1rem' }}>
-        <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#003366', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-          Responsable{members.length > 1 ? 's' : ''} :
-        </p>
-        {members.map(m => (
-          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            {m.photo ? (
-              <img src={m.photo} alt={m.nom} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} />
-            ) : (
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaUsers size={14} color="#aaa"/></div>
-            )}
-            <div>
-              <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: '600', color: '#333' }}>{m.nom}</span>
-              {/* On peut afficher le rôle exact si besoin, sinon juste le nom suffit souvent ici */}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+  // Fonction utilitaire pour récupérer les membres d'une équipe spécifique
+  // Vérifie si le tableau 'equipes' de la personne contient le tag demandé
+  const getMembersByTeam = (teamName) => {
+    return membres.filter(m => m.equipes && m.equipes.includes(teamName));
   };
 
   return (
     <main className="about-page">
       <Helmet>
-        <title>A propos - Hermes by NLE</title>
-        <meta name="description" content="Découvrez la mission, l'histoire et l'équipe d'Hermes by NLE." />
+        <title>A propos & Équipe - Hermes by NLE</title>
+        <meta name="description" content="Découvrez la mission, les pôles et le trombinoscope de l'équipe Hermes by NLE." />
       </Helmet>
 
       {/* 1. LE BUT */}
@@ -156,76 +101,78 @@ function AboutPage() {
         </div>
       </section>
       
-      {/* 3. NOS ACTIONS & RESPONSABLES DE PÔLE */}
+      {/* 3. NOS ACTIONS (Liens vers les pages pôles) */}
       <section className="page-section alternate-bg">
         <div className="section-content">
-          <h2>Nos Actions</h2>
+          <h2>Nos Pôles</h2>
           <p style={{marginBottom: '3rem'}}>3 équipes pour vous accompagner au mieux.</p>
           
           <div className="missions-grid">
-            
-            {/* --- COMMUNICATION --- */}
-            <Link 
-              to="/communication" 
-              className="mission-item"
-              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-            >
+            <Link to="/communication" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
               <FaBullhorn className="mission-icon" size={30} />
               <h3>Communication</h3>
               <p>Pour faire circuler l'information et valoriser vos projets.</p>
-              
-              {/* Affichage du responsable si présent */}
-              <PoleResponsable members={poleMembers.communication} />
             </Link>
             
-            {/* --- RÉDACTION --- */}
-            <Link 
-              to="/redaction" 
-              className="mission-item"
-              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-            >
+            <Link to="/redaction" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
               <FaPenNib className="mission-icon" size={30} />
               <h3>Rédaction</h3>
               <p>Pour créer <strong>le Mensuel Hermès</strong>, une newsletter qui regroupe toutes les infos.</p>
-              
-              {/* Affichage du responsable si présent */}
-              <PoleResponsable members={poleMembers.redaction} />
             </Link>
             
-            {/* --- ÉVÉNEMENTIEL --- */}
-            <Link 
-              to="/evenementiel" 
-              className="mission-item"
-              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-            >
+            <Link to="/evenementiel" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
               <FaCalendarAlt className="mission-icon" size={30} />
               <h3>Événementiel</h3>
               <p>Pour organiser des rencontres et des moments d'échange.</p>
-              
-              {/* Affichage du responsable si présent */}
-              <PoleResponsable members={poleMembers.evenementiel} />
             </Link>
-            
           </div>
         </div>
       </section>
 
-      {/* 4. NOTRE ÉQUIPE (LE BUREAU UNIQUEMENT) */}
+      {/* 4. TROMBINOSCOPE (Remplace "Le Bureau") */}
       <section className="page-section">
         <div className="section-content">
-          <h2>Le Bureau</h2>
-          <p>Ceux qui coordonnent l'association.</p>
+          <h2 className="trombi-title">L'Équipe</h2>
+          <p className="trombi-subtitle">Les visages derrière l'association.</p>
           
-          {loadingMembres ? (
-            <p>Chargement de l'équipe...</p>
-          ) : bureauMembers.length > 0 ? (
-            <div className="membres-list"> 
-              {bureauMembers.map(membre => (
-                <MemberCard key={membre.id} membre={membre} />
-              ))}
-            </div>
+          {loading ? (
+            <p>Chargement du trombinoscope...</p>
           ) : (
-            <p style={{fontStyle:'italic', color:'#777'}}>Aucun membre du bureau affiché pour le moment.</p>
+            <div className="trombinoscope-container">
+
+              {/* --- LE BUREAU --- */}
+              <TeamSection 
+                title="Le Bureau" 
+                icon={<FaUsers />}
+                members={getMembersByTeam('bureau')} 
+                description="Ils coordonnent la vision et la gestion de l'association."
+              />
+
+              {/* --- COMMUNICATION --- */}
+              <TeamSection 
+                title="Pôle Communication" 
+                icon={<FaBullhorn />}
+                members={getMembersByTeam('communication')} 
+                // description="Ils font briller l'association sur les réseaux et le campus."
+              />
+
+              {/* --- RÉDACTION --- */}
+              <TeamSection 
+                title="Pôle Rédaction" 
+                icon={<FaPenNib />}
+                members={getMembersByTeam('redaction')} 
+                // description="Les plumes qui rédigent le Mensuel Hermès."
+              />
+
+              {/* --- ÉVÉNEMENTIEL --- */}
+              <TeamSection 
+                title="Pôle Événementiel" 
+                icon={<FaCalendarAlt />}
+                members={getMembersByTeam('evenementiel')} 
+                // description="Les créateurs de rencontres et de moments forts."
+              />
+
+            </div>
           )}
         </div>
       </section>
@@ -234,7 +181,7 @@ function AboutPage() {
       <section className="page-section alternate-bg">
         <div className="section-content faq-section">
           <h2>Foire aux Questions (FAQ)</h2>
-          {loadingFaq ? (
+          {loading ? (
             <p>Chargement...</p>
           ) : faqItems.length > 0 ? (
             <div className="faq-list">
@@ -249,6 +196,29 @@ function AboutPage() {
       </section>
 
     </main>
+  );
+}
+
+// --- Composant Interne pour afficher une section d'équipe ---
+// Cela évite de répéter le code pour chaque pôle
+function TeamSection({ title, icon, members, description }) {
+  // Si personne dans cette équipe, on n'affiche pas la section entière
+  if (!members || members.length === 0) return null;
+
+  return (
+    <div className="team-section">
+      <div className="team-header">
+        <span className="team-icon">{icon}</span>
+        <h3>{title}</h3>
+      </div>
+      {description && <p className="team-description">{description}</p>}
+      
+      <div className="membres-list">
+        {members.map(membre => (
+          <MemberCard key={membre.id} membre={membre} />
+        ))}
+      </div>
+    </div>
   );
 }
 

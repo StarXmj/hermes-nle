@@ -1,118 +1,134 @@
 /* src/pages/AboutPage.css */
 
-/* 1. Section "Qui sommes-nous" (Nouveau Hero) */
-.hero-about {
-  background-color: #003366; /* Fond bleu foncé */
-  color: white ;
-  padding: 5rem 2rem;
+.about-page {
+  /* Hérite des styles globaux, pas besoin de reset violent */
 }
+
 .hero-about h1 {
-  color: white;
   font-size: 3rem;
+  color: #003366;
+  margin-bottom: 1rem;
 }
+
 .hero-subtitle {
-  color: white;
-  font-size: 1.25rem;
-  max-width: 800px;
-  margin: 1rem auto 0;
-  opacity: 0.9;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #DAA520; /* Gold */
+  margin-bottom: 2rem;
 }
+
 .hero-text {
- color: white;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   max-width: 800px;
-  margin: 1rem auto 0;
-  opacity: 0.8;
+  margin: 0 auto;
   line-height: 1.6;
 }
-.hero-about p{
-color: white !important;
 
+.alternate-bg {
+  background-color: #f9f9f9;
 }
 
-/* 2. Section Missions (Grille de 6) */
+/* Grille des missions/pôles */
 .missions-grid {
   display: grid;
-  /* On reste sur 3 colonnes, 6 items = 2 lignes */
-  grid-template-columns: repeat(3, 1fr); 
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
-  margin-top: 3rem;
-  text-align: left;
-}
-.mission-item {
-  /* On ajoute un peu de structure */
-  background: #fdfdfd;
-  padding: 1.5rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-}
-.mission-icon {
-  color: #0056b3;
-  margin-bottom: 1rem;
-}
-.mission-item h3 {
-  color: #003366;
-  font-size: 1.3rem;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-.mission-item p {
-  color: #555;
-  line-height: 1.6;
-  font-size: 0.95rem;
+  margin-top: 2rem;
 }
 
-/* 3. Section Engagements (Grille de 3 - Ne change pas) */
-.engagements-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-top: 3rem;
-  text-align: left;
-}
-.engagement-item {
-  background: #fff;
+.mission-item {
+  background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  border: 1px solid #eee;
 }
-.engagement-icon {
-  color: #0056b3;
+
+.mission-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  border-color: #DAA520;
+}
+
+.mission-icon {
+  color: #003366;
   margin-bottom: 1rem;
 }
-.engagement-item h3 {
+
+.mission-item h3 {
   color: #003366;
-  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* --- TROMBINOSCOPE STYLES --- */
+
+.trombi-title {
   margin-bottom: 0.5rem;
+  color: #003366;
+  font-size: 2.5rem;
 }
-.engagement-item p {
+
+.trombi-subtitle {
+  margin-bottom: 3rem;
+  font-style: italic;
+  color: #666;
+}
+
+.trombinoscope-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem; /* Espace vertical important entre les pôles */
+}
+
+.team-section {
+  text-align: center;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  color: #DAA520; /* Titre des sections en or */
+}
+
+.team-header h3 {
+  font-size: 2rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+}
+
+.team-icon {
+  font-size: 1.8rem;
+}
+
+.team-description {
+  max-width: 600px;
+  margin: 0 auto 2.5rem auto;
   color: #555;
-  line-height: 1.6;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
 }
 
-
-/* 4. Section Membres (Ne change pas) */
-.membres-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-top: 3rem;
+/* Liste des cartes membres */
+.membres-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
 }
 
-/* 5. Section FAQ (Ne change pas) */
-.faq-section {
-  max-width: 800px;
-}
+/* FAQ Section */
 .faq-list {
-  margin-top: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
 }
-
 /* Responsive */
 @media (max-width: 900px) {
   /* On passe les missions à 2 colonnes sur tablette */

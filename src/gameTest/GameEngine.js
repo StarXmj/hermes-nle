@@ -5,6 +5,7 @@ import { InputHandler } from './InputHandler';
 import { GAME_CONFIG, BIOMES, BIOME_SEQUENCE } from './constants';
 import { spriteManager } from './SpriteManager';
 import { particleManager } from './ParticleManager';
+import { soundManager } from './SoundManager'; 
 
 export class GameEngine {
   constructor(canvas, callbacks) {
@@ -16,11 +17,17 @@ export class GameEngine {
     this.resize();
     this.reset();
     
+    // GESTION DU TEMPS (FPS FIXE)
+    this.lastTime = 0;
+    this.accumulator = 0;
+    this.step = 1000 / 60; // On force 60 FPS pour la logique (16.66ms)
+
     this.resizeHandler = () => this.resize();
     window.addEventListener('resize', this.resizeHandler);
   }
 
   resize() {
+      // (Code resize inchangé)
       const width = window.innerWidth;
       const height = window.innerHeight;
       this.width = width;
@@ -55,31 +62,63 @@ export class GameEngine {
     this.biomeTimer = 0;
     this.transitionAlpha = 0; 
     this.gameStartTime = Date.now();
+
+    // Reset des timers de la boucle
+    this.lastTime = performance.now();
+    this.accumulator = 0;
+
+    soundManager.startAmbience();
   }
 
-  start() { this.loop(); }
+  start() { 
+      this.lastTime = performance.now();
+      requestAnimationFrame(this.loop); 
+  }
 
-  loop = () => {
+  // ✅ MODIFICATION CRITIQUE : BOUCLE DE JEU STABILISÉE
+  loop = (timestamp) => {
     if (!this.running) return;
 
+    // 1. Calcul du temps écoulé depuis la dernière frame
+    let deltaTime = timestamp - this.lastTime;
+    this.lastTime = timestamp;
+
+    // Sécurité : Si le jeu lag trop (ex: changement d'onglet), on plafonne pour éviter un saut énorme
+    if (deltaTime > 100) deltaTime = 100;
+
+    this.accumulator += deltaTime;
+
+    // 2. MISE À JOUR LOGIQUE (Rattrapage de temps)
+    // On exécute update() autant de fois que nécessaire pour atteindre le temps réel
+    // Cela garantit que la physique avance à vitesse constante quelque soit l'écran
+    while (this.accumulator >= this.step) {
+        this.update(); // Logique pure
+        this.accumulator -= this.step;
+    }
+
+    // 3. DESSIN (Aussi fluide que possible)
+    // On efface et on dessine à chaque frame écran (même si la logique n'a pas bougé)
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
 
-    this.update();
     this.draw(); 
     
+    // UI Update (moins fréquent)
     if (this.score % 10 < 1) {
         this.callbacks.onUpdateUI({
             score: Math.floor(this.score),
             biome: this.currentBiome
         });
     }
+
     requestAnimationFrame(this.loop);
   }
 
   update() {
+    // Cette fonction est maintenant appelée exactement 60 fois par seconde (temps logique)
+    
     if (this.transitionAlpha > 0) {
         this.transitionAlpha -= 0.02; 
         if(this.transitionAlpha < 0) this.transitionAlpha = 0;
@@ -94,6 +133,7 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
+    // Vent visuel
     if (this.speed > 16) {
         if (Math.random() < 0.1 + (this.speed - 16) * 0.02) {
              particleManager.createSpeedLine(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -111,6 +151,7 @@ export class GameEngine {
   }
 
   nextBiome() {
+      // (Inchangé)
       this.biomeSequenceIndex++;
       if (this.biomeSequenceIndex >= BIOME_SEQUENCE.length) {
           this.biomeSequenceIndex = 0;
@@ -126,6 +167,7 @@ export class GameEngine {
   }
 
   checkCollisions() {
+    // (Inchangé)
     const pBox = this.player.getHitbox();
     let ghostBox = null;
 
@@ -173,10 +215,13 @@ export class GameEngine {
 
   gameOver() {
     this.running = false;
+    soundManager.stopAmbience();
+    soundManager.play('death');
     this.callbacks.onGameOver({ score: Math.floor(this.score) });
   }
 
   draw() {
+    // (Inchangé - Copie exacte du code précédent pour draw)
     this.ctx.save();
     this.ctx.beginPath();
     this.ctx.rect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -193,7 +238,6 @@ export class GameEngine {
     }
 
     this.background.draw(this.ctx, this.currentBiome); 
-   
     if (this.currentBiome !== BIOMES.FLAPPY) {
         this.ctx.fillStyle = '#222';
         if (this.currentBiome !== BIOMES.INVERTED) {
@@ -245,33 +289,29 @@ export class GameEngine {
 
     const isSafeMode = (Date.now() - this.gameStartTime) < 3000;
 
-    // TUTO DE DÉPART (Seulement si score < 50 ou début)
     if (this.running && (isSafeMode || this.score < 50) && this.currentBiome !== BIOMES.FLAPPY) {
         this.drawStartTutorial();
     }
-
     if (this.running && this.currentBiome === BIOMES.FLAPPY && this.biomeTimer < 300) {
         this.drawFlappyTutorial();
     }
-
     if (this.input.isTouchDevice) {
         this.drawTouchMarkers();
     }
   }
 
   drawFlappyTutorial() {
+      // (Inchangé)
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       const w = this.canvas.width;
       const h = this.canvas.height;
       const dpr = window.devicePixelRatio || 1;
-
       this.ctx.textAlign = 'center';
       this.ctx.shadowColor = 'black';
       this.ctx.shadowBlur = 4;
       this.ctx.font = `bold ${30 * dpr}px Arial`;
       this.ctx.fillStyle = '#FFFFFF';
-      
       const actionText = this.input.isTouchDevice ? "TAP POUR STABILISER" : "ESPACE POUR STABILISER";
       this.ctx.fillText(actionText, w / 2, h * 0.3);
       this.ctx.font = `bold ${24 * dpr}px Arial`;
@@ -281,60 +321,49 @@ export class GameEngine {
   }
 
   drawStartTutorial() {
+      // (Inchangé)
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       const w = this.canvas.width;
       const h = this.canvas.height;
       const dpr = window.devicePixelRatio || 1;
-
       this.ctx.textAlign = 'center';
       this.ctx.shadowColor = 'black';
       this.ctx.shadowBlur = 4;
       this.ctx.fillStyle = '#FFD700'; 
       this.ctx.font = `bold ${28 * dpr}px Arial`;
       this.ctx.fillText("ÉVITE LES OBSTACLES", w / 2, h * 0.15); 
-
-      // ✅ C'EST ICI : Si isTouchDevice est vrai (donc téléphone), on affiche "Gauche/Droite"
       if (this.input.isTouchDevice) {
-          // GAUCHE (Bleu léger)
           this.ctx.fillStyle = 'rgba(52, 152, 219, 0.2)'; 
           this.ctx.fillRect(0, 0, w/2, h);
-          // DROITE (Rouge léger)
           this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
           this.ctx.fillRect(w/2, 0, w/2, h);
-
-          // Ligne séparatrice
           this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
           this.ctx.lineWidth = 4;
           this.ctx.beginPath();
           this.ctx.moveTo(w/2, 0);
           this.ctx.lineTo(w/2, h);
           this.ctx.stroke();
-
-          // TEXTE TACTILE
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${24 * dpr}px Arial`;
-          this.ctx.fillText("GAUCHE : S’ACCROUPIR", w * 0.25, h * 0.5);
-          this.ctx.fillText("DROITE : Saut / Double appui : Double saut", w * 0.75, h * 0.5);
-
+          this.ctx.fillText("GAUCHE : GLISSER", w * 0.25, h * 0.5);
+          this.ctx.fillText("DROITE : SAUTER", w * 0.75, h * 0.5);
       } else {
-          // ✅ TUTO PC (CLAVIER)
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${20 * dpr}px Arial`;
-          this.ctx.fillText("ESPACE / ↑ : SAUTER/Double ↑ : Double Saut", w / 2, h * 0.4);
-          this.ctx.fillText("↓ : S’ACCROUPIR", w / 2, h * 0.6);
+          this.ctx.fillText("ESPACE / ↑ : SAUTER", w / 2, h * 0.4);
+          this.ctx.fillText("↓ : GLISSER", w / 2, h * 0.6);
       }
       this.ctx.restore();
   }
 
   drawTouchMarkers() {
+      // (Inchangé)
       const touches = this.input.touches;
       if (!touches || touches.length === 0) return;
-
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
       const dpr = window.devicePixelRatio || 1;
-
       touches.forEach(t => {
           const x = t.x * dpr;
           const y = t.y * dpr;
@@ -345,9 +374,7 @@ export class GameEngine {
           this.ctx.stroke();
           this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
           this.ctx.fill();
-
           const jumpsLeft = this.player.maxJumps - this.player.jumpCount;
-          
           if (jumpsLeft > 0) {
               this.ctx.fillStyle = '#00FF00'; 
               for (let i = 0; i < jumpsLeft; i++) {
@@ -373,6 +400,7 @@ export class GameEngine {
 
   destroy() {
     this.running = false;
+    soundManager.stopAmbience();
     this.input.cleanup();
     window.removeEventListener('resize', this.resizeHandler);
   }

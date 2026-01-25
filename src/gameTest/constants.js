@@ -2,13 +2,13 @@ export const GAME_CONFIG = {
   // --- PHYSIQUE ---
   GRAVITY: 0.55,
   FLAPPY_GRAVITY: 0.5,     
-  JUMP_FORCE: -12,
+  JUMP_FORCE: -9,
   FLAPPY_JUMP_FORCE: -7,   
   
   // --- VITESSE ---
-  SPEED_START: 3.5,       // Avant: 6
-  SPEED_MAX: 16,          // Avant: 20
-  SPEED_INCREMENT: 0.0005,// Avant: 0.0015 (Monte beaucoup moins vite)
+  SPEED_START: 5,       // Avant: 6
+  SPEED_MAX: 20,          // Avant: 20
+  SPEED_INCREMENT: 0.0011,// Avant: 0.0015 (Monte beaucoup moins vite)
   
   // --- DIMENSIONS ---
   CANVAS_WIDTH: 800,

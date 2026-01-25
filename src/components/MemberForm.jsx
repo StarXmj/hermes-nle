@@ -14,6 +14,14 @@ const formatFullDate = (dateString) => {
   });
 };
 
+// Liste des équipes disponibles dans votre système
+const AVAILABLE_TEAMS = [
+  { id: 'bureau', label: 'Bureau' },
+  { id: 'communication', label: 'Pôle Communication' },
+  { id: 'redaction', label: 'Pôle Rédaction' },
+  { id: 'evenementiel', label: 'Pôle Événementiel' }
+];
+
 async function deleteStorageFile(url) {
   if (!url || !url.startsWith(supabaseStorageUrlStart)) return;
   try {
@@ -31,7 +39,9 @@ function MemberForm({ membre, onSave, onCancel }) {
     role: '',
     bio: '',
     photo: '',
-    status: 'brouillon'
+    status: 'brouillon',
+    equipes: [], // Tableau pour le multi-équipes
+    ordre: 99    // Par défaut en fin de liste
   });
 
   const [file, setFile] = useState(null);
@@ -45,12 +55,25 @@ function MemberForm({ membre, onSave, onCancel }) {
       const currentPhoto = membre.photo || '';
       if (currentPhoto.startsWith(supabaseStorageUrlStart)) {
         setExistingFileName(decodeURIComponent(currentPhoto.split('/').pop()));
-        setFormData({ ...membre, photo: '' });
+        setFormData({ 
+          ...membre, 
+          photo: '',
+          equipes: membre.equipes || [], // Sécurité si null
+          ordre: membre.ordre !== undefined ? membre.ordre : 99 
+        });
       } else {
-        setFormData(membre);
+        setFormData({
+          ...membre,
+          equipes: membre.equipes || [],
+          ordre: membre.ordre !== undefined ? membre.ordre : 99
+        });
       }
     } else {
-      setFormData({ nom: '', role: '', bio: '', photo: '', status: 'brouillon' });
+      // Nouveau membre
+      setFormData({ 
+        nom: '', role: '', bio: '', photo: '', status: 'brouillon', 
+        equipes: [], ordre: 99 
+      });
     }
   }, [membre]);
 
@@ -61,6 +84,20 @@ function MemberForm({ membre, onSave, onCancel }) {
       setFile(null);
       setExistingFileName('');
     }
+  };
+
+  // Gestion spécifique des checkboxes pour les équipes
+  const handleTeamChange = (teamId) => {
+    setFormData(prev => {
+      const currentTeams = prev.equipes || [];
+      if (currentTeams.includes(teamId)) {
+        // Si déjà présent, on l'enlève
+        return { ...prev, equipes: currentTeams.filter(t => t !== teamId) };
+      } else {
+        // Sinon on l'ajoute
+        return { ...prev, equipes: [...currentTeams, teamId] };
+      }
+    });
   };
 
   const handleFileChange = (e) => {
@@ -76,6 +113,7 @@ function MemberForm({ membre, onSave, onCancel }) {
     setLoading(true);
     setError(null);
 
+    // Vérification de conflit (Optimistic Lock)
     if (membre.id) {
       const { data: currentDbVersion, error: checkError } = await supabase
         .from('membres')
@@ -88,19 +126,19 @@ function MemberForm({ membre, onSave, onCancel }) {
         const localTime = new Date(membre.last_modif).getTime();
 
         if (dbTime > localTime) {
-          setError("⚠️ CONFLIT DÉTECTÉ : Quelqu'un a modifié cette fiche pendant que vous l'éditiez. Vos modifications n'ont pas été enregistrées pour ne pas écraser son travail. Veuillez annuler et rafraîchir la page.");
+          setError("⚠️ CONFLIT : Ce membre a été modifié par quelqu'un d'autre. Rafraîchissez la page.");
           setLoading(false);
           return; 
         }
       }
     }
 
+    // Gestion Photo (Upload / Suppression)
     let finalPhoto = formData.photo;
     let fileToDelete = null;
     const originalPhoto = membre.photo || '';
     const isOriginalFile = originalPhoto.startsWith(supabaseStorageUrlStart);
 
-    // Upload
     if (file) {
       setUploading(true);
       const fileName = `public/${Date.now()}-${file.name}`;
@@ -127,8 +165,15 @@ function MemberForm({ membre, onSave, onCancel }) {
 
     if (fileToDelete) await deleteStorageFile(fileToDelete);
 
-    // Sauvegarde BDD
-    const dataToSave = { ...formData, photo: finalPhoto };
+    // Préparation des données pour Supabase
+    const dataToSave = { 
+      ...formData, 
+      photo: finalPhoto,
+      equipes: formData.equipes, // On sauvegarde le tableau
+      ordre: parseInt(formData.ordre, 10) // On s'assure que c'est un entier
+    };
+
+    // Nettoyage des champs système
     delete dataToSave.created_by_profile;
     delete dataToSave.modif_by_profile;
     delete dataToSave.date_creat;
@@ -164,27 +209,48 @@ function MemberForm({ membre, onSave, onCancel }) {
         <div className="form-row">
             <div className="form-group">
                 <label>Nom / Prénom</label>
-                <input type="text" name="nom" value={formData.nom} onChange={handleChange} required />
+                <input type="text" name="nom" value={formData.nom} onChange={handleChange} required placeholder="Ex: Jean Dupont" />
             </div>
             
-            {/* --- MODIFICATION ICI : Liste déroulante pour les Rôles --- */}
             <div className="form-group">
-                <label>Rôle</label>
-                <select name="role" value={formData.role} onChange={handleChange} required>
-                  <option value="">-- Sélectionner un rôle --</option>
-                  {/* Le Bureau */}
-                  <option value="Président">Président</option>
-                  <option value="Vice-Président">Vice-Président</option>
-                  <option value="Secrétaire">Secrétaire</option>
-                  <option value="Trésorier">Trésorier</option>
-                  
-                  {/* Les Responsables de Pôle */}
-                  <option value="Responsable Communication">Communication</option>
-                  <option value="Responsable Rédaction">Rédaction</option>
-                  <option value="Responsable Événementiel">Événementiel</option>
-                  
-                  
-                </select>
+                <label>Titre / Rôle (Affiché sur la carte)</label>
+                <input type="text" name="role" value={formData.role} onChange={handleChange} required placeholder="Ex: Président, Rédacteur..." />
+            </div>
+        </div>
+
+        {/* --- CONFIGURATION TROMBINOSCOPE --- */}
+        <div style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #dceefb' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#003366' }}>Configuration Trombinoscope</h4>
+            
+            <div className="form-group">
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Appartient aux équipes :</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+                    {AVAILABLE_TEAMS.map(team => (
+                        <label key={team.id} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={formData.equipes.includes(team.id)} 
+                                onChange={() => handleTeamChange(team.id)}
+                                style={{ marginRight: '8px', width: 'auto' }}
+                            />
+                            {team.label}
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            <div className="form-group" style={{ marginTop: '15px' }}>
+                <label>Ordre d'affichage (Plus petit = Premier)</label>
+                <input 
+                    type="number" 
+                    name="ordre" 
+                    value={formData.ordre} 
+                    onChange={handleChange} 
+                    style={{ maxWidth: '100px' }}
+                />
+                <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                    1 = Président, 2 = VP, 10 = Resp. Pôle, 99 = Membre
+                </p>
             </div>
         </div>
 
@@ -199,12 +265,14 @@ function MemberForm({ membre, onSave, onCancel }) {
           <input type="url" name="photo" value={formData.photo} onChange={handleChange} disabled={!!file} placeholder="https://..." />
         </div>
         <p style={{textAlign:'center', margin:'0.5rem 0', fontWeight:'bold'}}>OU</p>
+        
         {existingFileName && (
           <div className="form-group-existing-file">
             <p>Fichier actuel : {existingFileName}</p>
             <button type="button" onClick={() => setExistingFileName('')} className="cta-button secondary" style={{padding:'5px 10px', fontSize:'0.8rem'}}>Supprimer</button>
           </div>
         )}
+        
         <div className="form-group">
           <label>Téléverser une photo (PNG/JPG)</label>
           <input type="file" onChange={handleFileChange} accept="image/*" disabled={!!formData.photo} />
