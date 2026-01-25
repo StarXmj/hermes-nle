@@ -1,76 +1,96 @@
 /* src/components/MemberCard.css */
 
 .member-card {
-  display: flex; /* La magie est ici ! */
-  align-items: center; /* Aligne verticalement la photo et le texte */
-  gap: 1.5rem; /* Espace entre la photo et le texte */
+  position: relative;
+  /* ✅ TAILLE RÉDUITE (était 280px / 380px) */
+  width: 240px;
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden; 
+  background-color: #f0f0f0;
   
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  text-align: left; /* On aligne tout le texte à gauche */
+  /* Effet de flottement */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+}
+
+/* --- IMAGE --- */
+.member-card-image {
   width: 100%;
-  box-sizing: border-box; /* Pour que le padding soit inclus */
-  
-  /* On enlève l'ancien effet de survol */
-  transition: none;
-}
-
-/* 1. Colonne de gauche (Photo) */
-.member-photo-container {
-  flex-shrink: 0; /* Empêche la photo de rétrécir */
-}
-
-.member-photo {
-  width: 100px; /* Taille de la photo */
-  height: 100px;
-  border-radius: 50%; /* Le cercle ! */
+  height: 100%;
   object-fit: cover;
-  border: 4px solid #f0f0f0;
+  object-position: center top; 
+  transition: transform 0.8s ease; 
 }
 
-/* 2. Colonne de droite (Infos) */
-.member-info {
-  flex-grow: 1; /* Le texte prend toute la place restante */
+/* Placeholder */
+.member-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+  color: #aaa;
+  font-size: 3.5rem; /* Réduit un peu l'icône aussi */
 }
 
-.member-name {
-  color: #003366;
-  font-size: 1.4rem;
-  margin: 0;
-}
-
-.member-role {
-  color: #0056b3;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.5rem; /* Moins d'espace */
-}
-
-.member-bio {
-  font-size: 0.95rem;
-  color: #555;
-  line-height: 1.5;
-  margin: 0; /* On enlève la marge du p */
-}
-
-@media (max-width: 600px) {
-  .member-card {
-    /* On empile (photo en haut, texte en bas) */
-    flex-direction: column;
-    text-align: center; /* On centre le texte */
-    gap: 1rem;
-    padding: 1.5rem;
-  }
-
-  .member-photo-container {
-    /* On centre la photo */
-    margin: 0 auto;
-  }
+/* --- INFOS EN BAS (Overlay) --- */
+.member-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  /* Un peu plus de padding pour aérer */
+  padding: 15px 10px; 
+  text-align: center;
+  color: white;
   
-  .member-info {
-    /* On s'assure que le contenu texte est centré */
-    align-items: center;
-  }
+  /* ✅ DÉGRADÉ PLUS SOMBRE pour garantir la lisibilité */
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%);
+  
+  transition: background 0.4s ease;
+}
+
+.member-card-name {
+  margin: 0;
+  font-size: 1.1rem; /* Légèrement réduit pour l'équilibre */
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  color: #fff;
+}
+
+.member-card-role {
+  margin: 5px 0 0 0;
+  /* ✅ VISIBILITÉ AMÉLIORÉE */
+  font-size: 0.9rem;      /* Plus grand */
+  font-weight: 600;       /* Plus gras */
+  color: #2563eb !important;         /* Jaune Or très vif (au lieu de sombre) */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Ombre forte pour détacher du fond */
+  opacity: 1;             /* Pas de transparence */
+}
+
+/* ====== EFFET DE SURVOL (HOVER) ====== */
+
+.member-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.member-card:hover .member-card-image {
+  transform: scale(1.08);
+}
+
+.member-card:hover .member-card-content {
+  /* Le fond devient bleu charte au survol */
+  background: linear-gradient(to top, rgba(0, 51, 102, 0.95) 0%, rgba(0, 51, 102, 0.8) 60%, transparent 100%);
+}
+
+.member-card:hover .member-card-role {
+  color: #FFD700 !important; /* Le rôle devient blanc au survol sur fond bleu */
 }
