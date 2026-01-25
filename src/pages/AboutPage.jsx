@@ -3,41 +3,57 @@ import { supabase } from '../supabaseClient';
 import MemberCard from '../components/MemberCard';
 import FaqItem from '../components/FaqItem';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom'; 
-import { FaBullhorn, FaPenNib, FaCalendarAlt, FaUsers } from 'react-icons/fa';
+import { 
+  FaBullhorn, FaPenNib, FaCalendarAlt, 
+  FaUsers, FaLaptopCode, FaUserGraduate 
+} from 'react-icons/fa';
 import './AboutPage.css';
+
+// 1. CONFIGURATION DES ÉQUIPES (Doit correspondre aux IDs dans MemberForm)
+const TEAMS_CONFIG = [
+  { id: 'bureau', label: 'Le Bureau', icon: <FaUsers />, description: "L'équipe dirigeante qui coordonne l'association." },
+  { id: 'communication', label: 'Pôle Communication', icon: <FaBullhorn />, description: "Ils font briller l'association sur les réseaux et le campus." },
+  { id: 'redaction', label: 'Pôle Rédaction', icon: <FaPenNib />, description: "Les plumes derrière le Mensuel Hermès." },
+  { id: 'evenementiel', label: 'Pôle Événementiel', icon: <FaCalendarAlt />, description: "Créateurs de rencontres et de moments forts." },
+  { id: 'web', label: 'Pôle Web & Tech', icon: <FaLaptopCode />, description: "Les architectes de nos outils numériques." },
+  { id: 'elus', label: 'Vos Élus Étudiants', icon: <FaUserGraduate />, description: "Vos représentants dans les conseils de l'université." }
+];
+
+// 2. HIÉRARCHIE VISUELLE (Ordre d'affichage dans une équipe)
+const RANK_PRIORITY = {
+  'responsable': 1,
+  'co-responsable': 2,
+  'membre': 3
+};
 
 function AboutPage() {
   const [membres, setMembres] = useState([]);
   const [faqItems, setFaqItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- Chargement des données ---
   useEffect(() => {
     async function loadData() {
       setLoading(true);
       
-      // 1. Charger les membres avec la nouvelle logique de tri (colonne 'ordre')
-      // Plus besoin de filtrer "manuellement" le bureau, la base de données fait foi.
+      // A. Récupération des membres
+      // On trie par ordre global pour avoir une base saine
       const { data: dataMembres, error: errorMembres } = await supabase
         .from('membres')
         .select('*')
         .eq('status', 'publié')
-        .order('ordre', { ascending: true }); // Le président (1) en premier, etc.
+        .order('ordre', { ascending: true });
 
       if (!errorMembres) {
         setMembres(dataMembres);
-      } else {
-        console.error("Erreur chargement membres:", errorMembres);
       }
 
-      // 2. Charger la FAQ
+      // B. Récupération de la FAQ
       const { data: dataFaq, error: errorFaq } = await supabase
         .from('faq')
         .select('*')
         .eq('status', 'publié')
         .order('date_creat', { ascending: true });
-
+      
       if (!errorFaq) {
         setFaqItems(dataFaq);
       }
@@ -47,142 +63,119 @@ function AboutPage() {
 
     loadData();
     
-    // Abonnement temps réel pour mise à jour immédiate si on change un membre
+    // Abonnement temps réel (Mise à jour auto si on modifie le back-office)
     const channel = supabase.channel('public-about')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'membres' }, loadData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'faq' }, loadData)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Fonction utilitaire pour récupérer les membres d'une équipe spécifique
-  // Vérifie si le tableau 'equipes' de la personne contient le tag demandé
-  const getMembersByTeam = (teamName) => {
-    return membres.filter(m => m.equipes && m.equipes.includes(teamName));
+  // --- LOGIQUE DE TRI INTELLIGENT ---
+  const getTeamMembers = (teamId) => {
+    if (!membres) return [];
+
+    // 1. On garde ceux qui ont le tag de l'équipe (ex: "web:responsable")
+    const teamMembers = membres.filter(m => 
+      m.equipes && m.equipes.some(eqString => eqString.startsWith(`${teamId}:`))
+    );
+
+    // 2. On attache le rang spécifique à cette équipe
+    const membersWithRank = teamMembers.map(m => {
+      const equipString = m.equipes.find(s => s.startsWith(`${teamId}:`));
+      const rank = equipString ? equipString.split(':')[1] : 'membre';
+      return { ...m, _currentRank: rank };
+    });
+
+    // 3. On trie : Responsable > Co-Resp > Membre > Ordre Global
+    return membersWithRank.sort((a, b) => {
+      const rankA = RANK_PRIORITY[a._currentRank] || 99;
+      const rankB = RANK_PRIORITY[b._currentRank] || 99;
+      
+      // Si rangs différents, le plus gradé d'abord
+      if (rankA !== rankB) return rankA - rankB;
+      
+      // Sinon, on utilise l'ordre global défini dans la fiche membre
+      return (a.ordre || 99) - (b.ordre || 99);
+    });
   };
 
   return (
     <main className="about-page">
       <Helmet>
-        <title>A propos & Équipe - Hermes by NLE</title>
-        <meta name="description" content="Découvrez la mission, les pôles et le trombinoscope de l'équipe Hermes by NLE." />
+        <title>L'Équipe - Hermes by NLE</title>
+        <meta name="description" content="Découvrez le trombinoscope de l'équipe Hermes by NLE et notre FAQ." />
       </Helmet>
 
-      {/* 1. LE BUT */}
+      {/* --- EN-TÊTE --- */}
       <section className="page-section hero-about">
         <div className="section-content">
-          <h1>Le But</h1>
-          <p className="hero-subtitle">
-            Hermes by NLE, c'est servir de relais auprès des étudiants de l'Université de Pau et des Pays de l'Adour.
-          </p>
-          <p className="hero-text">
-            Elle vise à accompagner les étudiants dans leur vie universitaire en facilitant leur intégration, 
-            leur orientation et leur accès aux différents services proposés par l'Université.
-          </p>
+          <h1>Qui sommes-nous ?</h1>
+          <p className="hero-subtitle">Le relais des étudiants de l'UPPA.</p>
         </div>
       </section>
 
-      {/* 2. LE NOM */}
-      <section className="page-section">
-        <div className="section-content" style={{maxWidth: '800px'}}>
-          <h2>Le Nom</h2>
-          <div style={{textAlign: 'left', fontSize: '1.1rem', lineHeight: '1.8', color: '#444'}}>
-            <p>
-              Dans la mythologie grecque, <strong>Hermès</strong> est le messager des dieux, un dieu-relais qui fait 
-              circuler la parole et relie les mondes.
-            </p>
-            <p>
-              Comme lui, notre asso veut servir de relais entre les étudiants, les enseignants et les institutions.
-            </p>
-            <p style={{fontWeight: 'bold', color: '#003366', marginTop: '1.5rem', textAlign: 'center', fontSize: '1.3rem'}}>
-              « Hermès, c'est plus qu'un nom : c'est une mission. »
-            </p>
-          </div>
-        </div>
-      </section>
-      
-      {/* 3. NOS ACTIONS (Liens vers les pages pôles) */}
-      <section className="page-section alternate-bg">
-        <div className="section-content">
-          <h2>Nos Pôles</h2>
-          <p style={{marginBottom: '3rem'}}>3 équipes pour vous accompagner au mieux.</p>
-          
-          <div className="missions-grid">
-            <Link to="/communication" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <FaBullhorn className="mission-icon" size={30} />
-              <h3>Communication</h3>
-              <p>Pour faire circuler l'information et valoriser vos projets.</p>
-            </Link>
-            
-            <Link to="/redaction" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <FaPenNib className="mission-icon" size={30} />
-              <h3>Rédaction</h3>
-              <p>Pour créer <strong>le Mensuel Hermès</strong>, une newsletter qui regroupe toutes les infos.</p>
-            </Link>
-            
-            <Link to="/evenementiel" className="mission-item" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <FaCalendarAlt className="mission-icon" size={30} />
-              <h3>Événementiel</h3>
-              <p>Pour organiser des rencontres et des moments d'échange.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. TROMBINOSCOPE (Remplace "Le Bureau") */}
+      {/* --- TROMBINOSCOPE --- */}
       <section className="page-section">
         <div className="section-content">
-          <h2 className="trombi-title">L'Équipe</h2>
-          <p className="trombi-subtitle">Les visages derrière l'association.</p>
-          
           {loading ? (
-            <p>Chargement du trombinoscope...</p>
+            <p>Chargement de l'équipe...</p>
           ) : (
-            <div className="trombinoscope-container">
+            <div className="trombinoscope-wrapper">
+              {TEAMS_CONFIG.map(team => {
+                const teamMembers = getTeamMembers(team.id);
+                
+                // Si personne dans l'équipe, on n'affiche pas la section
+                if (teamMembers.length === 0) return null;
 
-              {/* --- LE BUREAU --- */}
-              <TeamSection 
-                title="Le Bureau" 
-                icon={<FaUsers />}
-                members={getMembersByTeam('bureau')} 
-                description="Ils coordonnent la vision et la gestion de l'association."
-              />
+                return (
+                  <div key={team.id} className="team-block">
+                    
+                    {/* Header de l'équipe */}
+                    <div className="team-header-container">
+                        <div className="team-icon-circle">{team.icon}</div>
+                        <div className="team-title-box">
+                            <h2>{team.label}</h2>
+                            <p>{team.description}</p>
+                        </div>
+                    </div>
 
-              {/* --- COMMUNICATION --- */}
-              <TeamSection 
-                title="Pôle Communication" 
-                icon={<FaBullhorn />}
-                members={getMembersByTeam('communication')} 
-                // description="Ils font briller l'association sur les réseaux et le campus."
-              />
-
-              {/* --- RÉDACTION --- */}
-              <TeamSection 
-                title="Pôle Rédaction" 
-                icon={<FaPenNib />}
-                members={getMembersByTeam('redaction')} 
-                // description="Les plumes qui rédigent le Mensuel Hermès."
-              />
-
-              {/* --- ÉVÉNEMENTIEL --- */}
-              <TeamSection 
-                title="Pôle Événementiel" 
-                icon={<FaCalendarAlt />}
-                members={getMembersByTeam('evenementiel')} 
-                // description="Les créateurs de rencontres et de moments forts."
-              />
-
+                    {/* Grille des membres */}
+                    <div className="membres-grid">
+                      {teamMembers.map(membre => (
+                        <div key={membre.id} className="member-wrapper">
+                          
+                          {/* Badges Hiérarchiques */}
+                          {membre._currentRank === 'responsable' && (
+                             <span className="badge-resp">RESPONSABLE</span>
+                          )}
+                          {membre._currentRank === 'co-responsable' && (
+                             <span className="badge-coresp">CO-RESP</span>
+                          )}
+                          
+                          <MemberCard membre={membre} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      {/* 5. FAQ */}
+      {/* --- FAQ (Restaurée et robuste) --- */}
       <section className="page-section alternate-bg">
         <div className="section-content faq-section">
-          <h2>Foire aux Questions (FAQ)</h2>
+          <h2>Foire Aux Questions</h2>
+          <p style={{ marginBottom: '2rem', color: '#666' }}>
+            Une question ? La réponse est sûrement ici.
+          </p>
+
           {loading ? (
-            <p>Chargement...</p>
+            <p>Chargement des questions...</p>
           ) : faqItems.length > 0 ? (
             <div className="faq-list">
               {faqItems.map(item => (
@@ -190,35 +183,20 @@ function AboutPage() {
               ))}
             </div>
           ) : (
-            <p style={{fontStyle:'italic', color:'#777'}}>Aucune question pour le moment.</p>
+            <div style={{ 
+                padding: '30px', 
+                backgroundColor: 'white', 
+                borderRadius: '8px', 
+                border: '1px dashed #ccc',
+                color: '#777' 
+            }}>
+              <p>Aucune question fréquente n'a été publiée pour le moment.</p>
+            </div>
           )}
         </div>
       </section>
 
     </main>
-  );
-}
-
-// --- Composant Interne pour afficher une section d'équipe ---
-// Cela évite de répéter le code pour chaque pôle
-function TeamSection({ title, icon, members, description }) {
-  // Si personne dans cette équipe, on n'affiche pas la section entière
-  if (!members || members.length === 0) return null;
-
-  return (
-    <div className="team-section">
-      <div className="team-header">
-        <span className="team-icon">{icon}</span>
-        <h3>{title}</h3>
-      </div>
-      {description && <p className="team-description">{description}</p>}
-      
-      <div className="membres-list">
-        {members.map(membre => (
-          <MemberCard key={membre.id} membre={membre} />
-        ))}
-      </div>
-    </div>
   );
 }
 
