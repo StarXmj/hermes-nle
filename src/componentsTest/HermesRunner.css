@@ -98,6 +98,80 @@
     animation: rotatePhone 2s infinite ease-in-out;
     margin-bottom: 30px;
 }
+
+/* ... (Tout le CSS précédent reste) ... */
+
+/* --- HUD MODIFICATIONS --- */
+.greek-hud-score {
+    /* ... (existant) ... */
+    pointer-events: none; /* Le conteneur laisse passer les clics */
+    /* On garde le reste du style flex/gap etc */
+}
+
+/* ✅ BOUTON PAUSE STYLISÉ */
+.pause-btn {
+    pointer-events: auto !important; /* Force le clic sur le bouton */
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: 15px; /* Écarte du texte du biome */
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.pause-btn:hover {
+    background: #DAA520;
+    border-color: #DAA520;
+    color: black;
+    transform: scale(1.1);
+}
+
+/* ✅ OVERLAY PAUSE */
+.pause-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+/* --- SCORE LEADERBOARD FLUO --- */
+.lb-list li .score {
+    /* Jaune Fluo (Lime électrique) */
+    color: #DAA520; 
+    
+    /* Effet de lueur (Glow) pour faire ressortir le fluo sur fond sombre */
+    text-shadow: 0 0 10px #DAA520;
+    
+    font-weight: bold;
+    font-size: 1.1rem;
+    
+    /* Alignement à droite pour que les chiffres s'empilent bien */
+    margin-left: auto; 
+    
+    /* Police type "Code" pour bien aligner les chiffres (optionnel) */
+    font-variant-numeric: tabular-nums; 
+}
+.pause-overlay h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    color: #DAA520;
+    margin-bottom: 30px;
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+}
 .phone-icon { color: #fff; }
 
 @keyframes rotatePhone {

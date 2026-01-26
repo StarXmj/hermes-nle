@@ -20,14 +20,17 @@ export class GameEngine {
     // GESTION DU TEMPS (FPS FIXE)
     this.lastTime = 0;
     this.accumulator = 0;
-    this.step = 1000 / 60; // On force 60 FPS pour la logique (16.66ms)
+    this.step = 1000 / 60; 
+    
+    // ✅ ÉTAT PAUSE
+    this.isPaused = false;
 
     this.resizeHandler = () => this.resize();
     window.addEventListener('resize', this.resizeHandler);
   }
 
+  // ... (resize et reset inchangés) ...
   resize() {
-      // (Code resize inchangé)
       const width = window.innerWidth;
       const height = window.innerHeight;
       this.width = width;
@@ -55,6 +58,7 @@ export class GameEngine {
     this.speed = GAME_CONFIG.SPEED_START;
     this.score = 0;
     this.running = true;
+    this.isPaused = false; // Reset pause
     
     this.biomeSequenceIndex = 0;
     this.currentBiome = BIOME_SEQUENCE[0].type;
@@ -63,7 +67,6 @@ export class GameEngine {
     this.transitionAlpha = 0; 
     this.gameStartTime = Date.now();
 
-    // Reset des timers de la boucle
     this.lastTime = performance.now();
     this.accumulator = 0;
 
@@ -75,29 +78,39 @@ export class GameEngine {
       requestAnimationFrame(this.loop); 
   }
 
-  // ✅ MODIFICATION CRITIQUE : BOUCLE DE JEU STABILISÉE
-  loop = (timestamp) => {
-    if (!this.running) return;
+  // ✅ NOUVELLE MÉTHODE : GESTION PAUSE
+  togglePause(shouldPause) {
+      this.isPaused = shouldPause;
 
-    // 1. Calcul du temps écoulé depuis la dernière frame
+      if (this.isPaused) {
+          // On coupe le son d'ambiance pendant la pause
+          soundManager.stopAmbience();
+      } else {
+          // ON REPREND
+          soundManager.startAmbience();
+          // ⚠️ CRITIQUE : On réinitialise le temps pour éviter un saut temporel (lag)
+          this.lastTime = performance.now();
+          // On relance la boucle
+          requestAnimationFrame(this.loop);
+      }
+  }
+
+  loop = (timestamp) => {
+    // Si le jeu est fini OU en pause, on arrête la boucle
+    if (!this.running || this.isPaused) return;
+
     let deltaTime = timestamp - this.lastTime;
     this.lastTime = timestamp;
 
-    // Sécurité : Si le jeu lag trop (ex: changement d'onglet), on plafonne pour éviter un saut énorme
     if (deltaTime > 100) deltaTime = 100;
 
     this.accumulator += deltaTime;
 
-    // 2. MISE À JOUR LOGIQUE (Rattrapage de temps)
-    // On exécute update() autant de fois que nécessaire pour atteindre le temps réel
-    // Cela garantit que la physique avance à vitesse constante quelque soit l'écran
     while (this.accumulator >= this.step) {
-        this.update(); // Logique pure
+        this.update(); 
         this.accumulator -= this.step;
     }
 
-    // 3. DESSIN (Aussi fluide que possible)
-    // On efface et on dessine à chaque frame écran (même si la logique n'a pas bougé)
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -105,7 +118,6 @@ export class GameEngine {
 
     this.draw(); 
     
-    // UI Update (moins fréquent)
     if (this.score % 10 < 1) {
         this.callbacks.onUpdateUI({
             score: Math.floor(this.score),
@@ -116,9 +128,9 @@ export class GameEngine {
     requestAnimationFrame(this.loop);
   }
 
+  // ... (update, nextBiome, checkCollisions, isColliding, gameOver, draw... TOUT LE RESTE EST INCHANGÉ) ...
+  
   update() {
-    // Cette fonction est maintenant appelée exactement 60 fois par seconde (temps logique)
-    
     if (this.transitionAlpha > 0) {
         this.transitionAlpha -= 0.02; 
         if(this.transitionAlpha < 0) this.transitionAlpha = 0;
@@ -133,7 +145,6 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
-    // Vent visuel
     if (this.speed > 16) {
         if (Math.random() < 0.1 + (this.speed - 16) * 0.02) {
              particleManager.createSpeedLine(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -151,7 +162,6 @@ export class GameEngine {
   }
 
   nextBiome() {
-      // (Inchangé)
       this.biomeSequenceIndex++;
       if (this.biomeSequenceIndex >= BIOME_SEQUENCE.length) {
           this.biomeSequenceIndex = 0;
@@ -167,7 +177,6 @@ export class GameEngine {
   }
 
   checkCollisions() {
-    // (Inchangé)
     const pBox = this.player.getHitbox();
     let ghostBox = null;
 
@@ -221,7 +230,6 @@ export class GameEngine {
   }
 
   draw() {
-    // (Inchangé - Copie exacte du code précédent pour draw)
     this.ctx.save();
     this.ctx.beginPath();
     this.ctx.rect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -301,7 +309,6 @@ export class GameEngine {
   }
 
   drawFlappyTutorial() {
-      // (Inchangé)
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       const w = this.canvas.width;
@@ -321,7 +328,6 @@ export class GameEngine {
   }
 
   drawStartTutorial() {
-      // (Inchangé)
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       const w = this.canvas.width;
@@ -358,7 +364,6 @@ export class GameEngine {
   }
 
   drawTouchMarkers() {
-      // (Inchangé)
       const touches = this.input.touches;
       if (!touches || touches.length === 0) return;
       this.ctx.save();

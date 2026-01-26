@@ -2,9 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GameEngine } from '../gameTest/GameEngine';
 import { useGameAuth } from '../hooks/useGameAuth';
 import './HermesRunner.css'; 
-import { FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, FaTimes, FaExpand, FaCrown, FaHourglassHalf, FaSignOutAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { 
+    FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, 
+    FaTimes, FaExpand, FaCrown, FaHourglassHalf, 
+    FaSignOutAlt, FaEye, FaEyeSlash, 
+    FaPause, FaPlay // ✅ AJOUT DES ICONES
+} from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+// ... (BIOME_COLORS, STATIC_ICONS, getTimeUntilEndOfMonth inchangés) ...
 const BIOME_COLORS = {
     'NORMAL': { color: '#FFD700', label: 'OLYMPE' },
     'HADES': { color: '#FF4444', label: 'ENFERS' },
@@ -37,6 +43,9 @@ function HermesRunnerPage() {
   const [currentBiome, setCurrentBiome] = useState('NORMAL');
   const [hasEnteredFullScreen, setHasEnteredFullScreen] = useState(false);
   
+  // ✅ ÉTAT PAUSE
+  const [isPaused, setIsPaused] = useState(false);
+
   const { player, leaderboardAllTime, leaderboardMonthly, login, register, saveScore, logout, loading: authLoading, error: authError } = useGameAuth();
   
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -64,6 +73,7 @@ function HermesRunnerPage() {
             onGameOver: (result) => {
                 setScore(result.score);
                 setGameStatus('gameover');
+                setIsPaused(false); // Reset pause en cas de mort
                 if (player) saveScore(result.score);
             }
         });
@@ -79,7 +89,16 @@ function HermesRunnerPage() {
       setHasEnteredFullScreen(true);
   };
 
-  const startGame = () => { setGameStatus('playing'); };
+  const startGame = () => { setGameStatus('playing'); setIsPaused(false); };
+
+  // ✅ HANDLER PAUSE
+  const handleTogglePause = () => {
+      if (engineRef.current) {
+          const newState = !isPaused;
+          setIsPaused(newState);
+          engineRef.current.togglePause(newState);
+      }
+  };
 
   const handleAuthSubmit = async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -95,11 +114,7 @@ function HermesRunnerPage() {
           setShowAuthModal(false);
           setAuthForm({ email: '', pseudo: '', password: '', newsletter: true });
           
-          // ✅ FIX CRITIQUE : Si le jeu est fini et qu'on a un score, on le sauvegarde
-          // en utilisant DIRECTEMENT l'utilisateur récupéré (res.user)
-          // sans attendre que le state React se mette à jour.
           if (gameStatus === 'gameover' && score > 0) {
-              console.log("Sauvegarde du score post-auth pour :", res.user.pseudo);
               saveScore(score, res.user);
           }
       }
@@ -109,29 +124,38 @@ function HermesRunnerPage() {
 
   const currentBiomeData = BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL'];
 
-  // ✅ FONCTION D'AFFICHAGE ROBUSTE (CRASH FIX)
+  // ✅ FONCTION D'AFFICHAGE ROBUSTE (AVEC MÉDAILLES & LISTE COMPLÈTE)
+  // ✅ FONCTION D'AFFICHAGE (MÉDAILLES + FORMATAGE MILLIERS)
   const renderLeaderboardList = () => {
-      // 1. Sélection de la liste brute
       let rawList = leaderboardTab === 'season' ? leaderboardMonthly : leaderboardAllTime;
       
-      // 2. Sécurité absolue : Si undefined ou null, on force un tableau vide
-      if (!rawList || !Array.isArray(rawList)) {
-          rawList = [];
-      }
+      if (!rawList || !Array.isArray(rawList)) { rawList = []; }
+      if (rawList.length === 0) { return <li className="empty">Chargement ou aucun score...</li>; }
 
-      // 3. Gestion cas vide
-      if (rawList.length === 0) {
-          return <li className="empty">Chargement ou aucun score...</li>;
-      }
+      return rawList.map((l, i) => {
+          const isMe = player && player.pseudo === l.pseudo;
+          
+          let rankDisplay;
+          if (i === 0) rankDisplay = <span className="medal gold">🥇</span>;
+          else if (i === 1) rankDisplay = <span className="medal silver">🥈</span>;
+          else if (i === 2) rankDisplay = <span className="medal bronze">🥉</span>;
+          else rankDisplay = <span className="rank">#{i + 1}</span>;
 
-      // 4. Affichage (Safe Map)
-      return rawList.slice(0, 10).map((l, i) => (
-          <li key={i} className={player && player.pseudo === l.pseudo ? 'me' : ''}>
-              <span className="rank">#{i+1}</span>
-              <span className="name">{l.pseudo || 'Anonyme'}</span>
-              <span className="score">{l.best_score !== undefined ? l.best_score : l.score}</span>
-          </li>
-      ));
+          // Récupération de la valeur brute
+          const scoreValue = l.best_score !== undefined ? l.best_score : l.score;
+
+          return (
+              <li key={i} className={isMe ? 'me' : ''}>
+                  {rankDisplay}
+                  <span className="name">{l.pseudo || 'Anonyme'}</span>
+                  
+                  {/* ✅ MODIFICATION ICI : .toLocaleString('fr-FR') ajoute les espaces */}
+                  <span className="score">
+                    {scoreValue.toLocaleString('fr-FR')}
+                  </span>
+              </li>
+          );
+      });
   };
 
   return (
@@ -155,13 +179,28 @@ function HermesRunnerPage() {
 
       <canvas ref={canvasRef} className="game-canvas" />
 
+      {/* ✅ HUD SCORE + BOUTON PAUSE */}
       {gameStatus === 'playing' && (
         <div className="greek-hud-score">
             <span className="score-simple">{Math.floor(score)}</span>
             <span className="biome-simple" style={{ color: currentBiomeData.color }}>{currentBiomeData.label}</span>
+            
+            {/* BOUTON PAUSE */}
+            <button className="pause-btn" onClick={handleTogglePause} onTouchStart={(e) => { e.stopPropagation(); handleTogglePause(); }}>
+                {isPaused ? <FaPlay /> : <FaPause />}
+            </button>
         </div>
       )}
 
+      {/* ✅ OVERLAY PAUSE */}
+      {isPaused && (
+          <div className="pause-overlay">
+              <h1>PAUSE</h1>
+              <button className="greek-start-button" onClick={handleTogglePause}>REPRENDRE</button>
+          </div>
+      )}
+
+      {/* ... (Reste des overlays inchangés: Intro, GameOver, Auth) ... */}
       {hasEnteredFullScreen && gameStatus === 'intro' && (
           <div className="greek-overlay">
             <div className="waterfall-bg">
@@ -206,7 +245,6 @@ function HermesRunnerPage() {
                             <button className={leaderboardTab === 'season' ? 'active' : ''} onClick={() => setLeaderboardTab('season')}>{currentMonthName}</button>
                             <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={() => setLeaderboardTab('alltime')}>TOP LÉGENDE</button>
                         </div>
-                        {/* ✅ UTILISATION DE LA FONCTION SAFE */}
                         <ul className="lb-list">{renderLeaderboardList()}</ul>
                     </div>
                 </div>
