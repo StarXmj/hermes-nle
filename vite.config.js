@@ -49,7 +49,12 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
-        orientation: 'landscape',
+        
+        // ✅ MODIFICATION ICI : On laisse l'orientation libre ('any')
+        // Le site s'adapte à la rotation du téléphone.
+        // Seul le jeu forcera le paysage via son propre code.
+        orientation: 'any', 
+        
         icons: [
           {
             src: '/icon-192x192.png',
