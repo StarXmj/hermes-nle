@@ -1,11 +1,15 @@
-/* src/pages/AboutPage.css */
+/* --- HERO & TITRES --- */
+.hero-about {
+  text-align: center;
+  padding-bottom: 4rem;
+}
 
-/* --- HERO --- */
 .hero-about h1 {
   font-size: 3.5rem;
   color: #003366;
   margin-bottom: 0.5rem;
 }
+
 .hero-subtitle {
   font-size: 1.5rem;
   color: #DAA520;
@@ -15,24 +19,104 @@
   margin-bottom: 3rem;
 }
 
-/* --- TROMBINOSCOPE STRUCTURE --- */
+/* --- GRID MISSION (NOUVEAU DESIGN) --- */
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+  text-align: left;
+}
+
+.mission-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #DAA520; /* Liseré Or */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mission-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mission-card.main-card {
+  border-left-color: #003366; /* Liseré Bleu pour la principale */
+  background-color: #f8fbff;
+}
+
+.mission-card-icon {
+  font-size: 2rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.mission-card h3 {
+  font-size: 1.4rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.mission-card p {
+  color: #555;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* --- CITATION (Le Nom) --- */
+.quote-container {
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  background: #fff;
+  padding: 2rem 3rem;
+  border-radius: 50px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.quote-icon {
+  font-size: 2rem;
+  color: #DAA520;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.quote-container p {
+  font-size: 1.15rem;
+  color: #444;
+  font-style: italic;
+  line-height: 1.8;
+}
+
+/* --- RESTE DU CSS (Trombi, etc.) --- */
+.section-title-center {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #003366;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle-center {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-bottom: 3rem;
+}
+
 .trombinoscope-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6rem; /* Grand espace entre les équipes */
+  gap: 6rem; 
 }
 
-.team-block {
-  position: relative;
-}
-
-/* --- EN-TÊTE D'ÉQUIPE --- */
 .team-header-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 3rem;
-  position: relative;
 }
 
 .team-icon-circle {
@@ -47,93 +131,42 @@
   font-size: 2rem;
   box-shadow: 0 10px 20px rgba(0,51,102,0.2);
   margin-bottom: 1rem;
-  z-index: 2;
 }
 
-.team-title-box {
-  text-align: center;
-}
+.team-title-box { text-align: center; }
+.team-title-box h2 { font-size: 2.2rem; color: #003366; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+.team-title-box p { color: #666; font-size: 1.1rem; max-width: 600px; margin: 0.5rem auto 0; }
 
-.team-title-box h2 {
-  font-size: 2.2rem;
-  color: #003366;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.team-title-box p {
-  color: #666;
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin: 0.5rem auto 0;
-}
-
-/* Ligne décorative sous le titre */
-.team-header-container::after {
-  content: '';
-  width: 100px;
-  height: 4px;
-  background: #DAA520;
-  margin-top: 1.5rem;
-  border-radius: 2px;
-}
-
-/* --- GRILLE MEMBRES (RESPONSIVE) --- */
 .membres-grid {
   display: grid;
-  /* Auto-fill magique : s'adapte à la taille de l'écran */
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Adapté à la nouvelle taille de carte */
   gap: 3rem;
   justify-items: center;
 }
 
-.member-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 320px;
-}
+.member-wrapper { position: relative; width: 240px; }
 
-/* --- BADGES HIÉRARCHIE --- */
 .badge-resp, .badge-coresp {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -10px; right: -10px;
   padding: 5px 12px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: white;
+  font-size: 0.75rem; font-weight: bold; color: white;
   z-index: 10;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   text-transform: uppercase;
-  letter-spacing: 1px;
 }
-
-.badge-resp {
-  background: linear-gradient(45deg, #DAA520, #FFD700); /* Or */
-}
-
-.badge-coresp {
-  background: linear-gradient(45deg, #7f8c8d, #bdc3c7); /* Argent */
-}
+.badge-resp { background: linear-gradient(45deg, #DAA520, #FFD700); }
+.badge-coresp { background: linear-gradient(45deg, #7f8c8d, #bdc3c7); }
 
 /* --- FAQ --- */
-.faq-section {
-  max-width: 800px;
-  margin: 0 auto;
-}
+.faq-section { max-width: 800px; margin: 0 auto; }
+.faq-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.empty-faq { padding: 30px; background: white; border-radius: 8px; border: 1px dashed #ccc; color: #777; text-align: center; }
 
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-/* RESPONSIVE AJUSTEMENTS */
+/* Responsive */
 @media (max-width: 768px) {
   .hero-about h1 { font-size: 2.5rem; }
-  .team-header-container { margin-bottom: 2rem; }
-  .membres-grid { gap: 2rem; }
+  .mission-grid { grid-template-columns: 1fr; } /* 1 colonne sur mobile */
+  .quote-container { padding: 1.5rem; }
 }
