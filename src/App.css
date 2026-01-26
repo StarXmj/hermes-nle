@@ -126,6 +126,16 @@ main {
     box-shadow: 0 10px 28px rgba(139, 92, 246, 0.6);
 }
 
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
 .cta-button::before {
   content: "";
   position: absolute;
