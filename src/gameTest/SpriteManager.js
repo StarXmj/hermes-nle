@@ -7,28 +7,27 @@ class SpriteManager {
     // CONFIGURATION DES SÉQUENCES
     this.playerConfig = {
         run: {
-            base: 'run-hermes/hermes-run',  
+            base: 'run-hermes/webp/hermes-run',  
             count: 12,            
             startAt: 1,          
-            ext: '.png',         
+            ext: '.webp',         
             speed: 80
         },
         jump: {
-            base: 'jump-hermes/hermes-jump',  
+            base: 'jump-hermes/webp/hermes-jump',  
             count: 10,            
             startAt: 2,          
-            ext: '.png',         
+            ext: '.webp',         
             speed: 100           
         },
         // ✅ NOUVEAU : Séquence pour le mode FLAPPY
         fly: {
-            // Assurez-vous d'avoir le dossier /images/fly-hermes/hermes-fly-1.png, etc.
-            base: 'run-hermes/hermes-run',  
+            base: 'run-hermes/webp/hermes-run',  
             count: 12,            
             startAt: 1,          
-            ext: '.png',         
+            ext: '.webp',         
             speed: 80
-        }
+        },
     };
 
     this.initSprites();
@@ -61,16 +60,16 @@ class SpriteManager {
     this.sprites.player_fly  = this.loadSequence(this.playerConfig.fly); // ✅ Chargement Flappy
 
     // 2. OBSTACLES
-    this.sprites.column = this.loadImage('column.png');
-    this.sprites.amphora = this.loadImage('amphora.png');
-    this.sprites.shield = this.loadImage('shield.png');
-    this.sprites.harpy = this.loadImage('harpy.png');
-    this.sprites.column_broken = this.loadImage('column_broken.png');
-    this.sprites.spear = this.loadImage('spear.png');
-    this.sprites.stalagmite = this.loadImage('stalagmite.png');
-    this.sprites.stalactite = this.loadImage('stalactite.png');
-    this.sprites.chain = this.loadImage('chain.png');
-    this.sprites.cloud = this.loadImage('cloud.png');
+    this.sprites.column = this.loadImage('column.webp');
+    this.sprites.amphora = this.loadImage('amphora.webp');
+    this.sprites.shield = this.loadImage('shield.webp');
+    this.sprites.harpy = this.loadImage('harpy.webp');
+    this.sprites.column_broken = this.loadImage('column_broken.webp');
+    this.sprites.spear = this.loadImage('spear.webp');
+    this.sprites.stalagmite = this.loadImage('stalagmite.webp');
+    this.sprites.stalactite = this.loadImage('stalactite.webp');
+    this.sprites.chain = this.loadImage('chain.webp');
+    this.sprites.cloud = this.loadImage('cloud.webp');
   }
 
   drawPlayer(ctx, x, y, width, height, isSliding, isJumping, biome) {

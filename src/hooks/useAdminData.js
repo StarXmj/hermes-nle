@@ -5,8 +5,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export function useAdminData({ 
   table,           // Nom de la table (ex: 'actions')
-  select = '*',    // Colonnes à sélectionner (avec jointures éventuelles)
-  orderColumn = 'date_creat', 
+  select = 'id, created_at', // Ne plus mettre '*' par défaut
+  orderColumn = 'date_creat',
   orderAsc = false,
   bucketName = null, // Nom du bucket pour supprimer les fichiers (optionnel)
   fileField = null   // Nom de la colonne contenant l'URL du fichier (ex: 'image', 'logo')

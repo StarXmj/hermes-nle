@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import HermesLogo from '../assets/logo-hermes.png';
-import { HashLink } from 'react-router-hash-link';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import ThemeToggle from './ThemeToggle';
+import { usePWAInstall } from '../hooks/usePWAInstall'; // ✅ Import du hook
+import { Download } from 'lucide-react'; // ✅ Import de l'icône
 
 function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // ✅ Utilisation du hook PWA
+  const { showInstallBtn, handleInstall } = usePWAInstall();
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
-
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
@@ -21,14 +24,11 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // --- NOUVELLE FONCTION POUR REMONTER EN HAUT ---
   const handleScrollToTop = (e) => {
-    // Si on est déjà sur la home, on force le scroll
     if (isHomePage) {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Sinon, le Link to="/" fera son travail et on scrollera après chargement
     if (isDrawerOpen) setIsDrawerOpen(false);
   };
 
@@ -48,7 +48,6 @@ function Navbar() {
             : 'bg-white/50 dark:bg-white/5 backdrop-blur-md border-transparent dark:border-white/10'
           }`}>
           
-          {/* LOGO (Avec fonction Scroll To Top) */}
           <div className="flex-shrink-0 cursor-pointer">
             <Link to="/" onClick={handleScrollToTop}>
               <img src={HermesLogo} alt="Logo" className="h-8 md:h-10 lg:h-12 w-auto hover:scale-105 transition-transform duration-300" />
@@ -56,7 +55,6 @@ function Navbar() {
           </div>
 
           <ul className="hidden lg:flex items-center gap-4 xl:gap-8">
-            {/* Lien Accueil modifié */}
             <li><Link to="/" onClick={handleScrollToTop} className={navLinkClass('/')}>Accueil</Link></li>
             <li><Link to="/about" className={navLinkClass('/about')}>C'est quoi ?</Link></li>
             <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
@@ -67,6 +65,17 @@ function Navbar() {
           </ul>
 
           <div className="hidden lg:flex items-center gap-4">
+            {/* ✅ Bouton d'installation Desktop */}
+            {showInstallBtn && (
+              <button 
+                onClick={handleInstall}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white px-3 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/10"
+              >
+                <Download size={16} />
+                <span>Installer</span>
+              </button>
+            )}
+            
             <ThemeToggle />
             <Link to="/contact" state={{ sujetParDefaut: 'rejoindre_association' }} className="px-4 py-2 rounded-xl bg-hermes-primary text-white font-bold text-xs xl:text-sm shadow-lg hover:bg-blue-600 hover:scale-105 transition-all">
               Nous rejoindre
@@ -97,15 +106,25 @@ function Navbar() {
             </button>
         </div>
         
+        {/* ✅ Bouton d'installation Mobile (Placé en haut du menu) */}
+        {showInstallBtn && (
+          <button 
+            onClick={() => { handleInstall(); toggleDrawer(); }}
+            className="flex items-center justify-center gap-3 bg-hermes-primary text-white w-full py-4 rounded-2xl font-bold shadow-lg mb-8 animate-pulse"
+          >
+            <Download size={20} />
+            <span>Installer l'application</span>
+          </button>
+        )}
+
         <ul className="flex flex-col gap-6 text-lg overflow-y-auto">
           <li><Link to="/" onClick={handleScrollToTop} className={navLinkClass('/')}>Accueil</Link></li>
-            <li><Link to="/about" className={navLinkClass('/about')}>C'est quoi ?</Link></li>
-            <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
-            <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
-            <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
-            <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
-            <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
-           
+          <li><Link to="/about" className={navLinkClass('/about')}>C'est quoi ?</Link></li>
+          <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
+          <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
+          <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
+          <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
+          <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
         </ul>
       </div>
     </>
