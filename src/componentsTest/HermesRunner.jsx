@@ -267,21 +267,41 @@ function HermesRunnerPage() {
       )}
 
       {/* GameOver & Auth Modal inchangés */}
-      {gameStatus === 'gameover' && (
+       {gameStatus === 'gameover' && (
           <div className="gameover-overlay">
             <div className="gameover-content">
                 <h1 className="title-death">CHUTE D'ICARE</h1>
                 <div className="result-box">
                     <div className="score-display"><span className="lbl">SCORE FINAL</span><span className="val">{Math.floor(score)}</span></div>
+                    {player && <div className="best-display">Record personnel : {Math.max(player.best_score || 0, Math.floor(score))}</div>}
                 </div>
                 <div className="go-actions">
                     <button className="greek-btn-primary" onClick={startGame}><FaRedo/> REJOUER</button>
+                    {!player && <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>ENREGISTRER CE SCORE</button>}
                     <button className="greek-btn-text" onClick={() => setGameStatus('intro')}><FaArrowLeft/> MENU</button>
                 </div>
             </div>
           </div>
       )}
-      {/* ... Auth Modal ... */}
+      {showAuthModal && (
+            <div className="auth-modal-overlay" onMouseDown={e => e.stopPropagation()}>
+                <div className="auth-modal">
+                  <FaTimes className="close-btn" onClick={(e) => { e.stopPropagation(); setShowAuthModal(false); }} />
+                    <h2>{authMode === 'login' ? 'Connexion' : 'Nouvelle Légende'}</h2>
+                    {authError && <div className="auth-error-message">{authError}</div>}
+                    <form onSubmit={handleAuthSubmit}>
+                        {authMode === 'register' && <input type="text" placeholder="Pseudo" required value={authForm.pseudo} onChange={e=>setAuthForm({...authForm, pseudo:e.target.value})} />}
+                        <input type="email" placeholder="Email" required value={authForm.email} onChange={e=>setAuthForm({...authForm, email:e.target.value})} />
+                        <div className="password-input-wrapper">
+                            <input type={showPassword ? "text" : "password"} placeholder="Mot de passe" required value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})} />
+                            <span className="toggle-password-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</span>
+                        </div>
+                        <button type="submit" className="greek-btn-primary" disabled={authLoading}>{authLoading?'...':(authMode==='login'?'GO!':'VALIDER')}</button>
+                    </form>
+                    <p className="switch-auth" onClick={() => { setAuthMode(authMode==='login'?'register':'login'); setShowPassword(false); }}>{authMode === 'login' ? "Créer un compte" : "J'ai déjà un compte"}</p>
+                </div>
+            </div>
+      )}
     </div>
   );
 }
