@@ -321,7 +321,7 @@ function HermesRunnerPage() {
                                 <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>SAUVEGARDER MA PROGRESSION</button>
                             </>
                         )}
-                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.01</p>
+                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.02</p>
                     </div>
                 </div>
                 

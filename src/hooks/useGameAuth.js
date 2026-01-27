@@ -47,13 +47,16 @@ export function useGameAuth() {
 
     // ✅ OPTIMISATION : On interroge la vue SQL directement
     const { data: monthly } = await supabase
-      .from('view_leaderboard') 
-      .select('pseudo, score, created_at')
-      .gte('created_at', firstDayOfMonth) // Filtre : Seulement ce mois-ci
-      .order('score', { ascending: false })
-      .limit(50);
+      .from('view_monthly_best') 
+      .select('pseudo, score') // Plus besoin de filtrer la date ici, le SQL le fait
+      .limit(50); // Top 50 du mois
 
-    if (monthly) setLeaderboardMonthly(monthly);
+    // Sécurité si vide
+    if (monthly) {
+        setLeaderboardMonthly(monthly);
+    } else {
+        setLeaderboardMonthly([]);
+    }
   };
 
   const register = async (email, pseudo, password, newsletterOptin) => {
