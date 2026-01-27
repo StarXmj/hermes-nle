@@ -176,9 +176,9 @@ export class LevelManager {
       ctx.fillStyle = ent.color;
       
       if (ent.type === 'projectile') {
+          // ✅ OPTIMISATION : Suppression du shadowBlur (Lueur rouge)
+          // On garde juste la forme géométrique, c'est instantané à dessiner.
           ctx.save();
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = '#FF0000';
           
           ctx.beginPath();
           ctx.moveTo(ent.x, ent.y);
@@ -188,6 +188,7 @@ export class LevelManager {
           
           ctx.restore();
       } else {
+          // Obstacles classiques (Rectangles)
           ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
       }
     });

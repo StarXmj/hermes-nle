@@ -1,12 +1,11 @@
 /* --- BASE & FULLSCREEN --- */
-/* --- BASE & FULLSCREEN --- */
 .greek-runner-container {
     position: fixed; 
     top: 0; left: 0; 
     width: 100vw; 
     
     /* ✅ FIX IPHONE : Utiliser dvh (Dynamic Viewport Height) */
-    height: 100vh; /* Fallback pour vieux téléphones */
+    height: 100vh; /* Fallback */
     height: 100dvh; /* S'adapte à la barre d'adresse iOS */
     
     background: #000; 
@@ -19,26 +18,60 @@
 
 /* On s'assure que l'écran de verrouillage prend aussi tout l'écran */
 .orientation-lock {
-    /* ... (reste inchangé) ... */
+    display: none !important; /* Caché par défaut en paysage */
+    
+    position: fixed; 
+    inset: 0;
     width: 100vw !important; 
     height: 100vh !important;
-    height: 100dvh !important; /* ✅ AJOUT */
-    /* ... */
+    height: 100dvh !important; 
+    background: #000; 
+    
+    /* Z-INDEX MAXIMUM POSSIBLE */
+    z-index: 2147483647; 
+    
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;
+    color: #DAA520; 
+    text-align: center;
+    padding: 20px;
 }
+
+/* DÉTECTION PORTRAIT STRICTE */
+@media screen and (orientation: portrait) {
+    .orientation-lock {
+        display: flex !important;
+    }
+}
+
+.rotate-phone-animation {
+    animation: rotatePhone 2s infinite ease-in-out;
+    margin-bottom: 30px;
+}
+@keyframes rotatePhone {
+    0%, 10% { transform: rotate(0deg); }
+    40%, 60% { transform: rotate(90deg); }
+    90%, 100% { transform: rotate(0deg); }
+}
+.phone-icon { color: #fff; }
 
 .game-canvas { display: block; width: 100%; height: 100%; }
 
-/* --- HUD ULTRA SIMPLIFIÉ (CLEAN) --- */
+
+/* --- HUD (SCORE + BIOME + PAUSE) --- */
 .greek-hud-score {
     position: fixed; 
     top: 25px; 
     right: 25px;
     z-index: 100;
+    
+    /* Important : le conteneur laisse passer les clics, mais ses enfants les captent */
     pointer-events: none;
     
     display: flex; 
-    align-items: baseline; 
-    gap: 15px;
+    align-items: center; /* Alignement vertical centré */
+    gap: 20px;
     
     background: transparent !important;
     border: none !important;
@@ -65,64 +98,20 @@
     text-shadow: 2px 2px 0 #000;
 }
 
-/* --- ÉCRAN BLOCAGE PORTRAIT (CRITIQUE) --- */
-.orientation-lock {
-    /* Caché par défaut en paysage */
-    display: none !important;
-    
-    position: fixed; 
-    inset: 0;
-    width: 100vw !important; 
-    height: 100vh !important;
-    background: #000; 
-    
-    /* Z-INDEX MAXIMUM POSSIBLE */
-    z-index: 2147483647; 
-    
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center;
-    color: #DAA520; 
-    text-align: center;
-    padding: 20px;
-}
-
-/* DÉTECTION PORTRAIT STRICTE */
-@media screen and (orientation: portrait) {
-    .orientation-lock {
-        display: flex !important;
-    }
-}
-
-.rotate-phone-animation {
-    animation: rotatePhone 2s infinite ease-in-out;
-    margin-bottom: 30px;
-}
-
-/* ... (Tout le CSS précédent reste) ... */
-
-/* --- HUD MODIFICATIONS --- */
-.greek-hud-score {
-    /* ... (existant) ... */
-    pointer-events: none; /* Le conteneur laisse passer les clics */
-    /* On garde le reste du style flex/gap etc */
-}
-
 /* ✅ BOUTON PAUSE STYLISÉ */
 .pause-btn {
     pointer-events: auto !important; /* Force le clic sur le bouton */
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.4);
     border: 2px solid rgba(255, 255, 255, 0.5);
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    margin-left: 15px; /* Écarte du texte du biome */
     transition: all 0.2s;
     backdrop-filter: blur(5px);
 }
@@ -134,19 +123,100 @@
     transform: scale(1.1);
 }
 
-/* ✅ OVERLAY PAUSE */
+
+/* --- OVERLAY PAUSE STYLISÉ --- */
 .pause-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 200;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 9999; 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
+    
+    /* CRITIQUE POUR LE MOBILE */
+    pointer-events: auto !important; 
+    touch-action: manipulation;
 }
+
+.pause-overlay h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    color: #DAA520; /* Or */
+    margin-bottom: 40px;
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+    text-transform: uppercase;
+}
+
+/* Conteneur des boutons du menu pause */
+.pause-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 320px;
+}
+
+/* On s'assure que les boutons capturent bien le clic */
+.pause-menu button {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10000;
+}
+
+/* Bouton Reprendre (Gold) */
+.btn-pause-resume {
+    background: linear-gradient(135deg, #DAA520, #B8860B);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #000;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-pause-resume:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 25px rgba(218, 165, 32, 0.6);
+}
+
+/* Boutons Secondaires (Recommencer / Quitter) */
+.btn-pause-secondary {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-pause-secondary:hover {
+    border-color: white;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+
 /* --- SCORE LEADERBOARD FLUO --- */
 .lb-list li .score {
     /* Jaune Fluo (Lime électrique) */
@@ -164,21 +234,7 @@
     /* Police type "Code" pour bien aligner les chiffres (optionnel) */
     font-variant-numeric: tabular-nums; 
 }
-.pause-overlay h1 {
-    font-size: 4rem;
-    font-weight: 900;
-    letter-spacing: 5px;
-    color: #DAA520;
-    margin-bottom: 30px;
-    text-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
-}
-.phone-icon { color: #fff; }
 
-@keyframes rotatePhone {
-    0%, 10% { transform: rotate(0deg); }
-    40%, 60% { transform: rotate(90deg); }
-    90%, 100% { transform: rotate(0deg); }
-}
 
 /* --- RESTE DU STYLE (Menus, etc.) --- */
 .immersion-start-screen {
@@ -220,19 +276,55 @@
 .greek-btn-text { background: none; border: none; color: #666; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 5px; }
 .greek-btn-text:hover { color: #fff; }
 
+/* ✅ NOUVEAU : BOUTON INSTALLATION PWA */
+.pwa-install-btn-runner {
+    margin-top: 15px;
+    background: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    transition: all 0.2s;
+}
+.pwa-install-btn-runner:hover {
+    background: #333;
+    color: #fff;
+    border-color: #DAA520;
+}
+
+
 .menu-right { flex: 1; height: 100%; background: rgba(20, 20, 20, 0.8); border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; }
 .leaderboard-section { display: flex; flex-direction: column; height: 100%; }
 .lb-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 .lb-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
 .lb-tabs button { flex: 1; background: #111; color: #666; border: 1px solid #333; padding: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem; }
 .lb-tabs button.active { background: #333; color: #DAA520; border-color: #DAA520; }
-.lb-list { flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-.lb-list li { display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 0.9rem; color: #aaa; }
+.lb-list { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    list-style: none; 
+    padding: 0; margin: 0; 
+    
+    /* Scrollbar */
+    padding-right: 5px;
+}
+.lb-list::-webkit-scrollbar { width: 5px; }
+.lb-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+.lb-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 0.9rem; color: #aaa; }
 .lb-list li:last-child { border-bottom: none; }
 .lb-list li.me { color: #DAA520; font-weight: bold; background: rgba(218, 165, 32, 0.1); }
 .lb-list .rank { width: 30px; opacity: 0.5; font-style: italic; }
+.lb-list .medal { width: 30px; font-size: 1.2rem; text-align: center; }
 .lb-list .name { flex-grow: 1; text-align: left; padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lb-list .score { font-family: monospace; font-size: 1rem; }
+
+/* État vide */
 .lb-list li.empty { justify-content: center; color: #555; font-style: italic; padding-top: 50px; }
 
 .gameover-overlay { position: fixed; inset: 0; background: rgba(10, 0, 0, 0.9); z-index: 150; display: flex; justify-content: center; align-items: center; }

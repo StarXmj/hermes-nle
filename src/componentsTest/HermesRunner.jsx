@@ -6,7 +6,7 @@ import {
     FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, 
     FaTimes, FaExpand, FaCrown, FaHourglassHalf, 
     FaSignOutAlt, FaEye, FaEyeSlash, 
-    FaPause, FaPlay, FaDownload // ✅ Ajout de FaDownload
+    FaPause, FaPlay, FaDownload 
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -117,6 +117,8 @@ function HermesRunnerPage() {
 
   const startGame = () => { setGameStatus('playing'); setIsPaused(false); };
 
+  // --- GESTION PAUSE ---
+
   const handleTogglePause = () => {
       if (engineRef.current) {
           const newState = !isPaused;
@@ -124,6 +126,30 @@ function HermesRunnerPage() {
           engineRef.current.togglePause(newState);
       }
   };
+
+  // ✅ AJOUT : FONCTION RECOMMENCER
+  const handleRestart = () => {
+      setIsPaused(false); // Enlever l'écran de pause
+      if (engineRef.current) {
+          engineRef.current.reset(); // Reset des entités
+          engineRef.current.start(); // Relance la boucle (au cas où elle était stoppée)
+          // On s'assure que le moteur sait qu'il n'est plus en pause
+          engineRef.current.isPaused = false; 
+          engineRef.current.lastTime = performance.now(); // Reset du timer pour éviter le saut
+      }
+      setScore(0); // Reset score React
+  };
+
+  // ✅ AJOUT : FONCTION QUITTER
+  const handleQuit = () => {
+      setIsPaused(false);
+      setGameStatus('intro');
+      if (engineRef.current) {
+          engineRef.current.destroy();
+      }
+  };
+
+  // --- FIN GESTION PAUSE ---
 
   const handleAuthSubmit = async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -187,20 +213,84 @@ function HermesRunnerPage() {
       <canvas ref={canvasRef} className="game-canvas" />
 
       {/* HUD Score & Pause */}
-      {gameStatus === 'playing' && (
-        <div className="greek-hud-score">
-            <span className="score-simple">{Math.floor(score)}</span>
-            <span className="biome-simple" style={{ color: (BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).color }}>{(BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).label}</span>
-            <button className="pause-btn" onClick={handleTogglePause} onTouchStart={(e) => { e.stopPropagation(); handleTogglePause(); }}>
-                {isPaused ? <FaPlay /> : <FaPause />}
-            </button>
-        </div>
-      )}
+      {/* HUD Score & Pause */}
+{gameStatus === 'playing' && (
+  <div className="greek-hud-score">
+      <span className="score-simple">{Math.floor(score)}</span>
+      <span className="biome-simple" style={{ color: (BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).color }}>{(BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).label}</span>
+      
+      {/* BOUTON HUD CORRIGÉ */}
+      <button 
+          className="pause-btn" 
+          onClick={handleTogglePause} 
+          onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleTogglePause();
+          }}
+      >
+          {isPaused ? <FaPlay /> : <FaPause />}
+      </button>
+  </div>
+)}
 
+      {/* ✅ OVERLAY PAUSE CORRIGÉ AVEC MENU COMPLET */}
+      {/* ✅ OVERLAY PAUSE CORRIGÉ POUR MOBILE */}
+      {/* ✅ OVERLAY PAUSE CORRIGÉ (VERSION MOBILE ROBUSTE) */}
       {isPaused && (
-          <div className="pause-overlay">
+          <div 
+            className="pause-overlay"
+            /* BOUCLIER : On bloque tout ce qui touche cet écran pour pas que ça traverse au jeu */
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
               <h1>PAUSE</h1>
-              <button className="greek-start-button" onClick={handleTogglePause}>REPRENDRE</button>
+              
+              <div className="pause-menu">
+                  {/* Bouton REPRENDRE */}
+                  <button 
+                    className="btn-pause-resume" 
+                    /* Sur PC : Click classique */
+                    onClick={handleTogglePause}
+                    /* Sur MOBILE : On force l'action immédiatement et on tue l'événement */
+                    onTouchEnd={(e) => {
+                        e.preventDefault(); // Empêche le double-clic
+                        e.stopPropagation();
+                        handleTogglePause();
+                    }}
+                  >
+                      <FaPlay size={18} /> REPRENDRE
+                  </button>
+
+                  {/* Bouton RECOMMENCER */}
+                  <button 
+                    className="btn-pause-secondary" 
+                    onClick={handleRestart}
+                    onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRestart();
+                    }}
+                  >
+                      <FaRedo size={18} /> RECOMMENCER
+                  </button>
+
+                  {/* Bouton QUITTER */}
+                  <button 
+                    className="btn-pause-secondary" 
+                    onClick={handleQuit}
+                    onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleQuit();
+                    }}
+                  >
+                      <FaHome size={18} /> QUITTER
+                      
+                  </button>
+              </div>
           </div>
       )}
 
@@ -231,7 +321,7 @@ function HermesRunnerPage() {
                                 <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>SAUVEGARDER MA PROGRESSION</button>
                             </>
                         )}
-                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link>
+                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.01</p>
                     </div>
                 </div>
                 

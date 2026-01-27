@@ -3,103 +3,75 @@ import { supabase } from '../supabaseClient';
 
 export function useGameAuth() {
   const [player, setPlayer] = useState(null);
-  
-  // ✅ 1. SÉCURITÉ : Initialisation avec des tableaux vides
   const [leaderboardAllTime, setLeaderboardAllTime] = useState([]);
   const [leaderboardMonthly, setLeaderboardMonthly] = useState([]); 
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // A. Chargement du joueur depuis le stockage local
+    // A. Chargement du joueur local
     const savedPlayer = localStorage.getItem('hermes_player');
     if (savedPlayer) {
-      try {
-        setPlayer(JSON.parse(savedPlayer));
-      } catch (e) {
-        console.error("Erreur parsing player", e);
-      }
+      try { setPlayer(JSON.parse(savedPlayer)); } catch (e) { console.error(e); }
     }
     
-    // B. Premier chargement des scores
+    // B. Premier chargement
     fetchLeaderboards();
 
-    // ✅ 2. TEMPS RÉEL (Abonnement aux nouveaux scores)
+    // C. Temps Réel (On écoute la table brute, c'est plus fiable pour le trigger)
     const channel = supabase
       .channel('leaderboard_updates')
-      .on(
-        'postgres_changes',
-        { 
-          event: '*', // INSERT, UPDATE, ou DELETE
-          schema: 'public', 
-          table: 'arcade_scores' 
-        },
-        (payload) => {
-          console.log('⚡ Score détecté en temps réel ! Mise à jour...');
-          fetchLeaderboards(); // On recharge les listes
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'arcade_scores' }, () => {
+          fetchLeaderboards();
+      })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const fetchLeaderboards = async () => {
-    // 1. Classement Général
+    // 1. CLASSEMENT GÉNÉRAL (TOP JOUEURS)
+    // On garde arcade_players ici car c'est parfait pour avoir le "Meilleur Score Unique" par personne
     const { data: allTime } = await supabase
       .from('arcade_players')
       .select('pseudo, best_score')
       .order('best_score', { ascending: false })
-      .limit(1000);
+      .limit(50);
     
-    // Vérification de sécurité (toujours un tableau)
-    if (allTime && Array.isArray(allTime)) {
-        setLeaderboardAllTime(allTime);
-    } else {
-        setLeaderboardAllTime([]);
-    }
+    if (allTime) setLeaderboardAllTime(allTime);
 
-    // 2. Classement Mensuel (Saison)
-    try {
-        const { data: monthly, error: errorRPC } = await supabase.rpc('get_monthly_leaderboard');
-        
-        if (!errorRPC && monthly && Array.isArray(monthly)) {
-            setLeaderboardMonthly(monthly);
-        } else {
-            // Fallback safe si RPC échoue
-            setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
-        }
-    } catch (e) {
-        console.warn("Leaderboard mensuel indisponible, fallback.", e);
-        setLeaderboardMonthly(Array.isArray(allTime) ? allTime.slice(0, 50) : []);
-    }
+    // 2. CLASSEMENT DU MOIS (VIA VOTRE NOUVELLE VUE)
+    // On calcule le 1er jour du mois actuel
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    // ✅ OPTIMISATION : On interroge la vue SQL directement
+    const { data: monthly } = await supabase
+      .from('view_leaderboard') 
+      .select('pseudo, score, created_at')
+      .gte('created_at', firstDayOfMonth) // Filtre : Seulement ce mois-ci
+      .order('score', { ascending: false })
+      .limit(50);
+
+    if (monthly) setLeaderboardMonthly(monthly);
   };
 
   const register = async (email, pseudo, password, newsletterOptin) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     
     if (password.length < 6) {
         setError("Le mot de passe doit faire au moins 6 caractères.");
-        setLoading(false);
-        return { success: false };
+        setLoading(false); return { success: false };
     }
 
     try {
       const { data, error } = await supabase.rpc('register_arcade_player', {
-        p_email: email,
-        p_pseudo: pseudo,
-        p_password: password,
-        p_newsletter: newsletterOptin
+        p_email: email, p_pseudo: pseudo, p_password: password, p_newsletter: newsletterOptin
       });
 
       if (error) throw error;
 
       saveSession(data);
-      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate dans HermesRunner)
       return { success: true, user: data };
 
     } catch (err) {
@@ -115,18 +87,15 @@ export function useGameAuth() {
   };
 
   const login = async (email, password) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       const { data, error } = await supabase.rpc('login_arcade_player', {
-        p_email: email,
-        p_password: password
+        p_email: email, p_password: password
       });
 
       if (error || !data) throw new Error("Identifiants incorrects.");
       
       saveSession(data);
-      // ✅ RETOURNE L'UTILISATEUR (pour sauvegarde immédiate dans HermesRunner)
       return { success: true, user: data };
     } catch (err) {
       setError("Email ou mot de passe incorrect.");
@@ -136,29 +105,24 @@ export function useGameAuth() {
     }
   };
 
-  // ✅ ACCEPTE "playerOverride" POUR SAUVEGARDER AVANT LA MISE À JOUR DU STATE
   const saveScore = async (newScore, playerOverride = null) => {
-    // On prend soit le joueur qu'on force (celui qui vient de s'inscrire), soit le state actuel
     const targetPlayer = playerOverride || player;
+    if (!targetPlayer) return;
     
-    if (!targetPlayer) {
-        console.warn("Impossible de sauvegarder : aucun joueur identifié.");
-        return;
-    }
-    
-    // Insertion historique
+    // ✅ CORRECTION CRITIQUE : 
+    // On n'envoie PLUS le pseudo ici. La base le retrouvera toute seule via l'ID.
     await supabase.from('arcade_scores').insert([{ 
-      player_id: targetPlayer.id, score: newScore, pseudo: targetPlayer.pseudo 
+      player_id: targetPlayer.id, 
+      score: newScore 
     }]);
 
-    // Mise à jour record personnel
+    // Mise à jour du record perso (Best Score) dans la table players
     if (newScore > (targetPlayer.best_score || 0)) {
       const updatedPlayer = { ...targetPlayer, best_score: newScore };
       saveSession(updatedPlayer);
       await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', targetPlayer.id);
     }
     
-    // Update local immédiat
     fetchLeaderboards();
   };
 

@@ -35,12 +35,20 @@ export class GameEngine {
       const height = window.innerHeight;
       this.width = width;
       this.height = height;
-      const dpr = window.devicePixelRatio || 1;
+      
+      // ✅ OPTIMISATION CRITIQUE : PLAFONNER LA RÉSOLUTION
+      // On prend la densité de l'écran, mais on ne dépasse jamais 2.
+      // Sur un écran 3x (Samsung S22/S23, iPhone Pro), cela réduit la charge de calcul par 2.25 !
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); 
+      
       this.canvas.width = width * dpr;
       this.canvas.height = height * dpr;
+      
+      // Réinitialisation de la matrice de transformation
       this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
       this.ctx.scale(dpr, dpr);
       
+      // Calcul de l'échelle du jeu (Game Scale) pour le centrage
       this.gameScale = Math.min(width / GAME_CONFIG.CANVAS_WIDTH, height / GAME_CONFIG.CANVAS_HEIGHT);
       const offsetX = (width - GAME_CONFIG.CANVAS_WIDTH * this.gameScale) / 2;
       const offsetY = (height - GAME_CONFIG.CANVAS_HEIGHT * this.gameScale) / 2;
@@ -315,8 +323,8 @@ export class GameEngine {
       const h = this.canvas.height;
       const dpr = window.devicePixelRatio || 1;
       this.ctx.textAlign = 'center';
-      this.ctx.shadowColor = 'black';
-      this.ctx.shadowBlur = 4;
+      //this.ctx.shadowColor = 'black';
+      //this.ctx.shadowBlur = 4;
       this.ctx.font = `bold ${30 * dpr}px Arial`;
       this.ctx.fillStyle = '#FFFFFF';
       const actionText = this.input.isTouchDevice ? "TAP POUR STABILISER" : "ESPACE POUR STABILISER";
@@ -334,8 +342,8 @@ export class GameEngine {
       const h = this.canvas.height;
       const dpr = window.devicePixelRatio || 1;
       this.ctx.textAlign = 'center';
-      this.ctx.shadowColor = 'black';
-      this.ctx.shadowBlur = 4;
+      //this.ctx.shadowColor = 'black';
+      //this.ctx.shadowBlur = 4;
       this.ctx.fillStyle = '#FFD700'; 
       this.ctx.font = `bold ${28 * dpr}px Arial`;
       this.ctx.fillText("ÉVITE LES OBSTACLES", w / 2, h * 0.15); 

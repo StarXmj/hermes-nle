@@ -1,177 +1,159 @@
-import { GAME_CONFIG } from './constants';
+// Détection mobile pour limiter les particules
+const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 class ParticleManager {
+
+    
   constructor() {
     this.particles = [];
+    // ✅ POOL : Un réservoir de particules recyclables
+    this.pool = []; 
   }
 
-  // --- CRÉATION DES EFFETS ---
+  // Récupère une particule depuis le pool ou en crée une nouvelle si vide
+  getParticle() {
+      if (this.pool.length > 0) {
+          return this.pool.pop();
+      }
+      return { 
+          x: 0, y: 0, vx: 0, vy: 0, 
+          life: 0, maxLife: 0, 
+          size: 0, color: '', type: 'dust' 
+      };
+  }
 
-  // 1. Poussière (Course / Atterrissage)
   createDust(x, y) {
-      for (let i = 0; i < 5; i++) {
-          this.particles.push({
-              type: 'dust',
-              x: x,
-              y: y,
-              vx: (Math.random() - 0.5) * 2 - 2, // Part vers la gauche (derrière le joueur)
-              vy: (Math.random() - 0.5) * 2,
-              life: 1.0,
-              size: Math.random() * 5 + 3,
-              color: '#bdc3c7' // Gris poussière
-          });
-      }
+    if (IS_MOBILE && Math.random() > 0.2) return; 
+    if (!IS_MOBILE && Math.random() > 0.5) return; // Sur PC, 50%
+    const p = this.getParticle();
+    
+    p.x = x;
+    p.y = y;
+    p.vx = (Math.random() - 0.5) * 2;
+    p.vy = -Math.random() * 2;
+    p.life = 1.0;
+    p.maxLife = 1.0;
+    p.size = Math.random() * 3 + 1;
+    p.color = 'rgba(200, 200, 200,';
+    p.type = 'dust';
+    
+    this.particles.push(p);
   }
 
-  // 2. Saut (Nuage sous les pieds)
-  createJumpEffect(x, y) {
-      for (let i = 0; i < 8; i++) {
-          this.particles.push({
-              type: 'jump',
-              x: x + (Math.random() - 0.5) * 20,
-              y: y,
-              vx: (Math.random() - 0.5) * 3,
-              vy: Math.random() * 2 + 1, // Tombe légèrement
-              life: 1.0,
-              size: Math.random() * 6 + 4,
-              color: '#ecf0f1' // Blanc nuage
-          });
-      }
-  }
-
-  // 3. Double Saut (Explosion dorée/magique)
-  createDoubleJumpEffect(x, y) {
-      // Cercle qui s'agrandit
-      this.particles.push({
-          type: 'ring',
-          x: x,
-          y: y,
-          size: 10,
-          maxSize: 60,
-          life: 1.0,
-          color: '#FFD700', // Or
-          lineWidth: 3
-      });
-
-      // Étoiles
-      for (let i = 0; i < 10; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 3 + 2;
-          this.particles.push({
-              type: 'sparkle',
-              x: x,
-              y: y,
-              vx: Math.cos(angle) * speed,
-              vy: Math.sin(angle) * speed,
-              life: 1.0,
-              size: Math.random() * 4 + 2,
-              color: '#FFFF00'
-          });
-      }
-  }
-
-  // 4. Glissade (Traînée rapide au sol)
   createSlideDust(x, y) {
-      if (Math.random() > 0.3) return; // Pas à chaque frame
-      this.particles.push({
-          type: 'dust',
-          x: x,
-          y: y,
-          vx: -4 - Math.random() * 2, // Vitesse rapide vers l'arrière
-          vy: -1 - Math.random(), // Monte un peu
-          life: 0.6,
-          size: Math.random() * 4 + 2,
-          color: '#95a5a6'
-      });
+      // Optimisation : une seule particule au lieu de plusieurs
+      if (IS_MOBILE && Math.random() > 0.3) return;
+      
+      const p = this.getParticle();
+      p.x = x;
+      p.y = y;
+      p.vx = -2 - Math.random() * 2;
+      p.vy = -Math.random();
+      p.life = 1.0;
+      p.maxLife = 1.0;
+      p.size = Math.random() * 4 + 2;
+      p.color = 'rgba(150, 150, 150,';
+      p.type = 'dust';
+      this.particles.push(p);
   }
 
-  // 5. Lignes de Vitesse (Speed Lines) - Sur les bords
-  createSpeedLine(width, height) {
-      this.particles.push({
-          type: 'speedline',
-          x: width + 50,
-          y: Math.random() * height,
-          vx: -25 - Math.random() * 10, // Très rapide
-          vy: 0,
-          life: 1.0,
-          size: Math.random() * 2 + 1, // Épaisseur
-          length: Math.random() * 100 + 50,
-          color: 'rgba(255, 255, 255, 0.5)'
-      });
+  createJumpEffect(x, y) {
+    const count = IS_MOBILE ? 2 : 5;
+    
+    for(let i=0; i < count; i++) {
+        const p = this.getParticle();
+        p.x = x;
+        p.y = y;
+        p.vx = (Math.random() - 0.5) * 4;
+        p.vy = 1 + Math.random() * 2;
+        p.life = 1.0;
+        p.maxLife = 1.0;
+        p.size = Math.random() * 4 + 2;
+        p.color = 'rgba(255, 255, 255,';
+        p.type = 'dust';
+        this.particles.push(p);
+    }
   }
 
-  // 6. Feedback Tactile (Mobile)
-  createTouchRipple(x, y) {
-      this.particles.push({
-          type: 'ripple',
-          x: x,
-          y: y,
-          size: 5,
-          maxSize: 50,
-          life: 1.0,
-          color: 'rgba(255, 255, 255, 0.4)',
-          lineWidth: 4
-      });
+  createDoubleJumpEffect(x, y) {
+      const count = IS_MOBILE ? 3 : 8;
+      
+      for(let i=0; i < count; i++) {
+          const p = this.getParticle();
+          p.x = x;
+          p.y = y;
+          p.vx = (Math.random() - 0.5) * 6;
+          p.vy = (Math.random() - 0.5) * 6;
+          p.life = 1.0;
+          p.maxLife = 1.0;
+          p.size = Math.random() * 5 + 2;
+          p.color = 'rgba(255, 215, 0,'; // Or
+          p.type = 'spark';
+          this.particles.push(p);
+      }
   }
 
-  // --- UPDATE & DRAW ---
+  createSpeedLine(w, h) {
+      // Moins fréquent
+      const p = this.getParticle();
+      p.x = w;
+      p.y = Math.random() * h;
+      p.vx = -15 - Math.random() * 10;
+      p.vy = 0;
+      p.life = 1.0;
+      p.maxLife = 1.0;
+      p.size = Math.random() * 2 + 1; // Épaisseur
+      p.length = Math.random() * 50 + 20; // Longueur
+      p.color = 'rgba(255, 255, 255,';
+      p.type = 'line';
+      this.particles.push(p);
+  }
 
   update() {
-      for (let i = this.particles.length - 1; i >= 0; i--) {
-          let p = this.particles[i];
-          
-          if (p.type === 'ring' || p.type === 'ripple') {
-              // Agrandissement des cercles
-              p.size += (p.maxSize - p.size) * 0.1;
-              p.life -= 0.05;
-          } else if (p.type === 'speedline') {
-              p.x += p.vx;
-              if (p.x + p.length < 0) p.life = 0;
-          } else {
-              // Physique standard
-              p.x += p.vx;
-              p.y += p.vy;
-              p.size *= 0.95; // Rétrécit
-              p.life -= 0.03;
-          }
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= 0.03; 
+      p.x += p.vx;
+      p.y += p.vy;
 
-          if (p.life <= 0) {
-              this.particles.splice(i, 1);
-          }
+      if (p.life <= 0) {
+        // ✅ RECYCLAGE : On remet l'objet dans le pool
+        this.pool.push(p);
+        // On le retire de la liste active (swap and pop est plus rapide que splice, mais splice est ok ici)
+        this.particles.splice(i, 1);
       }
+    }
+  }
+
+  clear() {
+      // Tout le monde dans le pool
+      this.particles.forEach(p => this.pool.push(p));
+      this.particles = [];
   }
 
   draw(ctx) {
-      ctx.save();
-      for (let p of this.particles) {
-          ctx.globalAlpha = p.life;
-          ctx.fillStyle = p.color;
-          ctx.strokeStyle = p.color;
-
-          if (p.type === 'dust' || p.type === 'jump' || p.type === 'sparkle') {
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-              ctx.fill();
-          } 
-          else if (p.type === 'ring' || p.type === 'ripple') {
-              ctx.lineWidth = p.lineWidth || 2;
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-              ctx.stroke();
-          }
-          else if (p.type === 'speedline') {
-              ctx.lineWidth = p.size;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p.x + p.length, p.y);
-              ctx.stroke();
-          }
+    this.particles.forEach(p => {
+      ctx.globalAlpha = p.life;
+      
+      // On arrondit les positions avec (valeur | 0)
+      const px = p.x | 0;
+      const py = p.y | 0;
+      
+      if (p.type === 'line') {
+          // ...
+          ctx.beginPath();
+          ctx.moveTo(px, py); // Utiliser px, py
+          ctx.lineTo(px + p.length, py);
+          ctx.stroke();
+      } else {
+          ctx.fillStyle = p.color + p.life + ')';
+          ctx.beginPath();
+          // Pour les cercles, Math.floor est mieux
+          ctx.arc(px, py, p.size, 0, Math.PI * 2);
+          ctx.fill();
       }
-      ctx.restore();
-  }
-  
-  clear() {
-      this.particles = [];
+    });
+    ctx.globalAlpha = 1.0;
   }
 }
 
