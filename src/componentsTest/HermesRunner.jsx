@@ -354,7 +354,7 @@ function HermesRunnerPage() {
                                 <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>SAUVEGARDER MA PROGRESSION</button>
                             </>
                         )}
-                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.13</p>
+                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.14</p>
                     </div>
                 </div>
                 
@@ -404,9 +404,18 @@ function HermesRunnerPage() {
                                 lineHeight: '1.4'
                             }}>
                                 <div style={{marginBottom:5, color:'#FFD700'}}>⚠️ <strong>UNIQUE AU MONDE / MOIS</strong></div>
-                                <div style={{marginBottom:5}}>🔥 <strong>LE PHÉNIX</strong> : La plus forte progression.</div>
-                                <div style={{marginBottom:5}}>🗿 <strong>LE TITAN</strong> : La plus haute moyenne.</div>
-                                <div>🎻 <strong>LE VIRTUOSE</strong> : La meilleure médiane.</div>
+                                <div style={{marginBottom:8, color:'#FFD700', textAlign:'center', fontWeight:'bold', textTransform:'uppercase'}}>
+                                    👑 Il ne peut en rester qu'un !
+                                </div>
+                                <div style={{marginBottom:8}}>
+                                    🔥 <strong>LE PHÉNIX</strong> : L'étoile montante. Celui qui s'améliore le plus vite à chaque partie.
+                                </div>
+                                <div style={{marginBottom:8}}>
+                                    🗿 <strong>LE TITAN</strong> : Une machine ! Il ne fait <i>jamais</i> de petit score, sa moyenne est colossale.
+                                </div>
+                                <div>
+                                    🎻 <strong>LE VIRTUOSE</strong> : L'expert technique. Son niveau "normal" est souvent supérieur au record des autres.
+                                </div>
                             </div>
                         )}
 
