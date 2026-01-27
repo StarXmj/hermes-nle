@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabaseClient'; 
 import { GameEngine } from '../gameTest/GameEngine';
 import { useGameAuth } from '../hooks/useGameAuth';
+import ProgressionGraph from './ProgressionGraph'; 
 import './HermesRunner.css'; 
 import { 
     FaArrowLeft, FaRedo, FaTrophy, FaHome, FaMobileAlt, 
     FaTimes, FaExpand, FaCrown, FaHourglassHalf, 
     FaSignOutAlt, FaEye, FaEyeSlash, 
-    FaPause, FaPlay, FaDownload 
+    FaPause, FaPlay, FaDownload,
+    FaChartLine, FaInfoCircle 
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-// ... (BIOME_COLORS, STATIC_ICONS, getTimeUntilEndOfMonth inchangés)
 const BIOME_COLORS = {
     'NORMAL': { color: '#FFD700', label: 'OLYMPE' },
     'HADES': { color: '#FF4444', label: 'ENFERS' },
@@ -44,6 +46,11 @@ function HermesRunnerPage() {
   const [hasEnteredFullScreen, setHasEnteredFullScreen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
+  // ✅ ÉTATS POUR LA PROGRESSION
+  const [showProgression, setShowProgression] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [showLegend, setShowLegend] = useState(false); 
+
   // ✅ ÉTATS POUR L'INSTALLATION PWA
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -67,7 +74,6 @@ function HermesRunnerPage() {
     window.addEventListener('resize', handleResize);
     const timer = setInterval(() => setTimeLeft(getTimeUntilEndOfMonth()), 60000); 
     
-    // ✅ ÉCOUTEUR D'INSTALLATION
     const handler = (e) => {
         e.preventDefault();
         setDeferredPrompt(e);
@@ -127,20 +133,17 @@ function HermesRunnerPage() {
       }
   };
 
-  // ✅ AJOUT : FONCTION RECOMMENCER
   const handleRestart = () => {
-      setIsPaused(false); // Enlever l'écran de pause
+      setIsPaused(false); 
       if (engineRef.current) {
-          engineRef.current.reset(); // Reset des entités
-          engineRef.current.start(); // Relance la boucle (au cas où elle était stoppée)
-          // On s'assure que le moteur sait qu'il n'est plus en pause
+          engineRef.current.reset(); 
+          engineRef.current.start(); 
           engineRef.current.isPaused = false; 
-          engineRef.current.lastTime = performance.now(); // Reset du timer pour éviter le saut
+          engineRef.current.lastTime = performance.now(); 
       }
-      setScore(0); // Reset score React
+      setScore(0); 
   };
 
-  // ✅ AJOUT : FONCTION QUITTER
   const handleQuit = () => {
       setIsPaused(false);
       setGameStatus('intro');
@@ -149,7 +152,18 @@ function HermesRunnerPage() {
       }
   };
 
-  // --- FIN GESTION PAUSE ---
+  // --- GESTION PROGRESSION (HISTORIQUE) ---
+  const loadHistory = async () => {
+    if (!player) return;
+    const { data } = await supabase
+        .from('arcade_scores')
+        .select('score, created_at')
+        .eq('player_id', player.id)
+        .order('created_at', { ascending: false }); 
+
+    if (data) setHistory(data);
+    setShowProgression(true);
+  };
 
   const handleAuthSubmit = async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -166,24 +180,81 @@ function HermesRunnerPage() {
 
   const openModal = (mode, e) => { if(e) e.stopPropagation(); setAuthMode(mode); setShowAuthModal(true); setShowPassword(false); };
 
+  // ✅ RENDU LEADERBOARD AVEC BADGES
   const renderLeaderboardList = () => {
       let rawList = leaderboardTab === 'season' ? leaderboardMonthly : leaderboardAllTime;
       if (!rawList || !Array.isArray(rawList)) rawList = [];
       if (rawList.length === 0) return <li className="empty">Chargement...</li>;
 
+      // 1. CALCUL DES ROIS (UNIQUE PAR CATÉGORIE)
+      // On ne prend que les joueurs éligibles (>= 20 parties)
+      const eligiblePlayers = rawList.filter(p => p.total_games >= 20);
+
+      let bestPhenixId = null;
+      let bestTitanId = null;
+      let bestVirtuoseId = null;
+
+      if (eligiblePlayers.length > 0) {
+          // Trouver la meilleure progression (Phénix)
+          const maxSlope = Math.max(...eligiblePlayers.map(p => p.progression_slope));
+          const phenix = eligiblePlayers.find(p => p.progression_slope === maxSlope && maxSlope > 0); // Doit être positif
+          if (phenix) bestPhenixId = phenix.id || phenix.pseudo; // Fallback pseudo si id manque
+
+          // Trouver la meilleure moyenne (Titan)
+          const maxMean = Math.max(...eligiblePlayers.map(p => p.mean_score));
+          const titan = eligiblePlayers.find(p => p.mean_score === maxMean);
+          if (titan) bestTitanId = titan.id || titan.pseudo;
+
+          // Trouver la meilleure médiane (Virtuose)
+          const maxMedian = Math.max(...eligiblePlayers.map(p => p.median_score));
+          const virtuose = eligiblePlayers.find(p => p.median_score === maxMedian);
+          if (virtuose) bestVirtuoseId = virtuose.id || virtuose.pseudo;
+      }
+
       return rawList.map((l, i) => {
           const isMe = player && player.pseudo === l.pseudo;
+          // Identification unique (ID ou Pseudo)
+          const playerId = l.id || l.pseudo; 
+
           let rankDisplay;
           if (i === 0) rankDisplay = <span className="medal gold">🥇</span>;
           else if (i === 1) rankDisplay = <span className="medal silver">🥈</span>;
           else if (i === 2) rankDisplay = <span className="medal bronze">🥉</span>;
           else rankDisplay = <span className="rank">#{i + 1}</span>;
+          
           const scoreValue = l.best_score !== undefined ? l.best_score : l.score;
+
+          // --- ATTRIBUTION DES BADGES UNIQUES ---
+          const badges = [];
+
+          if (playerId === bestPhenixId) {
+              badges.push({ icon: "🔥", title: "LE PHÉNIX : Meilleure progression actuelle" });
+          }
+          if (playerId === bestTitanId) {
+              badges.push({ icon: "🗿", title: "LE TITAN : Meilleure moyenne de points" });
+          }
+          if (playerId === bestVirtuoseId) {
+              badges.push({ icon: "🎻", title: "LE VIRTUOSE : Meilleure médiane (Technique pure)" });
+          }
 
           return (
               <li key={i} className={isMe ? 'me' : ''}>
                   {rankDisplay}
-                  <span className="name">{l.pseudo || 'Anonyme'}</span>
+                  
+                  <span className="name">
+                      {l.pseudo || 'Anonyme'}
+                      {/* Affichage des badges */}
+                      {badges.map((b, idx) => (
+                          <span 
+                            key={idx}
+                            style={{marginLeft:'6px', cursor:'help', fontSize:'1rem'}} 
+                            title={b.title} 
+                          >
+                              {b.icon}
+                          </span>
+                      ))}
+                  </span>
+                  
                   <span className="score">{scoreValue.toLocaleString('fr-FR')}</span>
               </li>
           );
@@ -192,7 +263,6 @@ function HermesRunnerPage() {
 
   return (
     <div className="greek-runner-container">
-      {/* ... Orientation lock & Immersion screen inchangés ... */}
       <div className="orientation-lock">
         <div className="rotate-phone-animation"><FaMobileAlt size={80} className="phone-icon" /></div>
         <h2>TOURNEZ VOTRE ÉCRAN</h2>
@@ -213,88 +283,48 @@ function HermesRunnerPage() {
       <canvas ref={canvasRef} className="game-canvas" />
 
       {/* HUD Score & Pause */}
-      {/* HUD Score & Pause */}
-{gameStatus === 'playing' && (
-  <div className="greek-hud-score">
-      <span className="score-simple">{Math.floor(score)}</span>
-      <span className="biome-simple" style={{ color: (BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).color }}>{(BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).label}</span>
-      
-      {/* BOUTON HUD CORRIGÉ */}
-      <button 
-          className="pause-btn" 
-          onClick={handleTogglePause} 
-          onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleTogglePause();
-          }}
-      >
-          {isPaused ? <FaPlay /> : <FaPause />}
-      </button>
-  </div>
-)}
+      {gameStatus === 'playing' && (
+        <div className="greek-hud-score">
+            <span className="score-simple">{Math.floor(score)}</span>
+            <span className="biome-simple" style={{ color: (BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).color }}>{(BIOME_COLORS[currentBiome] || BIOME_COLORS['NORMAL']).label}</span>
+            
+            <button 
+                className="pause-btn" 
+                onClick={handleTogglePause} 
+                onTouchEnd={(e) => {
+                    e.preventDefault(); e.stopPropagation(); handleTogglePause();
+                }}
+            >
+                {isPaused ? <FaPlay /> : <FaPause />}
+            </button>
+        </div>
+      )}
 
-      {/* ✅ OVERLAY PAUSE CORRIGÉ AVEC MENU COMPLET */}
-      {/* ✅ OVERLAY PAUSE CORRIGÉ POUR MOBILE */}
-      {/* ✅ OVERLAY PAUSE CORRIGÉ (VERSION MOBILE ROBUSTE) */}
+      {/* OVERLAY PAUSE */}
       {isPaused && (
           <div 
             className="pause-overlay"
-            /* BOUCLIER : On bloque tout ce qui touche cet écran pour pas que ça traverse au jeu */
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
               <h1>PAUSE</h1>
-              
               <div className="pause-menu">
-                  {/* Bouton REPRENDRE */}
-                  <button 
-                    className="btn-pause-resume" 
-                    /* Sur PC : Click classique */
-                    onClick={handleTogglePause}
-                    /* Sur MOBILE : On force l'action immédiatement et on tue l'événement */
-                    onTouchEnd={(e) => {
-                        e.preventDefault(); // Empêche le double-clic
-                        e.stopPropagation();
-                        handleTogglePause();
-                    }}
-                  >
+                  <button className="btn-pause-resume" onClick={handleTogglePause} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); handleTogglePause(); }}>
                       <FaPlay size={18} /> REPRENDRE
                   </button>
-
-                  {/* Bouton RECOMMENCER */}
-                  <button 
-                    className="btn-pause-secondary" 
-                    onClick={handleRestart}
-                    onTouchEnd={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleRestart();
-                    }}
-                  >
+                  <button className="btn-pause-secondary" onClick={handleRestart} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); handleRestart(); }}>
                       <FaRedo size={18} /> RECOMMENCER
                   </button>
-
-                  {/* Bouton QUITTER */}
-                  <button 
-                    className="btn-pause-secondary" 
-                    onClick={handleQuit}
-                    onTouchEnd={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleQuit();
-                    }}
-                  >
+                  <button className="btn-pause-secondary" onClick={handleQuit} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); handleQuit(); }}>
                       <FaHome size={18} /> QUITTER
-                      
                   </button>
               </div>
           </div>
       )}
 
-      {/* MENU PRINCIPAL (INTRO) */}
+      {/* MENU PRINCIPAL */}
       {hasEnteredFullScreen && gameStatus === 'intro' && (
           <div className="greek-overlay">
             <div className="waterfall-bg">
@@ -313,6 +343,9 @@ function HermesRunnerPage() {
                             <>
                                 <div className="player-info">Héros : <strong style={{color:'#DAA520'}}>{player.pseudo}</strong></div>
                                 <button className="greek-btn-primary" onClick={startGame}>JOUER</button>
+                                <button className="greek-btn-secondary" onClick={loadHistory} style={{marginTop:'10px'}}>
+                                    <FaChartLine style={{marginRight:'8px'}}/> MA PROGRESSION
+                                </button>
                                 <button className="greek-btn-text" onClick={logout}><FaSignOutAlt /> Déconnexion</button>
                             </>
                         ) : (
@@ -321,7 +354,7 @@ function HermesRunnerPage() {
                                 <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>SAUVEGARDER MA PROGRESSION</button>
                             </>
                         )}
-                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.02</p>
+                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.13</p>
                     </div>
                 </div>
                 
@@ -338,16 +371,48 @@ function HermesRunnerPage() {
                             <button className={leaderboardTab === 'season' ? 'active' : ''} onClick={() => setLeaderboardTab('season')}>{currentMonthName}</button>
                             <button className={leaderboardTab === 'alltime' ? 'active' : ''} onClick={() => setLeaderboardTab('alltime')}>TOP LÉGENDE</button>
                         </div>
+                        
                         <ul className="lb-list">{renderLeaderboardList()}</ul>
                         
-                        {/* ✅ BOUTON D'INSTALLATION INTÉGRÉ ICI */}
+                        {/* ✅ ZONE EXPLICATION LÉGENDE MISE À JOUR */}
+                        <div 
+                            style={{ 
+                                marginTop: '10px', 
+                                borderTop: '1px solid #333', 
+                                paddingTop: '8px', 
+                                display: 'flex', 
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                fontSize: '0.75rem',
+                                color: '#666',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => setShowLegend(!showLegend)}
+                        >
+                            <span><FaInfoCircle style={{marginRight:5}}/> Trophées Uniques (+20 parties)</span>
+                            <span>{showLegend ? '▼' : '▶'}</span>
+                        </div>
+                        
+                        {showLegend && (
+                            <div style={{
+                                background: 'rgba(0,0,0,0.5)', 
+                                padding: '10px', 
+                                borderRadius: '6px', 
+                                marginTop: '5px',
+                                fontSize: '0.75rem',
+                                color: '#ccc',
+                                lineHeight: '1.4'
+                            }}>
+                                <div style={{marginBottom:5, color:'#FFD700'}}>⚠️ <strong>UNIQUE AU MONDE / MOIS</strong></div>
+                                <div style={{marginBottom:5}}>🔥 <strong>LE PHÉNIX</strong> : La plus forte progression.</div>
+                                <div style={{marginBottom:5}}>🗿 <strong>LE TITAN</strong> : La plus haute moyenne.</div>
+                                <div>🎻 <strong>LE VIRTUOSE</strong> : La meilleure médiane.</div>
+                            </div>
+                        )}
+
                         {!isStandalone && (deferredPrompt || isIOS) && (
-                            <button 
-                                onClick={handleInstallClick}
-                                className="pwa-install-btn-runner"
-                            >
-                                <FaDownload style={{marginRight: '10px'}} /> 
-                                {isIOS ? "Installer l'App" : "Jouer en Plein Écran"}
+                            <button onClick={handleInstallClick} className="pwa-install-btn-runner">
+                                <FaDownload style={{marginRight: '10px'}} /> {isIOS ? "Installer l'App" : "Jouer en Plein Écran"}
                             </button>
                         )}
                     </div>
@@ -356,14 +421,14 @@ function HermesRunnerPage() {
           </div>
       )}
 
-      {/* GameOver & Auth Modal inchangés */}
-       {gameStatus === 'gameover' && (
+      {/* GameOver Modal */}
+      {gameStatus === 'gameover' && (
           <div className="gameover-overlay">
             <div className="gameover-content">
                 <h1 className="title-death">CHUTE D'ICARE</h1>
                 <div className="result-box">
                     <div className="score-display"><span className="lbl">SCORE FINAL</span><span className="val">{Math.floor(score)}</span></div>
-                    {player && <div className="best-display">Record personnel : {Math.max(player.best_score || 0, Math.floor(score))}</div>}
+                    {player && <div className="best-display">Record personnel : {Math.max(Number(player.best_score) || 0, Math.floor(score)).toLocaleString('fr-FR')}</div>}
                 </div>
                 <div className="go-actions">
                     <button className="greek-btn-primary" onClick={startGame}><FaRedo/> REJOUER</button>
@@ -373,6 +438,20 @@ function HermesRunnerPage() {
             </div>
           </div>
       )}
+
+      {/* Modal Progression */}
+      {showProgression && (
+        <div className="auth-modal-overlay" onClick={() => setShowProgression(false)}>
+            <div className="auth-modal" onClick={e => e.stopPropagation()} style={{width:'500px', maxWidth:'95vw'}}>
+                <FaTimes className="close-btn" onClick={() => setShowProgression(false)} />
+                <h2 style={{color: '#DAA520'}}>MON ÉVOLUTION</h2>
+                <p style={{color: '#aaa', fontSize:'0.9rem', marginBottom:'20px'}}>Analyse de vos 200 dernières tentatives.</p>
+                <ProgressionGraph scores={history} bestScore={player.best_score} bestScoreDate={player.best_score_at} />
+            </div>
+        </div>
+      )}
+
+      {/* Modal Auth */}
       {showAuthModal && (
             <div className="auth-modal-overlay" onMouseDown={e => e.stopPropagation()}>
                 <div className="auth-modal">

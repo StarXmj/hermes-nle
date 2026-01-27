@@ -9,10 +9,20 @@ export function useGameAuth() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // A. Chargement du joueur local
+    // A. Chargement du joueur local (Cache)
     const savedPlayer = localStorage.getItem('hermes_player');
+    let parsedPlayer = null;
+    
     if (savedPlayer) {
-      try { setPlayer(JSON.parse(savedPlayer)); } catch (e) { console.error(e); }
+      try {
+        parsedPlayer = JSON.parse(savedPlayer);
+        setPlayer(parsedPlayer);
+        
+        // ✅ CORRECTIF : On vérifie tout de suite en base pour avoir la VRAIE date
+        refreshUserProfile(parsedPlayer.id); 
+      } catch (e) {
+        console.error("Erreur parsing player", e);
+      }
     }
     
     // B. Premier chargement
@@ -28,35 +38,34 @@ export function useGameAuth() {
 
     return () => { supabase.removeChannel(channel); };
   }, []);
-
+const refreshUserProfile = async (userId) => {
+      const { data, error } = await supabase
+          .from('arcade_players')
+          .select('*')
+          .eq('id', userId)
+          .single();
+          
+      if (data && !error) {
+          // On met à jour le state et le cache avec les données fraîches de la base
+          saveSession(data);
+      }
+  };
   const fetchLeaderboards = async () => {
-    // 1. CLASSEMENT GÉNÉRAL (TOP JOUEURS)
-    // On garde arcade_players ici car c'est parfait pour avoir le "Meilleur Score Unique" par personne
+    // 1. CLASSEMENT ALL TIME (Vue Étendue)
     const { data: allTime } = await supabase
-      .from('arcade_players')
-      .select('pseudo, best_score')
-      .order('best_score', { ascending: false })
-      .limit(50);
+      .from('view_leaderboard_extended') 
+      .select('*')
+      .order('best_score', { ascending: false }); // Pas de limite
     
     if (allTime) setLeaderboardAllTime(allTime);
 
-    // 2. CLASSEMENT DU MOIS (VIA VOTRE NOUVELLE VUE)
-    // On calcule le 1er jour du mois actuel
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-    // ✅ OPTIMISATION : On interroge la vue SQL directement
+    // 2. CLASSEMENT DU MOIS (Nouvelle Vue Stats)
     const { data: monthly } = await supabase
-      .from('view_monthly_best') 
-      .select('pseudo, score') // Plus besoin de filtrer la date ici, le SQL le fait
-      .limit(50); // Top 50 du mois
+      .from('view_monthly_stats') // ✅ On appelle la nouvelle vue mensuelle
+      .select('*')
+      .order('best_score', { ascending: false });
 
-    // Sécurité si vide
-    if (monthly) {
-        setLeaderboardMonthly(monthly);
-    } else {
-        setLeaderboardMonthly([]);
-    }
+    if (monthly) setLeaderboardMonthly(monthly);
   };
 
   const register = async (email, pseudo, password, newsletterOptin) => {
@@ -112,18 +121,23 @@ export function useGameAuth() {
     const targetPlayer = playerOverride || player;
     if (!targetPlayer) return;
     
-    // ✅ CORRECTION CRITIQUE : 
-    // On n'envoie PLUS le pseudo ici. La base le retrouvera toute seule via l'ID.
+    // Insertion score (le Trigger SQL s'occupera du nettoyage > 200)
     await supabase.from('arcade_scores').insert([{ 
       player_id: targetPlayer.id, 
       score: newScore 
     }]);
 
-    // Mise à jour du record perso (Best Score) dans la table players
+    // Mise à jour Record + DATE
     if (newScore > (targetPlayer.best_score || 0)) {
-      const updatedPlayer = { ...targetPlayer, best_score: newScore };
+      const now = new Date().toISOString(); // Date actuelle
+      const updatedPlayer = { ...targetPlayer, best_score: newScore, best_score_at: now };
+      
       saveSession(updatedPlayer);
-      await supabase.from('arcade_players').update({ best_score: newScore }).eq('id', targetPlayer.id);
+      
+      // ✅ ON SAUVEGARDE LA DATE
+      await supabase.from('arcade_players')
+        .update({ best_score: newScore, best_score_at: now })
+        .eq('id', targetPlayer.id);
     }
     
     fetchLeaderboards();

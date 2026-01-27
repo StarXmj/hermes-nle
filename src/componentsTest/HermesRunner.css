@@ -356,3 +356,166 @@
     .biome-simple { font-size: 1.2rem; }
     .greek-btn-primary { padding: 10px 20px; font-size: 1rem; }
 }
+
+/* --- GRAPHIQUE PROGRESSION (Style de base) --- */
+.progression-container {
+    width: 100%;
+    /* On retire le margin-top fixe pour éviter que ça pousse trop */
+    background: rgba(0,0,0,0.4);
+    padding: 15px; /* Réduit de 20 à 15 */
+    border-radius: 12px;
+    border: 1px solid #333;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    box-sizing: border-box; /* Important pour ne pas dépasser */
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px; /* Réduit de 15 à 10 */
+    margin-bottom: 15px;
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px; /* Réduit */
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-box.highlight {
+    background: rgba(218, 165, 32, 0.1);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+}
+
+.stat-box .label { color: #888; margin-bottom: 2px; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+.stat-box .value { color: #fff; font-weight: bold; font-size: 1rem; }
+.stat-box .value.gold { color: #DAA520; text-shadow: 0 0 10px rgba(218, 165, 32, 0.4); }
+
+.graph-wrapper {
+    width: 100%;
+    height: 140px; /* Hauteur standard */
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid #444;
+    border-left: 1px solid #444;
+}
+
+.chart-svg { width: 100%; height: 100%; }
+
+.chart-line {
+    filter: drop-shadow(0 0 4px rgba(218, 165, 32, 0.6));
+    animation: drawLine 1.5s ease-out forwards;
+}
+@keyframes drawLine { from { stroke-dasharray: 1000; stroke-dashoffset: 1000; } to { stroke-dasharray: 1000; stroke-dashoffset: 0; } }
+.no-data { color: #666; font-style: italic; text-align: center; padding: 20px; }
+
+
+/* ========================================= */
+/* 📱 ADAPTATION MOBILE (MODE PAYSAGE) 📱 */
+/* ========================================= */
+
+@media (max-height: 500px) {
+    /* 1. Menu Principal plus compact */
+    .menu-container { 
+        width: 98%; 
+        height: 95%; 
+        gap: 10px; 
+        padding: 0 10px; /* Un peu de marge sur les côtés */
+    }
+    
+    .menu-left {
+        justify-content: center; /* Centre verticalement le menu de gauche */
+    }
+
+    .menu-title { 
+        font-size: 2rem; /* Titre plus petit */
+        margin-bottom: 10px; 
+        line-height: 1;
+    }
+    
+    .menu-buttons {
+        gap: 8px; /* Boutons plus serrés */
+    }
+
+    .greek-btn-primary { 
+        padding: 8px 20px; 
+        font-size: 0.9rem; 
+    }
+    
+    .greek-btn-secondary {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+    }
+    
+    .greek-btn-text {
+        font-size: 0.8rem;
+        margin-top: 5px !important; /* Force moins d'espace */
+    }
+
+    .player-info {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    /* 2. HUD du Jeu */
+    .greek-hud-score { top: 10px; right: 15px; gap: 8px; }
+    .score-simple { font-size: 2.5rem; }
+    .biome-simple { font-size: 1rem; }
+    .pause-btn { width: 35px; height: 35px; }
+
+    /* 3. MODALE RESPONSIVE (CRITIQUE) */
+    .auth-modal {
+        width: 90%;
+        max-width: 500px;
+        /* Hauteur max pour ne pas sortir de l'écran */
+        max-height: 90vh; 
+        /* Permet de scroller DANS la modale si c'est trop petit */
+        overflow-y: auto; 
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* On réduit la taille des titres et marges dans la modale */
+    .auth-modal h2 { margin-bottom: 10px; font-size: 1.2rem; }
+    .auth-modal p { margin-bottom: 10px; font-size: 0.8rem; }
+    
+    /* On réduit le graphique sur mobile */
+    /* Zone Graphique */
+.graph-wrapper {
+    width: 100%;
+    height: 150px; /* Sur PC */
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    position: relative;
+    border: 1px solid #444;
+}
+
+/* Adaptation Mobile (Paysage) */
+@media (max-height: 500px) {
+    .graph-wrapper { 
+        height: 110px; /* Sur Mobile Paysage */
+    }
+}
+    
+    .stats-grid { gap: 5px; margin-bottom: 10px; }
+    .stat-box { padding: 5px; }
+    .stat-box .value { font-size: 0.9rem; }
+    
+    /* Bouton fermer toujours visible */
+    .close-btn { 
+        top: 10px; 
+        right: 10px; 
+        background: rgba(0,0,0,0.5); /* Petit fond pour lisibilité */
+        border-radius: 50%;
+        padding: 5px;
+        width: 25px; height: 25px;
+        display: flex; align-items: center; justify-content: center;
+    }
+}
