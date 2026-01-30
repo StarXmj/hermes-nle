@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient'; 
+import React, { useState, useEffect, useRef } from 'react';import { supabase } from '../supabaseClient'; 
 import { GameEngine } from '../gameTest/GameEngine';
 import { useGameAuth } from '../hooks/useGameAuth';
 import ProgressionGraph from './ProgressionGraph'; 
@@ -9,7 +8,7 @@ import {
     FaTimes, FaExpand, FaCrown, FaHourglassHalf, 
     FaSignOutAlt, FaEye, FaEyeSlash, 
     FaPause, FaPlay, FaDownload,
-    FaChartLine, FaInfoCircle 
+    FaChartLine, FaInfoCircle ,FaUsers
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -22,7 +21,8 @@ const BIOME_COLORS = {
     'INVERTED': { color: '#00FF00', label: 'CHAOS' },
     'PHILOTES': { color: '#FF69B4', label: 'AMITIÉ' }
 };
-
+// ...
+// ...
 const STATIC_ICONS = [
     { color: '#e74c3c', text: 'A' }, { color: '#3498db', text: 'Z' },
     { color: '#2ecc71', text: 'E' }, { color: '#f1c40f', text: 'R' },
@@ -40,6 +40,8 @@ const getTimeUntilEndOfMonth = () => {
 };
 
 function HermesRunnerPage() {
+    const [onlinePlayers, setOnlinePlayers] = useState(1); // On commence à 1 (vous !)
+
   const [gameStatus, setGameStatus] = useState('intro'); 
   const [score, setScore] = useState(0);
   const [currentBiome, setCurrentBiome] = useState('NORMAL');
@@ -102,6 +104,37 @@ function HermesRunnerPage() {
     }
     return () => { if (engineRef.current) engineRef.current.destroy(); };
   }, [gameStatus, player]); 
+
+  // ✅ RADAR EN TEMPS RÉEL (Supabase Presence)
+  useEffect(() => {
+    // On crée un canal de communication global
+    const channel = supabase.channel('online_users_room', {
+      config: {
+        presence: {
+          key: player ? player.pseudo : 'invité-' + Math.random(), // Identifiant unique
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        // Dès que quelqu'un arrive ou part, on recompte
+        const state = channel.presenceState();
+        // On compte le nombre de clés uniques
+        setOnlinePlayers(Object.keys(state).length);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // On signale notre présence aux autres
+          await channel.track({ online_at: new Date() });
+        }
+      });
+
+    // Nettoyage quand on quitte la page
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [player]); // Se relance si le joueur se connecte (pour mettre à jour son pseudo)
 
   const handleInstallClick = async (e) => {
       e.stopPropagation();
@@ -354,7 +387,52 @@ function HermesRunnerPage() {
                                 <button className="greek-btn-secondary" onClick={(e) => openModal('register', e)}>SAUVEGARDER MA PROGRESSION</button>
                             </>
                         )}
-                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link><p>v1.14</p>
+                        {/* ... dans le menu-left, en bas ... */}
+
+<div style={{
+    marginTop: 'auto', 
+    paddingTop: '20px',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '10px', 
+    color: '#888', 
+    fontSize: '0.8rem',
+    fontFamily: 'monospace',
+    background: 'rgba(0,0,0,0.3)',
+    padding: '8px 12px',
+    borderRadius: '20px',
+    border: '1px solid #333',
+    width: 'fit-content'
+}}>
+    {/* Point vert pulsant */}
+    <div style={{
+        width: '8px', 
+        height: '8px', 
+        background: '#00FF00', 
+        borderRadius: '50%', 
+        boxShadow: '0 0 10px #00FF00',
+        animation: 'pulseGreen 2s infinite'
+    }}></div>
+    
+    <span style={{color: '#fff', fontWeight:'bold', fontSize:'1rem'}}>
+        {onlinePlayers}
+    </span> 
+    
+    HEROS EN LIGNE
+</div>
+
+{/* Ajoutez cette animation dans votre CSS ou laissez-la ici si vous utilisez styled-components, 
+    mais le plus simple est de l'avoir dans le CSS global */}
+<style>{`
+    @keyframes pulseGreen {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+`}</style>
+
+<p style={{marginTop: '10px', fontSize:'0.7rem', color:'#444'}}>v1.14</p>
+                        <Link to="/" className="greek-btn-text" style={{marginTop:20}}><FaHome/> Quitter</Link>
                     </div>
                 </div>
                 
