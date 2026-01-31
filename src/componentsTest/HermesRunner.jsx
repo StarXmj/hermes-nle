@@ -183,10 +183,16 @@ const handleRestart = () => {
       } else {
           res = await login(email, pass);
       }
+      
       if (res && res.success) {
           setShowAuthModal(false); 
+          
+          // ✅ CORRECTION ICI : Si on a un score en attente, on essaie de le sauver
+          // avec la méthode sécurisée (et non l'ancienne saveScore bloquée)
           if (gameStatus === 'gameover' && score > 0) {
-              saveScore(score, res.user);
+              // Note : Cela marchera seulement si le serveur autorise le transfert de session
+              // (ce qui demande une modif SQL avancée), mais au moins ça ne plantera plus le client.
+              saveSecureScore(score); 
           }
       }
   };
