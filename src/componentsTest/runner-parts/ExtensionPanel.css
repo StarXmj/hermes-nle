@@ -1,0 +1,226 @@
+/* =============================================================================
+   🌟 PANNEAU LATÉRAL "MODERN GLASS"
+   ============================================================================= */
+
+/* CONTENEUR PRINCIPAL (Le fond global) */
+.extension-view-container {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); /* Transition plus douce */
+    z-index: 20;
+    /* Fond moderne : un dégradé profond plutôt que du noir pur */
+    background: linear-gradient(135deg, #050505 0%, #1a1a2e 100%);
+    display: flex; justify-content: center; align-items: center;
+}
+.extension-view-container.active { transform: translateX(0); }
+
+/* =============================================================================
+   CONTENU CENTRAL (La "Feuille de Verre")
+   ============================================================================= */
+.ext-content-wrapper {
+    width: 92%; max-width: 1000px; height: 92%;
+    display: flex; flex-direction: column;
+    /* Effet Glassmorphism */
+    background: rgba(255, 255, 255, 0.03); /* Très transparent */
+    backdrop-filter: blur(20px); /* Le flou magique derrière */
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure subtile */
+    border-radius: 24px; /* Coins très arrondis */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* Ombre douce portée */
+    overflow: hidden;
+    margin-left: 60px;
+}
+
+/* =============================================================================
+   HEADER FLOTTANT
+   ============================================================================= */
+.ext-header-sticky {
+    padding: 25px 30px;
+    /* Verre plus opaque pour le header */
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+}
+.ext-header-sticky h2 { 
+    margin: 0; color: #fff; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.version-tag { 
+    background: linear-gradient(135deg, #DAA520, #FFD700);
+    color: #000; padding: 4px 12px; border-radius: 20px; 
+    font-size: 0.9rem; font-weight: 900; vertical-align: middle; 
+    box-shadow: 0 2px 10px rgba(218, 165, 32, 0.3);
+}
+.close-icon-mobile { display: none; cursor: pointer; color: #fff; font-size: 1.5rem; transition: 0.2s; }
+.close-icon-mobile:hover { color: #DAA520; transform: rotate(90deg); }
+
+/* =============================================================================
+   ZONE DE CONTENU SCROLLABLE
+   ============================================================================= */
+.ext-scroll-area {
+    flex: 1; overflow-y: auto; 
+    padding: 40px;
+    display: flex; flex-direction: column; gap: 50px; /* Plus d'espace entre les sections */
+}
+/* Scrollbar invisible pour un look plus pur */
+.ext-scroll-area { scrollbar-width: none; -ms-overflow-style: none; }
+.ext-scroll-area::-webkit-scrollbar { display: none; }
+
+
+/* --- TITRES DE SECTION MODERNES --- */
+.sec-title {
+    font-size: 1.3rem; color: #FFD700; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; letter-spacing: 0.5px;
+    /* Petit soulignement dégradé */
+    position: relative;
+    padding-bottom: 10px;
+}
+.sec-title::after {
+    content: ''; position: absolute; bottom: 0; left: 0;
+    width: 50px; height: 3px; background: linear-gradient(90deg, #DAA520, transparent);
+    border-radius: 3px;
+}
+
+
+/* =============================================================================
+   REDESIGN DES SECTIONS
+   ============================================================================= */
+
+/* 1. MISE À JOUR (Patch Notes) */
+ p.update-date { color: #fff !important; font-weight: 300; margin-top: -15px; margin-bottom: 20px; }
+.patch-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.patch-list li { 
+    padding: 12px 15px; 
+    background: rgba(255,255,255,0.03); /* Carte subtile */
+    border-radius: 12px;
+    color: #eee; 
+    display: flex; align-items: flex-start; line-height: 1.5;
+}
+.patch-list li::before { 
+    content: "✨"; margin-right: 10px; font-size: 1.1rem;
+}
+
+/* 2. TUTO (Guide) */
+.tuto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.tuto-box { 
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+    padding: 25px; border-radius: 20px; 
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.tuto-box h4 { 
+    color: #fff; margin-top: 0; margin-bottom: 15px;
+    font-size: 1.1rem; display: flex; align-items: center; gap: 10px; 
+}
+.tuto-box p, .math-list li { color: #ccc; line-height: 1.7; margin-bottom: 10px; }
+.math-list { padding-left: 20px; }
+.math-list strong { color: #DAA520; font-weight: 600; }
+
+/* 3. CADEAUX (The Premium Look) */
+.season-end-alert { 
+    background: linear-gradient(90deg, rgba(255, 235, 59, 0.2), transparent);
+    color: #ffeb3b; padding: 12px; border-radius: 8px; 
+    border-left: 4px solid #ffeb3b;
+    margin-bottom: 25px; font-weight: 600; text-align: left;
+}
+.rewards-list { display: flex; flex-direction: column; gap: 20px; }
+
+/* Carte de récompense de base */
+.reward-card {
+    display: flex; align-items: center; gap: 25px;
+    padding: 25px; border-radius: 24px; /* Très arrondi */
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative; overflow: hidden;
+    transition: all 0.3s ease;
+}
+.reward-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+
+/* Lueur d'arrière-plan */
+.reward-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0.1; z-index: 0; pointer-events: none;
+}
+
+.reward-rank-badge {
+    font-size: 2.5rem; font-weight: 900; width: 70px; height: 70px;
+    display: flex; justify-content: center; align-items: center;
+    border-radius: 50%; flex-shrink: 0; z-index: 1;
+    background: rgba(0,0,0,0.3);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.reward-content { z-index: 1; }
+.reward-content h3 { margin: 0 0 8px 0; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.5px; }
+.reward-content p { margin: 0; color: #ddd; font-size: 1rem; line-height: 1.5; }
+
+/* Couleurs Spécifiques Premium */
+/* 🥇 OR */
+.reward-card.rank-1 { border-color: rgba(255, 215, 0, 0.3); }
+.reward-card.rank-1::before { background: linear-gradient(45deg, #FFD700, transparent); opacity: 0.15; }
+.reward-card.rank-1 .reward-rank-badge { color: #FFD700; border: 3px solid #FFD700; text-shadow: 0 0 20px #FFD700; }
+.reward-card.rank-1 h3 { color: #FFD700; }
+
+/* 🥈 ARGENT */
+.reward-card.rank-2 { border-color: rgba(192, 192, 192, 0.3); }
+.reward-card.rank-2::before { background: linear-gradient(45deg, #E0E0E0, transparent); }
+.reward-card.rank-2 .reward-rank-badge { color: #E0E0E0; border: 3px solid #E0E0E0; text-shadow: 0 0 15px #E0E0E0; }
+.reward-card.rank-2 h3 { color: #E0E0E0; }
+
+/* 🥉 BRONZE */
+.reward-card.rank-3 { border-color: rgba(205, 127, 50, 0.3); }
+.reward-card.rank-3::before { background: linear-gradient(45deg, #CD7F32, transparent); }
+.reward-card.rank-3 .reward-rank-badge { color: #FFC090; border: 3px solid #CD7F32; text-shadow: 0 0 15px #CD7F32; }
+.reward-card.rank-3 h3 { color: #FFC090; }
+
+/* 4. PARTENAIRES (Pillules modernes) */
+.partner-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.partner-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); color: #eee;
+    padding: 12px 24px; border-radius: 30px; /* Pill shape */
+    text-decoration: none; font-weight: 600; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px; transition: 0.3s;
+}
+.partner-btn:hover { 
+    background: #DAA520; color: #000; border-color: #DAA520;
+    box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4);
+    transform: translateY(-3px);
+}
+
+/* =============================================================================
+   ARROWS & MOBILE
+   ============================================================================= */
+.nav-arrow-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 60px; height: 100px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 100; font-size: 3rem; color: rgba(255,255,255,0.3);
+    transition: 0.3s; animation: pulseArrow 3s infinite ease-in-out;
+}
+.nav-arrow-btn:hover { color: #DAA520; transform: translateY(-50%) scale(1.2); }
+.nav-right { right: 20px; }
+.nav-left { left: 20px; }
+@keyframes pulseArrow {
+    0%, 100% { opacity: 0.4; transform: translateY(-50%) scale(1); }
+    50% { opacity: 0.8; transform: translateY(-50%) scale(1.1); }
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 800px) or (max-height: 600px) {
+    .ext-content-wrapper { width: 100%; height: 100%; border-radius: 0; border: none; margin-left: 0; background: rgba(10, 10, 15, 0.98); }
+    .nav-arrow-btn.nav-left { display: none; }
+    .nav-arrow-btn.nav-right { display: flex; right: 10px; } /* Garde la flèche d'ouverture */
+    .close-icon-mobile { display: block; }
+    
+    .ext-header-sticky { padding: 15px 20px; }
+    .ext-header-sticky h2 { font-size: 1.4rem; }
+    .ext-scroll-area { padding: 20px; gap: 35px; }
+    
+    .tuto-grid { grid-template-columns: 1fr; gap: 15px; }
+    .reward-card { flex-direction: column; text-align: center; gap: 15px; padding: 20px; }
+    .reward-rank-badge { width: 60px; height: 60px; font-size: 2rem; }
+    .partner-btn { width: 100%; justify-content: center; }
+}

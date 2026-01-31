@@ -1,3 +1,30 @@
 {
-  "version": "1.14"
+  "version": "1.22",
+  "name": "",
+  "date": "31 janvier 2026",
+  "patchNotes": [
+    "Système de classement valorisé (Top %).",
+    "Refonte visuelle du podium.",
+    "Nouvelles pages d'explication"
+  ],
+  "tutorial": {
+    "controls": [
+      "🎯 OBJECTIF : Éviter les obstacles le plus longtemps possible.",
+      "💻 PC : Flèche HAUT pour sauter (x2 double saut) | Flèche BAS pour glisser.",
+      "📱 MOBILE : Tapoter à DROITE pour sauter (x2 double saut) | Tapoter à GAUCHE pour glisser.",
+      "🕊️ MODE AÉRIEN (Flappy) : Tapotez régulièrement pour stabiliser le vol. Ne touchez ni le sol ni les obstacles !"
+    ],
+    "scoring": [
+      "✅ VALIDATION : Seules les parties > 300 points sont comptabilisées pour le classement et les stats.",
+      "📊 STATISTIQUES : Moyenne, médiane et progression sont calculées uniquement sur vos parties validées.",
+      "🏅 BADGES SPÉCIAUX : Attribués aux joueurs connectés ayant au moins 20 parties validées (> 300 pts)."
+    ]
+  },
+  "rewards": {
+    "seasonEnd": "Clôture le 29 février à 23h59",
+    "tiers": []
+  },
+  "partners": [
+    { "name": "Partenaire Hermes", "url": "https://hermesnle.fr/partenaires" }
+  ]
 }

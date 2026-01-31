@@ -1,0 +1,209 @@
+/* CONTAINER DROIT */
+.menu-right {
+    flex: 1; height: 100%;
+    background: rgba(20, 20, 20, 0.7); 
+    border: 1px solid #333; border-radius: 12px;
+    padding: 20px; display: flex; flex-direction: column;
+    backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    min-height: 400px;
+}
+
+/* EN-TÊTE */
+.lb-header {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;
+    font-weight: 900; font-size: 1rem; letter-spacing: 1px;
+}
+
+/* ONGLETS */
+.lb-tabs { display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0; }
+.lb-tabs button {
+    flex: 1; background: #111; color: #666; border: 1px solid #333; padding: 10px;
+    cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s;
+    font-size: 0.8rem; border-radius: 4px;
+}
+.lb-tabs button.active { 
+    background: #222; color: #fff; border-color: #DAA520; 
+    box-shadow: 0 0 10px rgba(218, 165, 32, 0.2);
+}
+
+/* LISTE */
+.lb-list {
+    flex-grow: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; padding-right: 5px;
+    scrollbar-width: thin; scrollbar-color: #444 transparent;
+}
+.lb-list::-webkit-scrollbar { width: 4px; }
+.lb-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+/* --- LIGNES JOUEURS (DESIGN DE BASE) --- */
+.lb-list li {
+    display: flex; align-items: center;
+    padding: 12px 10px; /* Un peu plus d'espace pour le doigt */
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    color: #fff; /* Blanc pur pour la lisibilité */
+    transition: transform 0.2s;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+/* --- COLONNES --- */
+.rank-col { 
+    width: 40px; text-align: center; 
+    font-weight: bold; font-size: 1.1rem; /* Rang plus gros */
+    opacity: 0.8; 
+}
+
+.name-col { 
+    flex: 1; text-align: left; padding: 0 10px; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    display: flex; align-items: center; gap: 8px;
+    
+    /* ✅ POLICE NORMALE ET GROSSE */
+    font-family: sans-serif; 
+    font-size: 1.1rem; 
+    font-weight: 700;
+}
+
+.score-col { 
+    /* ✅ PLUS DE 'Courier New' ! */
+    font-family: sans-serif; 
+    
+    /* ✅ ECRITURE GROSSE ET DORÉE */
+    font-size: 1.3rem; 
+    font-weight: 900; 
+    color: #DAA520;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.lb-list li:hover { background: rgba(255,255,255,0.03); }
+
+/* --- LE PODIUM (VISIBILITÉ MAXIMALE) --- */
+
+/* 🥇 1er - OR */
+.lb-list li.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent);
+    border-left: 4px solid #FFD700;
+    margin-bottom: 8px; /* Un peu d'espace sous le 1er */
+    padding: 15px 8px; /* Plus gros */
+}
+.lb-list li.rank-1 .name-col { font-size: 1.1rem; color: #FFD700; font-weight: bold; }
+.lb-list li.rank-1 .score-col { font-size: 1.3rem; color: #FFD700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+.lb-list li.rank-1 .medal { font-size: 1.8rem; } /* Médaille énorme */
+
+/* 🥈 2ème - ARGENT */
+.lb-list li.rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), transparent);
+    border-left: 4px solid #C0C0C0;
+    margin-bottom: 4px;
+}
+.lb-list li.rank-2 .name-col { color: #E0E0E0; font-weight: bold; }
+.lb-list li.rank-2 .score-col { color: #E0E0E0; text-shadow: 0 0 10px rgba(192, 192, 192, 0.4); }
+.lb-list li.rank-2 .medal { font-size: 1.4rem; }
+
+/* 🥉 3ème - BRONZE */
+.lb-list li.rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), transparent);
+    border-left: 4px solid #CD7F32;
+    margin-bottom: 10px; /* Séparation avec le reste */
+}
+.lb-list li.rank-3 .name-col { color: #FFC090; font-weight: bold; }
+.lb-list li.rank-3 .score-col { color: #FFC090; text-shadow: 0 0 10px rgba(205, 127, 50, 0.4); }
+.lb-list li.rank-3 .medal { font-size: 1.4rem; }
+
+
+/* JOUEUR CONNECTÉ (Si je suis 5ème par exemple) */
+.lb-list li.me { 
+    background: rgba(218, 165, 32, 0.1); 
+    border: 1px solid rgba(218, 165, 32, 0.3);
+}
+/* Si je suis dans le top 3 ET connecté, on garde le style podium mais on ajoute une lueur */
+.lb-list li.me.rank-1, .lb-list li.me.rank-2, .lb-list li.me.rank-3 {
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+
+.badges-row { display: flex; gap: 2px; }
+.badge-icon { cursor: help; font-size: 1rem; filter: drop-shadow(0 0 5px rgba(255,100,0,0.5)); }
+
+
+/* LÉGENDE */
+.legend-trigger {
+    margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.75rem; color: #666; cursor: pointer; flex-shrink: 0;
+}
+.legend-trigger:hover { color: #DAA520; }
+
+.legend-panel {
+    margin-top: 10px; background: rgba(0,0,0,0.4); padding: 10px;
+    border-radius: 6px; border: 1px solid #333; animation: fadeIn 0.3s;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+.legend-title { color: #E056FD; font-weight: bold; font-size: 0.7rem; margin-bottom: 8px; text-align: center; }
+.legend-item { margin-bottom: 6px; font-size: 0.75rem; color: #ccc; }
+.legend-item p { margin: 2px 0 0 18px; color: #888; font-style: italic; font-size: 0.7rem; }
+
+/* MOBILE */
+@media (max-height: 600px) {
+    .menu-right { padding: 15px; min-height: unset; height: 100%; }
+    .lb-list li { padding: 8px 5px; font-size: 0.85rem; }
+    .lb-list li.rank-1 { padding: 10px 5px; margin-bottom: 5px; } /* Moins gros sur mobile */
+    .medal { font-size: 1.2rem !important; }
+    .score-col { font-size: 0.9rem !important; }
+    .legend-panel { display: none; }
+}
+
+/* ... (Tout le code CSS desktop reste identique avant ça) ... */
+
+/* =============================================================================
+   📱 ADAPTATION MOBILE (CORRIGÉE POUR LA LÉGENDE)
+   ============================================================================= */
+@media (max-height: 600px) or (max-width: 600px) {
+    
+    .menu-right { 
+        padding: 10px; 
+        min-height: unset; 
+        height: 100%; 
+        position: relative; /* Important pour le positionnement absolu */
+    }
+
+    /* Ajustement de la liste pour laisser de la place au bouton en bas */
+    .lb-list {
+        padding-bottom: 40px; /* Espace pour le bouton légende */
+    }
+
+    .lb-list li { padding: 8px 5px; font-size: 0.85rem; }
+    .lb-list li.rank-1 { padding: 10px 5px; margin-bottom: 5px; } 
+    .medal { font-size: 1.2rem !important; }
+    .score-col { font-size: 0.9rem !important; }
+
+    /* BOUTON DÉCLENCHEUR (Toujours visible et plus gros) */
+    .legend-trigger {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 40px;
+        background: #111;
+        border-top: 1px solid #333;
+        display: flex; justify-content: center; align-items: center; gap: 10px;
+        padding: 0; margin: 0;
+        z-index: 20;
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #DAA520;
+    }
+    .legend-trigger:active { background: #222; }
+
+    /* PANNEAU LÉGENDE (Mode Pop-up sur mobile) */
+    .legend-panel {
+        display: block; /* On force l'affichage (c'était none avant) */
+        position: absolute;
+        bottom: 45px; /* Juste au-dessus du bouton */
+        left: 10px; right: 10px;
+        background: rgba(10, 10, 10, 0.98); /* Fond presque opaque */
+        border: 1px solid #DAA520;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+        z-index: 100; /* Au-dessus de la liste */
+        max-height: 60%;
+        overflow-y: auto;
+    }
+}

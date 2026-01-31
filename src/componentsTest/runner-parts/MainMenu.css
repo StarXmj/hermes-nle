@@ -1,0 +1,68 @@
+.menu-left {
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: flex-start;
+    height: 100%; /* Important pour l'alignement */
+}
+
+.menu-title {
+    font-size: 5rem; 
+    line-height: 0.9; 
+    color: #fff; 
+    margin-bottom: 30px; 
+    font-weight: 800;
+    text-shadow: 0 0 30px rgba(255,255,255,0.1);
+}
+
+.menu-buttons {
+    display: flex; flex-direction: column; gap: 15px; 
+    width: 100%; max-width: 350px;
+}
+
+.greek-btn-primary {
+    background: #DAA520; border: none; padding: 15px; 
+    font-size: 1.2rem; font-weight: 800; color: #000; 
+    cursor: pointer; text-transform: uppercase; transition: 0.2s;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.greek-btn-primary:hover { background: #FFD700; transform: translateY(-2px); }
+
+.greek-btn-secondary {
+    background: transparent; border: 2px solid #555; color: #ccc; 
+    padding: 12px; font-weight: 700; cursor: pointer; 
+    text-transform: uppercase; transition: 0.2s;
+}
+.greek-btn-secondary:hover { border-color: #DAA520; color: #DAA520; }
+
+.greek-btn-text {
+    background: none; border: none; color: #666; cursor: pointer; 
+    font-size: 0.9rem; display: flex; align-items: center; text-decoration: none;
+}
+.greek-btn-text:hover { color: #fff; }
+
+.online-counter {
+    margin-top: 10px; padding: 8px 12px;
+    display: flex; align-items: center; gap: 10px;
+    color: #888; font-size: 0.8rem; font-family: monospace;
+    background: rgba(0,0,0,0.4); border-radius: 20px; border: 1px solid #333; 
+    width: fit-content;
+}
+
+.pulsing-dot {
+    width: 8px; height: 8px; background: #00FF00; border-radius: 50%;
+    box-shadow: 0 0 10px #00FF00; animation: pulseGreen 2s infinite;
+}
+@keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+
+/* ✅ RESPONSIVE MOBILE AMÉLIORÉ */
+@media (max-height: 500px) {
+    .menu-left { align-items: center; text-align: center; }
+    .menu-title { font-size: 2.5rem; margin-bottom: 15px; } /* Titre plus petit */
+    .menu-buttons { width: 280px; gap: 10px; } /* Boutons plus serrés */
+    .greek-btn-primary { padding: 10px; font-size: 1rem; }
+    .greek-btn-secondary { padding: 8px; font-size: 0.8rem; }
+    .player-info { font-size: 0.9rem !important; }
+}
+
