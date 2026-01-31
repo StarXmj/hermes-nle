@@ -18,7 +18,6 @@ import { THEMES } from './data/themes';
 import InstallPWA from './components/InstallPWA'; 
 import LoadingSpinner from './components/LoadingSpinner';
 import MobileGameManager from './components/MobileGameManager';
-import GlobalUpdateBadge from './components/GlobalUpdateBadge';
 
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -70,7 +69,6 @@ function App() {
         style: { background: '#333', color: '#fff' }
       }} />
       <RouteTracker />
-      <GlobalUpdateBadge />
       <AutoLogout />
       <MobileGameManager />
 
