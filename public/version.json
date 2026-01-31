@@ -1,11 +1,10 @@
 {
-  "version": "1.24",
+  "version": "1.25",
   "name": "",
   "date": "31 janvier 2026",
   "patchNotes": [
-    "Système de classement valorisé (Top %).",
-    "Refonte visuelle du podium.",
-    "Nouvelles pages d'explication"
+    "Sécurité renforcée",
+"Bug fixé"
   ],
   "tutorial": {
     "controls": [

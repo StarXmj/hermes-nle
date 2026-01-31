@@ -136,7 +136,7 @@ function ActionsPage() {
       
       <header className="actions-page-header">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-3">
-          Nos <span className="text-hermes-primary">Évènements</span>
+          Nos  <span className="text-hermes-primary">Évènements</span>
         <p>Toutes nos animations, événements et interventions.</p>
         </h1>
         <div className="filter-buttons">

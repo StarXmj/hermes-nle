@@ -207,3 +207,18 @@
         overflow-y: auto;
     }
 }
+
+.empty-state {
+    padding: 30px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.empty-state small {
+    color: #DAA520;
+    font-weight: bold;
+    font-style: normal;
+}

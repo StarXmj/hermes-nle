@@ -360,13 +360,15 @@ export class GameEngine {
           this.ctx.stroke();
           this.ctx.fillStyle = '#FFFFFF';
           this.ctx.font = `bold ${24 * dpr}px Arial`;
-          this.ctx.fillText("GAUCHE : GLISSER", w * 0.25, h * 0.5);
-          this.ctx.fillText("DROITE : SAUTER", w * 0.75, h * 0.5);
-      } else {
-          this.ctx.fillStyle = '#FFFFFF';
-          this.ctx.font = `bold ${20 * dpr}px Arial`;
-          this.ctx.fillText("ESPACE / ↑ : SAUTER", w / 2, h * 0.4);
-          this.ctx.fillText("↓ : GLISSER", w / 2, h * 0.6);
+        this.ctx.fillText("GAUCHE : GLISSER", w * 0.25, h * 0.5);
+this.ctx.fillText("DROITE : SAUTER | x2 DOUBLE SAUT", w * 0.75, h * 0.5);
+} else {
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = `bold ${20 * dpr}px Arial`;
+    this.ctx.fillText("ESPACE / ↑ : SAUTER | x2 DOUBLE SAUT", w / 2, h * 0.4);
+    this.ctx.fillText("↓ : GLISSER", w / 2, h * 0.6);
+
+
       }
       this.ctx.restore();
   }

@@ -1,54 +1,75 @@
 import React, { useState, useMemo } from 'react';
-import { FaCrown, FaHourglassHalf, FaInfoCircle } from 'react-icons/fa';
+import { FaCrown, FaHourglassHalf, FaInfoCircle, FaCalendarAlt } from 'react-icons/fa';
 import './LeaderboardPanel.css';
 
 const LeaderboardPanel = ({ leaderboardAllTime, leaderboardMonthly, timeLeft, player }) => {
     const [tab, setTab] = useState('season');
     const [showLegend, setShowLegend] = useState(false);
 
-    // ✅ NOM DU MOIS ACTUEL (ex: "JANVIER")
+    // ✅ NOM DU MOIS ACTUEL (ex: "FÉVRIER")
     const currentMonthName = new Date().toLocaleString('fr-FR', { month: 'long' }).toUpperCase();
 
     // 1. CHOIX DE LA LISTE
     const currentList = tab === 'season' ? leaderboardMonthly : leaderboardAllTime;
 
-    // 2. CALCUL DES BADGES
+    // 2. CALCUL DES BADGES (CORRIGÉ)
     const { bestPhenixId, bestTitanId, bestVirtuoseId } = useMemo(() => {
         if (!currentList || currentList.length === 0) return {};
-        let eligible = currentList.filter(p => p.total_games >= 20);
-        if (eligible.length === 0) eligible = currentList;
+
+        // 🛑 SEUILS STRICTS
+        // Mois en cours : Il faut au moins 5 parties pour avoir un badge
+        // All Time : Il faut au moins 20 parties
+        const minGames = tab === 'season' ? 5 : 20;
+
+        // On ne garde QUE ceux qui ont assez joué
+        let eligible = currentList.filter(p => (p.total_games || 0) >= minGames);
+
+        // 🚨 C'EST ICI QUE C'ÉTAIT BUGGÉ AVANT
+        // Si personne n'a assez joué, on ne donne AUCUN badge (au lieu de les donner au premier venu)
+        if (eligible.length === 0) {
+            return { bestPhenixId: null, bestTitanId: null, bestVirtuoseId: null };
+        }
 
         let phenix = null, titan = null, virtuose = null;
-        if (eligible.length > 0) {
-            const maxSlope = Math.max(...eligible.map(p => p.progression_slope || -999));
-            if (maxSlope > 0) phenix = eligible.find(p => p.progression_slope === maxSlope);
-            const maxMean = Math.max(...eligible.map(p => p.mean_score || 0));
-            if (maxMean > 0) titan = eligible.find(p => p.mean_score === maxMean);
-            const maxMedian = Math.max(...eligible.map(p => p.median_score || 0));
-            if (maxMedian > 0) virtuose = eligible.find(p => p.median_score === maxMedian);
-        }
+
+        // Calcul des badges seulement parmi les éligibles
+        const maxSlope = Math.max(...eligible.map(p => p.progression_slope || -9999));
+        if (maxSlope > 0) phenix = eligible.find(p => p.progression_slope === maxSlope);
+
+        const maxMean = Math.max(...eligible.map(p => p.mean_score || 0));
+        if (maxMean > 0) titan = eligible.find(p => p.mean_score === maxMean);
+
+        const maxMedian = Math.max(...eligible.map(p => p.median_score || 0));
+        if (maxMedian > 0) virtuose = eligible.find(p => p.median_score === maxMedian);
+
         return {
             bestPhenixId: phenix ? (phenix.id || phenix.pseudo) : null,
             bestTitanId: titan ? (titan.id || titan.pseudo) : null,
             bestVirtuoseId: virtuose ? (virtuose.id || virtuose.pseudo) : null
         };
-    }, [currentList]);
+    }, [currentList, tab]);
 
     return (
         <div className="menu-right">
             {/* EN-TÊTE */}
             <div className="lb-header">
                 {tab === 'season' ? (
-                    <><FaHourglassHalf style={{color: '#DAA520'}}/> <span style={{color: '#DAA520'}}>{currentMonthName} • {timeLeft}</span></>
+                    <>
+                        <FaCalendarAlt style={{color: '#DAA520'}}/> 
+                        <span style={{color: '#DAA520', marginLeft:'8px'}}>SAISON {currentMonthName}</span>
+                    </>
                 ) : (
-                    <><FaCrown style={{color: '#E056FD'}}/> <span style={{color: '#E056FD', textShadow: '0 0 10px rgba(224, 86, 253, 0.4)'}}>HALL OF FAME</span></>
+                    <>
+                        <FaCrown style={{color: '#E056FD'}}/> 
+                        <span style={{color: '#E056FD', textShadow: '0 0 10px rgba(224, 86, 253, 0.4)', marginLeft:'8px'}}>HALL OF FAME</span>
+                    </>
                 )}
             </div>
             
             {/* ONGLETS */}
             <div className="lb-tabs">
                 <button className={tab==='season'?'active':''} onClick={()=>setTab('season')}>
-                    {currentMonthName}
+                    MOIS EN COURS
                 </button>
                 <button className={tab==='alltime'?'active':''} onClick={()=>setTab('alltime')}>
                     LÉGENDE
@@ -58,8 +79,14 @@ const LeaderboardPanel = ({ leaderboardAllTime, leaderboardMonthly, timeLeft, pl
             {/* LISTE DES JOUEURS */}
             <ul className="lb-list">
                 {currentList && currentList.length > 0 ? currentList.map((l, i) => {
-                    const playerId = l.id || l.pseudo;
-                    const isMe = player && player.pseudo === l.pseudo;
+                    const playerId = l.id || l.player_id || l.pseudo; // Fallback ID
+                    
+                    // On vérifie si c'est nous
+                    const isMe = player && (
+                        (player.id && l.player_id && player.id === l.player_id) || 
+                        (player.pseudo === l.pseudo)
+                    );
+
                     const scoreValue = l.best_score ?? l.score ?? 0;
                     
                     // Badges
@@ -68,7 +95,7 @@ const LeaderboardPanel = ({ leaderboardAllTime, leaderboardMonthly, timeLeft, pl
                     if (playerId === bestTitanId) badges.push({ icon: "🗿", title: "LE TITAN" });
                     if (playerId === bestVirtuoseId) badges.push({ icon: "🎻", title: "LE VIRTUOSE" });
 
-                    // ✅ CLASSE POUR LE PODIUM (1, 2, 3)
+                    // Classement Podium
                     const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
 
                     return (
@@ -95,7 +122,11 @@ const LeaderboardPanel = ({ leaderboardAllTime, leaderboardMonthly, timeLeft, pl
                         </li>
                     );
                 }) : (
-                    <li className="empty">Chargement...</li>
+                    <div className="empty-state" style={{padding:'20px', textAlign:'center', color:'#888', fontStyle:'italic'}}>
+                        {tab === 'season' 
+                            ? "La saison commence... À toi de jouer !" 
+                            : "Chargement des légendes..."}
+                    </div>
                 )}
             </ul>
 

@@ -32,7 +32,7 @@ function HermesRunnerPage() {
   const [currentBiome, setCurrentBiome] = useState('NORMAL');
   const [hasEnteredFullScreen, setHasEnteredFullScreen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  
+  const [sessionId, setSessionId] = useState(null);
   const [showProgression, setShowProgression] = useState(false);
   const [history, setHistory] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -56,7 +56,46 @@ function HermesRunnerPage() {
     if (distance > 50 && viewMode === 'main') setViewMode('extension');
     if (distance < -50 && viewMode === 'extension') setViewMode('main');
   };
+// ... après handleRestart et loadHistory par exemple ...
 
+  // ✅ FONCTION 1 : Démarrer une session sécurisée
+  const startGameSession = async () => {
+    try {
+        const { data, error } = await supabase.rpc('start_game');
+        if (error) console.error("Erreur start_game:", error);
+        if (data) {
+            console.log("Session démarrée :", data);
+            setSessionId(data);
+        }
+    } catch (err) {
+        console.error("Erreur session:", err);
+    }
+  };
+
+  // ✅ FONCTION 2 : Envoyer le score sécurisé
+  const saveSecureScore = async (finalScore) => {
+    if (!sessionId) {
+        console.error("Pas de session ID, score ignoré.");
+        return;
+    }
+
+    // On envoie le score (ou la distance) au serveur RPC
+    const { data, error } = await supabase.rpc('submit_run', { 
+        session_id: sessionId,
+        claimed_distance: Math.floor(finalScore) // Assurez-vous que ça correspond à votre logique (Score = Distance ?)
+    });
+
+    if (data && data.success) {
+        console.log("✅ Score validé !", data.new_score);
+        // Optionnel : Rafraîchir l'affichage du meilleur score localement si besoin
+        // via une fonction de useGameAuth (ex: refreshUserProfile)
+    } else {
+        console.error("❌ Score rejeté :", data?.message || error);
+    }
+    
+    // On nettoie la session pour éviter de réutiliser la même
+    setSessionId(null);
+  };
   // ✅ 1. CHARGEMENT DE LA VERSION DEPUIS LE FICHIER JSON
   useEffect(() => {
     // On ajoute un timestamp pour éviter que le navigateur cache le JSON lui-même
@@ -88,15 +127,28 @@ function HermesRunnerPage() {
 
   useEffect(() => {
     if (gameStatus === 'playing' && canvasRef.current) {
+        
+        // ✅ 1. ON DÉMARRE LA SESSION SÉCURISÉE ICI
+        startGameSession();
+
         engineRef.current = new GameEngine(canvasRef.current, {
             onUpdateUI: (s) => { setScore(s.score); setCurrentBiome(s.biome); },
-            onGameOver: (res) => { setScore(res.score); setGameStatus('gameover'); setIsPaused(false); if(player) saveScore(res.score); }
+            onGameOver: (res) => { 
+                setScore(res.score); 
+                setGameStatus('gameover'); 
+                setIsPaused(false); 
+                
+                // ✅ 2. ON SAUVEGARDE VIA LE NOUVEAU SYSTÈME SÉCURISÉ
+                if(player) {
+                    saveSecureScore(res.score); 
+                    // saveScore(res.score); // ⚠️ Supprimez ou commentez l'ancien saveScore insecure
+                }
+            }
         });
         engineRef.current.start();
     }
     return () => { if (engineRef.current) engineRef.current.destroy(); };
-  }, [gameStatus]);
-
+  }, [gameStatus]); // Assurez-vous que sessionId n'est pas dans les dépendances pour éviter les boucles
   // ... (Handlers inchangés) ...
   const handleTogglePause = () => { const s = !isPaused; setIsPaused(s); engineRef.current?.togglePause(s); };
 const handleRestart = () => {
