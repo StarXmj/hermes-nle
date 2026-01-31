@@ -5,7 +5,6 @@ import App from './App.jsx'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async';
-import GlobalUpdateBadge from './components/GlobalUpdateBadge';
 
 // --- LE MOUCHARD D'ERREUR (INDISPENSABLE POUR LE MOBILE) ---
 class ErrorBoundary extends React.Component {
@@ -47,7 +46,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary> {/* On enveloppe tout ici */}
       <HelmetProvider>
-              <GlobalUpdateBadge />
 
         <BrowserRouter>
           <App />

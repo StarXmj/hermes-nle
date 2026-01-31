@@ -11,7 +11,7 @@ import ExtensionPanel from './runner-parts/ExtensionPanel';
 import Modals from './runner-parts/Modals';
 import { FaChevronRight, FaMobileAlt, FaExpand } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-
+import VersionControl from './runner-parts/VersionControl'; // Ou VersionControl tout court selon où tu l'as mis
 const getTimeUntilEndOfMonth = () => {
   const now = new Date();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -25,7 +25,6 @@ const getTimeUntilEndOfMonth = () => {
 function HermesRunnerPage() {
   // ✅ ÉTAT POUR LA VERSION (vide par défaut)
   const [gameVersion, setGameVersion] = useState("...");
-
   const [onlinePlayers, setOnlinePlayers] = useState(1); 
   const [dbPartners, setDbPartners] = useState([]);
   const [gameStatus, setGameStatus] = useState('intro'); 
@@ -60,14 +59,12 @@ function HermesRunnerPage() {
 
   // ✅ 1. CHARGEMENT DE LA VERSION DEPUIS LE FICHIER JSON
   useEffect(() => {
-    fetch('/version.json')
+    // On ajoute un timestamp pour éviter que le navigateur cache le JSON lui-même
+    fetch(`/version.json?t=${Date.now()}`) 
         .then(res => res.json())
         .then(data => setGameVersion(data.version))
-        .catch(err => {
-            console.error("Erreur chargement version:", err);
-            setGameVersion("1.0"); // Fallback si erreur
-        });
-  }, []);
+        .catch(err => setGameVersion("1.0"));
+}, []);
 
   // ... (Le reste des useEffects pour timer, partenaires, online, engine... reste identique)
   useEffect(() => {
@@ -144,8 +141,7 @@ const handleRestart = () => {
 
   return (
     <div className="greek-runner-container">
-        {/* ... (Lock Screen & Intro inchangés) ... */}
-        <div className="orientation-lock">
+{gameVersion !== "..." && <VersionControl currentVersion={gameVersion} />}        <div className="orientation-lock">
             <div className="rotate-phone-animation"><FaMobileAlt size={80} className="phone-icon"/></div>
             <h2>TOURNEZ VOTRE ÉCRAN</h2>
         </div>
