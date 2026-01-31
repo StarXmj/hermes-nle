@@ -101,12 +101,13 @@ const ProgressionGraph = ({ scores, playerBestScore, leaderboardAllTime, leaderb
         const betterThan = 100 - percentile;
 
         let title = "", sub = "", color = "";
-        if (myRank === 1) { title = "👑 DIEU DE L'OLYMPE"; sub = "Numéro 1 absolu !"; color = "#E056FD"; }
-        else if (percentile <= 1) { title = "🏛️ LÉGENDE VIVANTE (Top 1%)"; sub = "Domination totale."; color = "#FFD700"; }
-        else if (percentile <= 10) { title = "⚔️ HÉROS D'ÉLITE (Top 10%)"; sub = "L'Olympe est proche."; color = "#00FFFF"; }
-        else if (percentile <= 30) { title = "🦁 GUERRIER REDOUTABLE"; sub = `Mieux que ${Math.floor(betterThan)}% des joueurs !`; color = "#00FF00"; }
-        else if (percentile <= 60) { title = "🦅 ATHLÈTE PROMETTEUR"; sub = `Top 60% atteint.`; color = "#DAA520"; }
-        else { title = "🔥 ESPOIR EN DEVENIR"; sub = "Chaque score compte."; color = "#AAA"; }
+       if (myRank === 1) { title = "👑 DIEU DE L'OLYMPE"; sub = "Numéro 1 absolu !"; color = "#E056FD"; }
+else if (percentile <= 1) { title = "🏛️ LÉGENDE VIVANTE (Top 1%)"; sub = "Domination totale."; color = "#FFD700"; }
+else if (percentile <= 10) { title = "⚔️ HÉROS D'ÉLITE (Top 10%)"; sub = "L'Olympe est proche."; color = "#00FFFF"; }
+else if (percentile <= 30) { title = "🦁 GUERRIER REDOUTABLE"; sub = `Mieux que ${Math.floor(betterThan)}% des joueurs !`; color = "#00FF00"; }
+else if (percentile <= 50) { title = "🦅 ATHLÈTE CONFIRMÉ"; sub = "Bravo, tu es plus fort que la moitié des joueurs !"; color = "#DAA520"; }
+else if (percentile <= 75) { title = "🌪️ ATHLÈTE EN DEVENIR"; sub = "Tu commences à te démarquer !"; color = "#DAA520"; }
+else { title = "🔥 ESPOIR EN DEVENIR"; sub = "Chaque score compte."; color = "#AAA"; }
 
         return { title, sub, color };
     }, [filteredData, viewMode, leaderboardAllTime, leaderboardMonthly]);
