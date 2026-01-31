@@ -11,7 +11,7 @@ import ExtensionPanel from './runner-parts/ExtensionPanel';
 import Modals from './runner-parts/Modals';
 import { FaChevronRight, FaMobileAlt, FaExpand } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import VersionControl from './runner-parts/VersionControl'; // Ou VersionControl tout court selon où tu l'as mis
+import VersionControl from './VersionControl'; // Ou VersionControl tout court selon où tu l'as mis
 const getTimeUntilEndOfMonth = () => {
   const now = new Date();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
