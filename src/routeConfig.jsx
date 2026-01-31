@@ -41,6 +41,7 @@ const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
 const AdminDecorsPage = lazy(() => import('./pages/AdminDecorsPage'));
 import AdminAssoPage from './pages/AdminAssoPage';
+import MaintenancePage from './componentsTest/MaintenancePage';
 
 // Composants de sécurité
 import ProtectedRoute from './components/ProtectedRoute';
@@ -199,7 +200,7 @@ export const appRoutes = [
   
   {
     path: '/runner',
-    element: <RunnerGame />,
+    element: <MaintenancePage />,
     name: 'Hermes Runner',
     category: 'main',
   },

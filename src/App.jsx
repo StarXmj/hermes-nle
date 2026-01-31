@@ -18,7 +18,7 @@ import { THEMES } from './data/themes';
 import InstallPWA from './components/InstallPWA'; 
 import LoadingSpinner from './components/LoadingSpinner';
 import MobileGameManager from './components/MobileGameManager';
-
+import MaintenancePage from './componentsTest/MaintenancePage';
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
     if (route.children) {
