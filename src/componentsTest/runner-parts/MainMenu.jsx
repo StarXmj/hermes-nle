@@ -5,7 +5,6 @@ import { supabase } from '../../supabaseClient';
 import { LOOT_BOXES, openLootBox, SKINS_REGISTRY } from '../../data/LootBoxes';
 import './MainMenu.css';
 
-// 1. AJOUT DE LA PROP 'onToggleShop'
 const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHistory, onOpenAuth, onToggleShop }) => {
     const [view, setView] = useState('menu'); 
     const [playerData, setPlayerData] = useState(player || { coins: 0, unlocked_skins: ['default'], current_skin: 'default' });
@@ -15,23 +14,20 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
         if(player) setPlayerData(prev => ({...prev, ...player}));
     }, [player]);
 
-    // --- GESTION OUVERTURE / FERMETURE BOUTIQUE ---
     const openShop = () => {
         setView('shop');
-        if (onToggleShop) onToggleShop(true); // Masque le leaderboard
+        if (onToggleShop) onToggleShop(true); 
     };
 
     const closeShop = () => {
         setView('menu');
-        if (onToggleShop) onToggleShop(false); // Affiche le leaderboard
+        if (onToggleShop) onToggleShop(false); 
     };
 
-    // --- LOGIQUE ACHAT & EQUIP ---
     const handleBuyBox = async (box) => {
         if ((playerData.coins || 0) < box.price) { alert("Pas assez de pièces !"); return; }
         setOpeningBox(box.id);
         
-        // Simulation délai ouverture
         setTimeout(async () => {
             const wonSkin = openLootBox(box.id);
             const newCoins = playerData.coins - box.price;
@@ -54,48 +50,42 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
         setPlayerData(prev => ({ ...prev, current_skin: skinId }));
         if(player) {
             await supabase.from('arcade_players').update({ current_skin: skinId }).eq('id', player.id);
-            // On met à jour l'objet player global pour que le jeu le prenne en compte
             player.current_skin = skinId; 
         }
     };
 
-    // --- RENDU D'UNE CARTE SKIN ---
-    // --- RENDU D'UNE CARTE SKIN (MODIFIÉ) ---
+    // --- CORRECTION AFFICHAGE BOUTIQUE ---
     const renderSkinCard = (skin) => {
         const isUnlocked = (playerData.unlocked_skins || ['default']).includes(skin.id);
         const isEquipped = playerData.current_skin === skin.id;
         const imagePath = `/images/skins/${skin.id}/run/1.webp`;
 
-        // ✅ Determine si la carte doit réagir au clic
-        // On peut cliquer seulement si c'est débloqué ET que ce n'est pas déjà celui qu'on porte
         const isClickable = isUnlocked && !isEquipped;
 
         return (
             <div 
                 key={skin.id} 
-                // ✅ Ajout de la classe 'clickable' pour le CSS
-                // ✅ L'événement onClick est maintenant sur toute la DIV
                 className={`skin-card ${!isUnlocked ? 'locked' : ''} ${isEquipped ? 'equipped' : ''} ${isClickable ? 'clickable' : ''}`}
                 onClick={isClickable ? () => handleEquip(skin.id) : undefined}
-                role={isClickable ? "button" : undefined} // Accessibilité
-                tabIndex={isClickable ? 0 : -1} // Accessibilité
+                role={isClickable ? "button" : undefined} 
+                tabIndex={isClickable ? 0 : -1} 
             >
-                {/* Icône Status (Cadenas uniquement, le check est géré par le CSS 'equipped::after') */}
                 <div className="status-icon">
                     {!isUnlocked && <FaLock color="#e74c3c"/>}
                 </div>
 
+                {/* ✅ Suppression du onError pour voir si l'image charge ou pas */}
                 <img 
-                    src={imagePath} alt={skin.name} className="skin-visual"
-                    onError={(e) => { e.target.style.display = 'none'; }} 
+                    src={imagePath} 
+                    alt={skin.name} 
+                    className="skin-visual"
+                    style={{ width: '60px', height: '60px', objectFit: 'contain' }} 
                 />
                 <div className="skin-name">{skin.name}</div>
-
-                {/* ❌ BOUTON SUPPRIMÉ ICI */}
             </div>
         );
     };
-    // --- VUE BOUTIQUE ---
+
     if (view === 'shop') {
         const commons = SKINS_REGISTRY.filter(s => s.rarity === 'common');
         const rares = SKINS_REGISTRY.filter(s => s.rarity === 'rare');
@@ -103,38 +93,34 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
 
         return (
             <div className="shop-container">
-                {/* HEADER */}
                 <div className="shop-header">
-                    {/* UTILISATION DE closeShop() pour revenir au menu et réafficher le leaderboard */}
                     <button className="greek-btn-text" onClick={closeShop}><FaArrowLeft/> RETOUR</button>
                     <div className="wallet" style={{color:'#FFD700', fontWeight:'bold', fontSize:'1.2rem'}}>
                         {playerData.coins || 0} <FaCoins/>
                     </div>
                 </div>
 
-                {/* 1. LES COFFRES (Centrés en haut) */}
                 <h3 style={{color:'#DAA520', marginBottom:'15px'}}>🎁 COFFRES MYSTÈRES</h3>
                 <div className="loot-section">
-    {LOOT_BOXES.map(box => (
-        <div key={box.id} className="loot-card">
-            <div className="loot-emoji">📦</div>
-            <div className="loot-title">{box.name}</div>
-            <div className="loot-price">
-                {box.price} <FaCoins size={12}/>
-            </div>
-            <button 
-                className="greek-btn-secondary" 
-                disabled={openingBox !== null} 
-                onClick={() => handleBuyBox(box)} 
-                style={{width:'100%', fontSize:'0.7rem', padding:'6px', marginTop:'auto', border:'1px solid #555'}}
-            >
-                {openingBox === box.id ? '...' : 'OUVRIR'}
-            </button>
-        </div>
-    ))}
-</div>
+                    {LOOT_BOXES.map(box => (
+                        <div key={box.id} className="loot-card">
+                            <div className="loot-emoji">📦</div>
+                            <div className="loot-title">{box.name}</div>
+                            <div className="loot-price">
+                                {box.price} <FaCoins size={12}/>
+                            </div>
+                            <button 
+                                className="greek-btn-secondary" 
+                                disabled={openingBox !== null} 
+                                onClick={() => handleBuyBox(box)} 
+                                style={{width:'100%', fontSize:'0.7rem', padding:'6px', marginTop:'auto', border:'1px solid #555'}}
+                            >
+                                {openingBox === box.id ? '...' : 'OUVRIR'}
+                            </button>
+                        </div>
+                    ))}
+                </div>
 
-                {/* 2. COMMUN (Vert) */}
                 <div className="rarity-row rarity-common">
                     <div className="rarity-title">COMMUN</div>
                     <div className="skins-grid-centered">
@@ -142,7 +128,6 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
                     </div>
                 </div>
 
-                {/* 3. RARE (Bleu) */}
                 <div className="rarity-row rarity-rare">
                     <div className="rarity-title">RARE</div>
                     <div className="skins-grid-centered">
@@ -150,7 +135,6 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
                     </div>
                 </div>
 
-                {/* 4. ÉPIQUE (Violet) */}
                 <div className="rarity-row rarity-epic">
                     <div className="rarity-title">ÉPIQUE</div>
                     <div className="skins-grid-centered">
@@ -161,7 +145,6 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
         );
     }
 
-    // --- VUE MENU PRINCIPAL ---
     return (
         <div className="menu-left">
             <h1 className="menu-title">HERMES<br/>QUEST</h1>
@@ -175,12 +158,9 @@ const MainMenu = ({ player, onlinePlayers, version, onStart, onLogout, onLoadHis
                             </div>
                         </div>
                         <button className="greek-btn-primary" onClick={onStart}>JOUER</button>
-                        
-                        {/* UTILISATION DE openShop() pour masquer le leaderboard */}
                         <button className="greek-btn-secondary" onClick={openShop}>
                             <FaShoppingBag style={{marginRight:8}}/> BOUTIQUE
                         </button>
-
                         <button className="greek-btn-secondary" onClick={onLoadHistory}>
                             <FaChartLine style={{marginRight:8}}/> PROGRESSION
                         </button>

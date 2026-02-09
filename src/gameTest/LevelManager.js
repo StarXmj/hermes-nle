@@ -2,50 +2,42 @@ import { GAME_CONFIG, ENTITY_TYPES, BIOMES } from './constants';
 
 export class LevelManager {
   constructor() {
-    this.entities = []; // Obstacles mortels
-    this.platforms = []; // --- NOUVEAU : Plateformes sur lesquelles on marche
-    this.coins = [];     // --- NOUVEAU : Pièces à collecter
+    this.entities = []; 
+    this.platforms = []; 
+    this.coins = [];     
     
     this.lastSpawnX = 0;
     this.minGap = 0;
     this.projectileTimer = 0;
-    
-    // Timer pour faire apparaître des plateformes indépendamment des obstacles au sol
     this.platformTimer = 0; 
   }
 
   clearAll() {
     this.entities = [];
-    this.platforms = []; // Clear
-    this.coins = [];     // Clear
+    this.platforms = [];
+    this.coins = [];    
     this.lastSpawnX = GAME_CONFIG.CANVAS_WIDTH + 500;
     this.projectileTimer = 0;
     this.platformTimer = 0;
   }
 
-  update(speed, biome, canSpawn = true) {
-    // 1. Mise à jour des positions (OBSTACLES MORTELS)
+  update(speed, biome, canSpawn = true, distance = 0) {
+    // 1. Mise à jour des positions
     for (let i = this.entities.length - 1; i >= 0; i--) {
       let ent = this.entities[i];
       ent.x -= speed;
-      
-      if (ent.type === 'projectile') {
-          ent.y += ent.speedY;
-      }
-
+      if (ent.type === 'projectile') ent.y += ent.speedY;
       if (ent.x + ent.width < 0 || ent.y > GAME_CONFIG.CANVAS_HEIGHT || ent.markedForDeletion) {
         this.entities.splice(i, 1);
       }
     }
 
-    // --- NOUVEAU : Mise à jour des PLATEFORMES ---
     for (let i = this.platforms.length - 1; i >= 0; i--) {
         let p = this.platforms[i];
         p.x -= speed;
         if (p.x + p.width < 0) this.platforms.splice(i, 1);
     }
 
-    // --- NOUVEAU : Mise à jour des PIÈCES ---
     for (let i = this.coins.length - 1; i >= 0; i--) {
         let c = this.coins[i];
         c.x -= speed;
@@ -54,15 +46,12 @@ export class LevelManager {
     
     this.lastSpawnX -= speed;
 
-    // SÉCURITÉ : Si on est dans les 3 premières secondes, on arrête ici
     if (!canSpawn) return;
 
-    // 2. Spawn des obstacles classiques (VOTRE LOGIQUE EXISTANTE)
     if (this.lastSpawnX < GAME_CONFIG.CANVAS_WIDTH - this.minGap) {
         this.trySpawnObstacle(biome, speed);
     }
 
-    // 3. Spawn des Projectiles (ARES)
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
         if (this.projectileTimer > Math.random() * 150 + 150) {
@@ -71,26 +60,33 @@ export class LevelManager {
         }
     }
 
-    // --- NOUVEAU : Spawn des PLATEFORMES et PIÈCES ---
-    // On ne fait pas spawn de plateformes en mode Flappy ou Inverted pour simplifier
-    if (biome !== BIOMES.FLAPPY && biome !== BIOMES.INVERTED) {
+    // Spawn Plateformes
+    if (biome !== BIOMES.FLAPPY) {
         this.platformTimer += speed;
-        // Toutes les ~2000 unités de distance (ajustable)
         if (this.platformTimer > 1500 + Math.random() * 1000) {
-            this.spawnPlatform();
+            this.spawnPlatform(distance, biome); 
             this.platformTimer = 0;
         }
     }
   }
 
-  // --- NOUVELLE MÉTHODE : Création des plateformes et pièces ---
-  spawnPlatform() {
-      const width = Math.random() * 100 + 120; // Largeur entre 120 et 220
+  // ✅ CORRECTION LOGIQUE PIÈCE & PLATEFORME
+  spawnPlatform(currentDistance, biome) {
+      const width = Math.random() * 100 + 120; 
       const height = 20;
-      // Hauteur accessible pour un saut
-      const y = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - (Math.random() * 120 + 80); 
       
-      // 30% de chance d'être un "Limiteur" (Rouge)
+      // ✅ 1. Hauteur aléatoire basée sur les constantes
+      const randomHeight = Math.random() * (GAME_CONFIG.PLATFORM_MAX_HEIGHT - GAME_CONFIG.PLATFORM_MIN_HEIGHT) + GAME_CONFIG.PLATFORM_MIN_HEIGHT;
+      
+      let y;
+      if (biome === BIOMES.INVERTED) {
+          // En inversé, on part du haut (GROUND_HEIGHT) et on descend vers le centre
+          y = GAME_CONFIG.GROUND_HEIGHT + randomHeight;
+      } else {
+          // En normal, on part du bas et on monte
+          y = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - randomHeight;
+      }
+      
       const isLimiter = Math.random() < 0.3;
       
       const platform = {
@@ -103,11 +99,15 @@ export class LevelManager {
       
       this.platforms.push(platform);
 
-      // 60% de chance d'ajouter une PIÈCE au-dessus
-      if (Math.random() < 0.6) {
+      // ✅ 2. Règle Pièce : Si > 600m, pièce GARANTIE (100% de chance) si plateforme spawn
+      if (currentDistance >= 600) {
+          // ✅ CORRECTION : La pièce est toujours placée "visuellement au-dessus" (y - 50)
+          // Même en inversé, cela la place du côté "intérieur" du jeu, donc sur la plateforme pour le joueur
+          const coinY = platform.y - 50;
+
           this.coins.push({
-              x: platform.x + width / 2 - 15, // Centré
-              y: platform.y - 50,             // Au dessus
+              x: platform.x + width / 2 - 15, 
+              y: coinY,             
               width: 30,
               height: 30,
               collected: false
@@ -144,7 +144,6 @@ export class LevelManager {
       let finalHeight = 0;
       let finalType = 'obstacle'; 
 
-      // 1. BIOMES CLASSIQUES
       if (biome === BIOMES.NORMAL || biome === BIOMES.HADES || biome === BIOMES.DIONYSOS || biome === BIOMES.ARES || biome === BIOMES.PHILOTES) {
           
           if (rand < 0.65) { 
@@ -172,7 +171,6 @@ export class LevelManager {
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - heightFromGround;
           }
       }
-      // 2. BIOME INVERTED
       else if (biome === BIOMES.INVERTED) {
           if (rand < 0.6) {
               def = ENTITY_TYPES.GROUND; 
@@ -186,7 +184,6 @@ export class LevelManager {
               yPos = GAME_CONFIG.GROUND_HEIGHT + this.randomInt(50, 70);
           }
       }
-      // 3. BIOME FLAPPY
       else if (biome === BIOMES.FLAPPY) {
            if (rand < 0.4) { 
                def = ENTITY_TYPES.GROUND;
@@ -208,7 +205,6 @@ export class LevelManager {
       }
 
       let reactionFrames = (biome === BIOMES.FLAPPY) ? 50 : 65; 
-      
       if (biome === BIOMES.HADES) reactionFrames = 100; 
       if (biome === BIOMES.ARES) reactionFrames = 100;  
 
@@ -230,18 +226,14 @@ export class LevelManager {
   }
 
   draw(ctx) {
-    // 1. DESSINER LES PLATEFORMES (NOUVEAU)
     this.platforms.forEach(platform => {
       if (platform.type === 'limiter') {
-          // Style "Limiteur" : Rouge + Bordure + Croix
           ctx.fillStyle = '#b91c1c'; 
           ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-          
           ctx.strokeStyle = '#fca5a5';
           ctx.lineWidth = 2;
           ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
           
-          // Petit symbole "Interdit" au milieu
           const centerX = platform.x + platform.width/2;
           const centerY = platform.y + platform.height/2;
           ctx.beginPath();
@@ -249,31 +241,23 @@ export class LevelManager {
           ctx.moveTo(centerX - 5, centerY - 5);
           ctx.lineTo(centerX + 5, centerY + 5);
           ctx.stroke();
-
       } else {
-          // Style Standard : Vert/Nature
           ctx.fillStyle = '#22c55e';
           ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-          // Petite déco herbe
           ctx.fillStyle = '#16a34a';
           ctx.fillRect(platform.x, platform.y, platform.width, 5);
       }
     });
 
-    // 2. DESSINER LES PIÈCES (NOUVEAU)
     this.coins.forEach(coin => {
         if (!coin.collected) {
-            // Effet brillant Or
             ctx.fillStyle = '#FFD700'; 
             ctx.beginPath();
             ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, Math.PI * 2);
             ctx.fill();
-            
             ctx.strokeStyle = '#DAA520';
             ctx.lineWidth = 2;
             ctx.stroke();
-            
-            // Reflet
             ctx.fillStyle = 'rgba(255,255,255,0.8)';
             ctx.beginPath();
             ctx.arc(coin.x + coin.width/2 - 5, coin.y + coin.height/2 - 5, 4, 0, Math.PI * 2);
@@ -281,10 +265,8 @@ export class LevelManager {
         }
     });
 
-    // 3. DESSINER LES OBSTACLES (VOTRE CODE)
     this.entities.forEach(ent => {
       ctx.fillStyle = ent.color;
-      
       if (ent.type === 'projectile') {
           ctx.save();
           ctx.beginPath();

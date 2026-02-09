@@ -25,11 +25,12 @@ export class Player {
     
     this.rotation = 0;
 
-    // --- NOUVEAU : Gestion des Skins & Limiteur ---
     this.skin = skin;
     this.isJumpLimited = false; 
 
-    // ✅ OPTIMISATION GC : Pré-allocation des objets Hitbox
+    // Compteur pour l'animation fluide
+    this.animFrame = 0;
+
     this.hitbox = { x: 0, y: 0, width: 0, height: 0 };
     this.ghostHitbox = { x: 0, y: 0, width: 0, height: 0 };
   }
@@ -40,7 +41,7 @@ export class Player {
     this.isSliding = false;
     this.height = this.originalHeight;
     this.rotation = 0;
-    this.isJumpLimited = false; // Reset du limiteur
+    this.isJumpLimited = false; 
     
     if (biome === BIOMES.INVERTED) {
         this.y = GAME_CONFIG.GROUND_HEIGHT; 
@@ -54,6 +55,8 @@ export class Player {
   }
 
   update(input, biome) {
+    this.animFrame++;
+
     if (input.keys.down && biome !== BIOMES.FLAPPY) {
       if (!this.isSliding) {
           this.isSliding = true;
@@ -95,10 +98,8 @@ export class Player {
   }
 
   updateNormal(input) {
-    // Calcul limiteur : Si on est sur une plateforme rouge, on a le droit qu'à 1 saut
     const allowedJumps = this.isJumpLimited ? 1 : this.maxJumps;
 
-    // ✅ COMBINAISON : On vérifie allowedJumps ET on interdit le saut si on glisse
     if (input.keys.up && !this.jumpPressedBefore && !this.isSliding) {
         if (this.jumpCount < allowedJumps) {
             this.vy = GAME_CONFIG.JUMP_FORCE; 
@@ -106,30 +107,30 @@ export class Player {
             if (this.jumpCount === 0) particleManager.createJumpEffect(this.x + this.width / 2, this.y + this.height);
             else particleManager.createDoubleJumpEffect(this.x + this.width / 2, this.y + this.height);
             this.jumpCount++;
+            this.animFrame = 0; 
         }
     }
     this.y += this.vy;
     
     const groundY = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - this.height;
     
-    // Le sol par défaut
     if (this.y < groundY) {
         this.vy += GAME_CONFIG.GRAVITY;
-        this.rotation += 0.15; 
+        // ❌ SUPPRESSION DE LA ROTATION ICI
+        // this.rotation += 0.15; 
     } else {
         if (this.vy > 0) particleManager.createDust(this.x + this.width / 2, this.y + this.height);
         this.vy = 0;
         this.jumpCount = 0;
         this.y = groundY;
         this.rotation = 0;
-        this.isJumpLimited = false; // Reset au sol
+        this.isJumpLimited = false; 
         if (!this.isSliding && Math.random() > 0.9) particleManager.createDust(this.x, this.y + this.height);
     }
     this.jumpPressedBefore = input.keys.up;
   }
 
   updateInverted(input) {
-    // ✅ CORRECTION : Interdit le saut si glissade
     if (input.keys.up && !this.jumpPressedBefore && !this.isSliding) {
         if (this.jumpCount < this.maxJumps) {
             this.vy = -GAME_CONFIG.JUMP_FORCE; 
@@ -137,6 +138,7 @@ export class Player {
             if (this.jumpCount === 0) particleManager.createJumpEffect(this.x + this.width / 2, this.y);
             else particleManager.createDoubleJumpEffect(this.x + this.width / 2, this.y);
             this.jumpCount++;
+            this.animFrame = 0; 
         }
     }
     this.y += this.vy;
@@ -192,34 +194,21 @@ export class Player {
       return this.ghostHitbox;
   }
   
-  // Appelé par GameEngine quand on touche une plateforme
   setOnPlatform(platform) {
       this.y = platform.y - this.height;
       this.vy = 0;
       this.jumpCount = 0;
       this.rotation = 0;
-      
-      // Si la plateforme est un limiteur, on active la restriction
-      if (platform.type === 'limiter') {
-          this.isJumpLimited = true;
-      } else {
-          this.isJumpLimited = false;
-      }
+      if (platform.type === 'limiter') this.isJumpLimited = true;
+      else this.isJumpLimited = false;
   }
   
   draw(ctx) {
       ctx.save();
-
-      // Application des filtres de skin (Effets visuels si pas de sprite)
-      if (this.skin === 'gold') {
-        ctx.filter = 'sepia(1) brightness(1.2) saturate(3)'; 
-      } else if (this.skin === 'shadow') {
-        ctx.filter = 'grayscale(100%) brightness(0.5) contrast(2)'; 
-      } else if (this.skin === 'matrix') {
-        ctx.filter = 'hue-rotate(90deg) contrast(1.5)';
-      } else if (this.skin === 'dionysos') {
-        ctx.filter = 'hue-rotate(-50deg) saturate(2)'; 
-      }
+      if (this.skin === 'gold') ctx.filter = 'sepia(1) brightness(1.2) saturate(3)'; 
+      else if (this.skin === 'shadow') ctx.filter = 'grayscale(100%) brightness(0.5) contrast(2)'; 
+      else if (this.skin === 'matrix') ctx.filter = 'hue-rotate(90deg) contrast(1.5)';
+      else if (this.skin === 'dionysos') ctx.filter = 'hue-rotate(-50deg) saturate(2)'; 
 
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -228,7 +217,6 @@ export class Player {
           ctx.fillStyle = '#FFF';
           ctx.fillRect(this.x - 10, this.y + 10, 10, 20);
       }
-      
       ctx.restore();
   }
 }

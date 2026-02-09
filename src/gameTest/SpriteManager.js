@@ -1,40 +1,28 @@
 import { BIOMES } from './constants';
 
 export const spriteManager = {
-  // Stockage mémoire
   sprites: {
-    player: {
-      run: [],
-      jump: []
-    },
+    player: { run: [], jump: [] },
     obstacles: {},
-    // ✅ Ajout du sprite pour la pièce
     coin: null 
   },
   
   loaded: false,
   MAX_FRAMES_SEARCH: 30,
 
-  /**
-   * Charge dynamiquement un skin et les assets globaux
-   */
   async load(skinId = 'default') {
     console.log(`⚡ Chargement du skin : ${skinId}`);
-    
-    // 1. Reset
     this.sprites.player.run = [];
     this.sprites.player.jump = [];
     
-    // 2. Scan des dossiers Joueur
+    // On charge bien 'run' et 'jump' comme indiqué dans ta structure
     const runFrames = await this.scanFolder(skinId, 'run');
     const jumpFrames = await this.scanFolder(skinId, 'jump');
 
     this.sprites.player.run = runFrames;
     this.sprites.player.jump = jumpFrames;
 
-    // 3. Chargement Obstacles & Objets
     await this.loadObstacles();
-
     this.loaded = true;
     console.log(`✅ Skin "${skinId}" chargé.`);
   },
@@ -50,7 +38,6 @@ export const spriteManager = {
   },
 
   async loadObstacles() {
-    // Si déjà chargé, on ignore
     if (Object.keys(this.sprites.obstacles).length > 0 && this.sprites.coin) return; 
 
     const obsList = [
@@ -66,14 +53,12 @@ export const spriteManager = {
         { key: 'cloud', path: '/images/cloud.webp' }
     ];
 
-    // Chargement obstacles
     const promises = obsList.map(o => 
         this.loadImage(o.path).then(img => {
             if (img) this.sprites.obstacles[o.key] = img;
         })
     );
 
-    // ✅ Chargement de la pièce (Coin)
     promises.push(
         this.loadImage('/images/coin.webp').then(img => {
             if(img) this.sprites.coin = img;
@@ -92,64 +77,87 @@ export const spriteManager = {
     });
   },
 
-  // --- RENDU JOUEUR (Inchangé) ---
+  // --- RENDU JOUEUR CORRIGÉ (FLUIDE) ---
   drawPlayer(ctx, player, biome) {
      if (!this.loaded) return;
-     // ... (votre code drawPlayer existant, copiez-le ici si besoin, sinon gardez l'actuel)
-     // Pour gagner de la place je ne le remets pas tout, mais gardez votre logique de slide/jump
      
-     // Exemple minimal pour que ça compile si vous copiez tout :
+     // Sélection du bon tableau de sprites
      const spriteArray = (player.vy !== 0 && biome !== BIOMES.FLAPPY) ? this.sprites.player.jump : this.sprites.player.run;
+     
      if (!spriteArray || spriteArray.length === 0) {
         ctx.fillStyle = player.color;
         ctx.fillRect(player.x, player.y, player.width, player.height);
         return;
      }
-     const frameIndex = Math.floor(Date.now() / 60) % spriteArray.length;
+
+     // ✅ CORRECTION : Utilise player.animFrame pour une animation stable
+     // On divise par 5 pour ralentir l'animation (ajustable selon la vitesse souhaitée)
+     const frameIndex = Math.floor(player.animFrame / 5) % spriteArray.length;
      const img = spriteArray[frameIndex];
      
      if (img) {
         ctx.save();
         ctx.translate(player.x + player.width/2, player.y + player.height/2);
+        
+        // Rotation pour le saut (flip, salto...)
+        if (player.rotation) ctx.rotate(player.rotation);
+
+        // Effet miroir pour le biome inversé
         if (biome === BIOMES.INVERTED) ctx.scale(1, -1);
+        
         ctx.drawImage(img, -player.width/2, -player.height/2, player.width, player.height);
         ctx.restore();
      }
   },
 
-  // --- RENDU OBSTACLE (Inchangé) ---
+  // --- RENDU OBSTACLE CORRIGÉ (HARPIE) ---
   drawObstacle(ctx, ent, biome) {
-    // ... (votre code drawObstacle existant)
-    // Gardez votre logique actuelle pour les obstacles
-    
-    // Exemple minimal :
     const img = this.sprites.obstacles[ent.drawType || 'column'];
+    
     if(img) {
-        ctx.drawImage(img, ent.x, ent.y, ent.width, ent.height);
+        // ✅ CORRECTION HARPIE : Elle doit regarder à GAUCHE (-1 scaleX)
+        if (ent.drawType === 'harpy') {
+            ctx.save();
+            // On se place au centre de l'obstacle
+            ctx.translate(ent.x + ent.width/2, ent.y + ent.height/2);
+            
+            // 1. Miroir horizontal par défaut (pour qu'elle regarde vers le joueur)
+            let scaleX = -1;
+            let scaleY = 1;
+
+            // 2. Miroir vertical SI biome inversé (tête en bas)
+            if (biome === BIOMES.INVERTED) {
+                scaleY = -1;
+            }
+
+            ctx.scale(scaleX, scaleY);
+            
+            // On dessine centré
+            ctx.drawImage(img, -ent.width/2, -ent.height/2, ent.width, ent.height);
+            ctx.restore();
+        } else {
+            // Obstacles classiques (colonnes, etc.)
+            ctx.drawImage(img, ent.x, ent.y, ent.width, ent.height);
+        }
     } else {
         ctx.fillStyle = 'grey';
         ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
     }
   },
 
-  // ✅ NOUVEAU : RENDU PIÈCE
   drawCoin(ctx, coin) {
       if (this.sprites.coin) {
           ctx.save();
-          // Animation simple de flottement ou rotation
           const floatOffset = Math.sin(Date.now() / 200) * 5;
-          const size = 30; // Taille d'affichage
+          const size = 30; 
           
           ctx.translate(coin.x + size/2, coin.y + size/2 + floatOffset);
-          
-          // Effet de rotation 3D simulée (scale X)
           const scaleX = Math.abs(Math.sin(Date.now() / 300));
           ctx.scale(scaleX, 1);
           
           ctx.drawImage(this.sprites.coin, -size/2, -size/2, size, size);
           ctx.restore();
       } else {
-          // Fallback : Cercle Jaune
           ctx.fillStyle = '#FFD700';
           ctx.beginPath();
           ctx.arc(coin.x + 15, coin.y + 15, 10, 0, Math.PI * 2);

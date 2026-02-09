@@ -17,6 +17,10 @@ export const GAME_CONFIG = {
   
   // --- DIVERS ---
   TRANSITION_DURATION: 60, 
+
+
+  PLATFORM_MIN_HEIGHT: 80,  // Hauteur minimale par rapport au sol
+    PLATFORM_MAX_HEIGHT: 200, // Hauteur maximale par rapport au sol
   GHOST_OFFSET_Y: 120,     
   COIN_SCORE_BONUS: 50     
 };
