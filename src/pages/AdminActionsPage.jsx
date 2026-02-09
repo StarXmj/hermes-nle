@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 
 // 1. IMPORT DES LOGOS
 import logoHermes from '../assets/logo-hermes.png';
-const LOGO_DIONYSOS = '/src/assets/logo-dionysus.png';
+import LOGO_DIONYSOS from '../assets/logo-dionysus.png';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const BUCKET_NAME = 'programmes';

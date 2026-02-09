@@ -11,7 +11,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const supabaseStorageUrlStart = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/`;
 
 // URL du logo Dionysos (on utilise l'amphore du dossier public pour l'instant)
-const LOGO_DIONYSOS = '/src/assets/logo-dionysus.png';
+import LOGO_DIONYSOS from '../assets/logo-dionysus.png';
 
 const isStorageFile = (url) => {
   return url && url.startsWith(supabaseStorageUrlStart);

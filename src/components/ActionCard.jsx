@@ -5,7 +5,7 @@ import './ActionCard.css';
 import logoHermes from '../assets/logo-hermes.png';
 
 // On utilise l'amphore pour Dionysos (chemin public)
-const LOGO_DIONYSOS = '/src/assets/logo-dionysus.png';
+import LOGO_DIONYSOS from '../assets/logo-dionysus.png';
 
 function ActionCard({ action, status, isUpcoming }) {
   const isDionysos = action.typeEvenement === 'dionysos';
