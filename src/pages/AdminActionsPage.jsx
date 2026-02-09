@@ -2,11 +2,15 @@
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FaTrash, FaEdit, FaPlusCircle } from 'react-icons/fa'; // J'ai retiré les flèches des imports
+import { FaTrash, FaEdit, FaPlusCircle } from 'react-icons/fa'; 
 import ActionForm from '../components/ActionForm'; 
 import './AdminActionsPage.css';
-import { useAdminData } from '../hooks/useAdminData';
 import React, { useState, useEffect } from 'react';
+
+// 1. IMPORT DES LOGOS
+import logoHermes from '../assets/logo-hermes.png';
+const LOGO_DIONYSOS = '/src/assets/logo-dionysus.png';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const BUCKET_NAME = 'programmes';
 
@@ -31,6 +35,7 @@ function AdminActionsPage() {
 
   async function fetchActions() {
     setLoading(true);
+    // Le select('*') récupère déjà la colonne typeEvenement ajoutée précédemment
     const { data, error } = await supabase
       .from('actions')
       .select(`
@@ -148,8 +153,8 @@ function AdminActionsPage() {
         <button 
           className="cta-button" 
           onClick={() => setEditingAction('new')} 
-          aria-label="Retour au Tableau de bord" // Indispensable pour les lecteurs d'écran et le score SEO
-        title="Retour"
+          aria-label="Ajouter une action" 
+          title="Ajouter"
         >
           <FaPlusCircle /> Ajouter une action
         </button>
@@ -159,69 +164,86 @@ function AdminActionsPage() {
       {error && <p className="error-message">{error}</p>}
       
       <div className="admin-list">
-        {actions.map(action => (
-          <div className="admin-row" key={action.id}>
-            
-            <div className="admin-row-info">
-              <span className="admin-row-title">{action.titre}</span>
-              <span className="admin-row-date">
-                {new Date(action.dateISO).toLocaleDateString('fr-FR')}
-              </span>
+        {actions.map(action => {
+          // 2. LOGIQUE DU LOGO
+          const isDionysos = action.typeEvenement === 'dionysos';
+          const currentLogo = isDionysos ? LOGO_DIONYSOS : logoHermes;
+
+          return (
+            <div className="admin-row" key={action.id}>
               
-              <div className="admin-row-metadata">
-                <span>
-                  Créé le: {formatFullDate(action.date_creat)} 
-                  <br/>
-                  {/* Affiche l'email (username) */}
-                  par: <strong>{action.created_by_profile?.username || 'Inconnu'}</strong>
+              <div className="admin-row-info">
+                {/* 3. AFFICHAGE DU LOGO AVEC LE TITRE */}
+                <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px'}}>
+                   <img 
+                      src={currentLogo} 
+                      alt={action.typeEvenement} 
+                      title={isDionysos ? "Événement Dionysos" : "Événement Hermes"}
+                      style={{
+                        width: '24px', 
+                        height: '24px', 
+                        objectFit: 'contain', 
+                        opacity: 0.9
+                      }} 
+                   />
+                   <span className="admin-row-title" style={{marginBottom: 0}}>{action.titre}</span>
+                </div>
+
+                <span className="admin-row-date">
+                  {new Date(action.dateISO).toLocaleDateString('fr-FR')}
                 </span>
                 
-                {action.modif_by && (
+                <div className="admin-row-metadata">
                   <span>
+                    Créé le: {formatFullDate(action.date_creat)} 
                     <br/>
-                    Modifié le: {formatFullDate(action.last_modif)} 
-                    <br/>
-                    par: <strong>{action.modif_by_profile?.username || 'Inconnu'}</strong>
+                    par: <strong>{action.created_by_profile?.username || 'Inconnu'}</strong>
                   </span>
-                )}
+                  
+                  {action.modif_by && (
+                    <span>
+                      <br/>
+                      Modifié le: {formatFullDate(action.last_modif)} 
+                      <br/>
+                      par: <strong>{action.modif_by_profile?.username || 'Inconnu'}</strong>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="admin-row-controls">
+                 <span style={{fontSize:'0.8rem', color: action.status === 'publié' ? 'green' : '#777', marginRight:'10px', fontWeight: 'bold'}}>
+                  {action.status === 'publié' ? 'PUBLIÉ' : 'BROUILLON'}
+                </span>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    checked={action.status === 'publié'} 
+                    onChange={() => handleStatusToggle(action)}
+                  />
+                  <span className="slider round"></span>
+                </label>
+                
+                <button 
+                  className="admin-btn icon-btn" 
+                  title="Modifier"
+                  aria-label="Modifier l'action"
+                  onClick={() => setEditingAction(action)} 
+                >
+                  <FaEdit />
+                </button>
+                <button 
+                  className="admin-btn icon-btn danger" 
+                  title="Supprimer"
+                  aria-label="Supprimer l'action"
+                  onClick={() => handleDelete(action)}
+                >
+                  <FaTrash />
+                </button>
               </div>
             </div>
-
-            <div className="admin-row-controls">
-
-               <span style={{fontSize:'0.8rem', color: action.status === 'publié' ? 'green' : '#777', marginRight:'10px', fontWeight: 'bold'}}>
-                {action.status === 'publié' ? 'PUBLIÉ' : 'BROUILLON'}
-              </span>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={action.status === 'publié'} 
-                  onChange={() => handleStatusToggle(action)}
-                />
-                <span className="slider round"></span>
-              </label>
-              
-              {/* FLÈCHES SUPPRIMÉES ICI */}
-              
-              <button 
-                className="admin-btn icon-btn" 
-                title="Modifier"
-                ria-label="Modifier l'action"
-                onClick={() => setEditingAction(action)} 
-              >
-                <FaEdit />
-              </button>
-              <button 
-                className="admin-btn icon-btn danger" 
-                title="Supprimer"
-                aria-label="Supprimer l'action"
-                onClick={() => handleDelete(action)}
-              >
-                <FaTrash />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </main>
   );

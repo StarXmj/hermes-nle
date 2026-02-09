@@ -11,15 +11,27 @@
 .gameover-content { 
     text-align: center; color: #fff; 
     animation: popIn 0.3s ease-out; 
+    width: 90%; max-width: 400px;
 }
 @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.title-death { font-size: 4rem; color: #FF4444; margin: 0; font-weight: 900; letter-spacing: -2px; }
-.result-box { margin: 30px 0; }
-.score-display .lbl { display: block; font-size: 0.8rem; color: #888; letter-spacing: 3px; }
-.score-display .val { font-size: 5rem; font-weight: 900; color: #fff; line-height: 1; }
-.best-display { color: #DAA520; margin-top: 10px; font-size: 1.1rem; }
-.go-actions { display: flex; gap: 15px; justify-content: center; }
+.title-death { font-size: 3.5rem; color: #FF4444; margin: 0; font-weight: 900; letter-spacing: -2px; font-family: 'Cinzel', serif; }
+.result-box { margin: 20px 0; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border: 1px solid #444; }
+
+.score-display .lbl { display: block; font-size: 0.9rem; color: #aaa; letter-spacing: 2px; margin-bottom: 5px; }
+.score-display .val { font-size: 4rem; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
+/* 💰 NOUVEAU : STYLE DES PIÈCES */
+.coins-summary-box { margin-top: 20px; padding-top: 15px; border-top: 1px solid #444; }
+.coin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 1rem; }
+.coin-row .label { color: #ccc; }
+.coin-row .value { font-weight: bold; display: flex; align-items: center; gap: 5px; }
+.value.gain { color: #2ecc71; }
+.value.total { color: #FFD700; font-size: 1.2rem; }
+.guest-message { font-size: 0.8rem; color: #e67e22; font-style: italic; margin-top: 10px; }
+
+.best-display { color: #DAA520; margin-top: 15px; font-size: 0.9rem; font-style: italic; }
+.go-actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; margin-top: 20px; }
 
 /* =============================================================================
    🔐 AUTH & MODAL BASE (Conteneur Générique)
@@ -51,8 +63,12 @@
 .auth-modal input {
     width: 100%; padding: 12px; margin-bottom: 10px; 
     background: #000; border: 1px solid #333; color: #fff; box-sizing: border-box;
+    border-radius: 4px;
 }
 .auth-modal input:focus { border-color: #DAA520; outline: none; }
+
+.password-wrapper { position: relative; width: 100%; }
+.eye-icon { position: absolute; right: 10px; top: 12px; cursor: pointer; color: #666; }
 
 /* Message Erreur Rouge */
 .auth-error-message {
@@ -106,21 +122,18 @@
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;
 }
 .stat-box {
-    background: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 6px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.stat-box.highlight { background: rgba(218, 165, 32, 0.1); border: 1px solid rgba(218, 165, 32, 0.3); }
-.stat-box .label { color: #888; margin-bottom: 2px; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
-.stat-box .value { color: #fff; font-weight: bold; font-size: 1rem; }
-.stat-box .value.gold { color: #DAA520; text-shadow: 0 0 10px rgba(218, 165, 32, 0.4); }
+.stat-box .label { color: #888; margin-bottom: 5px; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
+.stat-box .value { color: #fff; font-weight: bold; font-size: 1.2rem; }
 
 /* Graphique */
 .graph-wrapper {
-    width: 100%; height: 140px; 
+    width: 100%; height: 200px; 
     background: rgba(0,0,0,0.2); border-radius: 4px; 
     position: relative; border: 1px solid #444;
 }
-.no-data { color: #666; font-style: italic; text-align: center; padding: 20px; }
 
 /* =============================================================================
    📱 MOBILE ULTRA COMPACT (PAYSAGE < 500px)
@@ -128,46 +141,42 @@
 @media (max-height: 500px) {
     /* Modale : Prend tout l'écran, scrollable */
     .auth-modal { 
-        padding: 10px; 
-        max-height: 98vh; /* Max hauteur */
-        width: 98%; max-width: 550px;
-        overflow-y: auto; /* Scroll si ça dépasse */
+        padding: 15px; 
+        max-height: 95vh; 
+        width: 95%; max-width: 600px;
+        overflow-y: auto; 
     }
-    .auth-modal h2 { font-size: 1rem; margin-bottom: 5px; }
+    .auth-modal h2 { font-size: 1.2rem; margin-bottom: 10px; }
 
-    /* Bouton fermer rond et plus facile à toucher */
-    .close-btn { 
-        top: 5px; right: 5px; padding: 8px; 
-        background: rgba(255,255,255,0.1); border-radius: 50%; 
-        width: 24px; height: 24px; 
-        display: flex; align-items: center; justify-content: center; 
-    }
+    /* Bouton fermer */
+    .close-btn { top: 10px; right: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
 
-    /* Conteneur Progression : On enlève les marges inutiles */
-    .progression-container { padding: 5px; background: transparent; border: none; box-shadow: none; }
+    /* Conteneur Progression */
+    .progression-container { padding: 10px; border: none; box-shadow: none; }
 
     /* Onglets miniatures */
-    .tab-container { margin-bottom: 5px; gap: 5px; }
-    .tab-btn { padding: 4px; font-size: 0.7rem; }
+    .tab-container { margin-bottom: 10px; gap: 5px; }
+    .tab-btn { padding: 5px; font-size: 0.7rem; }
 
     /* Classement : Ligne unique */
-    .ranking-card { padding: 4px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .ranking-title { font-size: 0.8rem; margin: 0; }
-    .ranking-sub { font-size: 0.7rem; margin: 0; }
+    .ranking-card { padding: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .ranking-title { font-size: 0.9rem; margin: 0; }
+    .ranking-sub { font-size: 0.8rem; margin: 0; }
 
     /* Stats : 4 colonnes sur une ligne */
-    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 5px; }
-    .stat-box { padding: 4px; background: rgba(255,255,255,0.08); }
-    .stat-box .label { font-size: 0.5rem; margin-bottom: 0; }
-    .stat-box .value { font-size: 0.8rem; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+    .stat-box { padding: 5px; }
+    .stat-box .label { font-size: 0.5rem; margin-bottom: 2px; }
+    .stat-box .value { font-size: 0.9rem; }
 
     /* Graphique : Hauteur réduite */
-    .graph-wrapper { height: 100px; border: none; background: transparent; }
+    .graph-wrapper { height: 120px; border: none; background: transparent; }
 
     /* GameOver reduit */
     .title-death { font-size: 2.5rem; }
-    .score-display .val { font-size: 3.5rem; }
-    .result-box { margin: 10px 0; }
-    .go-actions { gap: 10px; }
-    .greek-btn-primary, .greek-btn-secondary { padding: 8px 15px; font-size: 0.8rem; }
+    .score-display .val { font-size: 3rem; }
+    .result-box { margin: 10px 0; padding: 10px; }
+    .coins-summary-box { margin-top: 10px; padding-top: 10px; }
+    .go-actions { flex-direction: row; gap: 10px; }
+    .greek-btn-primary, .greek-btn-secondary, .greek-btn-text { padding: 8px 12px; font-size: 0.8rem; }
 }

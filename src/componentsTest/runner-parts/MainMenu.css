@@ -1,12 +1,14 @@
+/* --- CONTENEUR PRINCIPAL --- */
 .menu-left {
     flex: 1; 
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
     align-items: flex-start;
-    height: 100%; /* Important pour l'alignement */
+    height: 100%; 
 }
 
+/* --- TITRE --- */
 .menu-title {
     font-size: 5rem; 
     line-height: 0.9; 
@@ -14,8 +16,10 @@
     margin-bottom: 30px; 
     font-weight: 800;
     text-shadow: 0 0 30px rgba(255,255,255,0.1);
+    font-family: 'Cinzel', serif; /* Ajout police grecque si dispo */
 }
 
+/* --- BOUTONS --- */
 .menu-buttons {
     display: flex; flex-direction: column; gap: 15px; 
     width: 100%; max-width: 350px;
@@ -42,6 +46,7 @@
 }
 .greek-btn-text:hover { color: #fff; }
 
+/* --- COMPTEUR LIGNE --- */
 .online-counter {
     margin-top: 10px; padding: 8px 12px;
     display: flex; align-items: center; gap: 10px;
@@ -56,13 +61,257 @@
 }
 @keyframes pulseGreen { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-/* ✅ RESPONSIVE MOBILE AMÉLIORÉ */
-@media (max-height: 500px) {
-    .menu-left { align-items: center; text-align: center; }
-    .menu-title { font-size: 2.5rem; margin-bottom: 15px; } /* Titre plus petit */
-    .menu-buttons { width: 280px; gap: 10px; } /* Boutons plus serrés */
-    .greek-btn-primary { padding: 10px; font-size: 1rem; }
-    .greek-btn-secondary { padding: 8px; font-size: 0.8rem; }
-    .player-info { font-size: 0.9rem !important; }
+
+/* =============================================================================
+   🛍️ BOUTIQUE (SHOP)
+   ============================================================================= */
+
+/* Conteneur Plein Écran */
+.shop-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto; 
+    text-align: center;
 }
 
+/* En-tête */
+.shop-header {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+
+/* =============================================================================
+   🎁 CARTES COFFRES (AMÉLIORÉES)
+   ============================================================================= */
+.loot-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Plus d'espace */
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.loot-card {
+    /* Nouveau look "Carte Trésor" */
+    width: 130px;
+    background: linear-gradient(180deg, #2c3e50 0%, #000000 100%);
+    border: 1px solid #DAA520;
+    border-radius: 12px;
+    padding: 15px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 15px rgba(218, 165, 32, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.loot-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(218, 165, 32, 0.5);
+}
+
+.loot-emoji {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+}
+
+.loot-title {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.loot-price {
+    font-size: 0.9rem;
+    color: #FFD700;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px;
+    border-radius: 15px;
+    margin-bottom: 5px;
+}
+
+/* =============================================================================
+   🎨 SECTION SKINS (LIGNES PAR RARETÉ)
+   ============================================================================= */
+.rarity-row {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 30px;
+}
+
+.rarity-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.rarity-title::before, .rarity-title::after {
+    content: "";
+    height: 2px;
+    width: 40px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+/* Grille de skins */
+.skins-grid-centered {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* =============================================================================
+   🎭 CARTE DE SKIN (STYLE & COULEURS)
+   ============================================================================= */
+
+.skin-card {
+    position: relative;
+    width: 120px; 
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    padding: 15px;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid transparent; 
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-sizing: border-box; 
+}
+
+/* Image */
+.skin-visual {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    image-rendering: pixelated; 
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+    transition: transform 0.3s;
+}
+
+/* Nom */
+.skin-name {
+    font-size: 0.85rem;
+    font-weight: 800; /* Plus gras */
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Couleur par défaut (sera écrasée par la rareté) */
+    color: rgba(255,255,255,0.9);
+}
+
+/* --- ÉTATS INTERACTIFS --- */
+
+/* 1. CLIQUABLE */
+.skin-card.clickable { cursor: pointer; }
+.skin-card.clickable:hover {
+    transform: translateY(-5px) scale(1.02); 
+    background: rgba(255, 255, 255, 0.1); 
+}
+.skin-card.clickable:hover .skin-visual { transform: scale(1.1); }
+.skin-card.clickable:active { transform: scale(0.98); }
+
+/* 2. ÉQUIPÉ */
+.skin-card.equipped {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(0,0,0,0.4));
+    border-color: #2ecc71 !important; 
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+.skin-card.equipped .skin-name { color: #2ecc71 !important; } /* Nom en Vert */
+.skin-card.equipped::after {
+    content: "✔ ÉQUIPÉ";
+    position: absolute;
+    bottom: 5px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #2ecc71;
+    letter-spacing: 1px;
+}
+
+/* 3. VERROUILLÉ */
+.skin-card.locked {
+    opacity: 0.6;
+    background: rgba(0, 0, 0, 0.7);
+    border-color: #444 !important; /* Force gris */
+    cursor: not-allowed;
+}
+.skin-card.locked .skin-visual { filter: grayscale(100%) brightness(0.5); }
+.skin-card.locked .skin-name { color: #888 !important; } /* Nom en Gris */
+
+/* --- ICONES STATUS --- */
+.status-icon {
+    position: absolute;
+    top: 8px; left: 8px; 
+    font-size: 1rem;
+    z-index: 2;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
+}
+
+/* --- 🌈 COULEURS PAR RARETÉ (Bordures & Textes) --- */
+
+/* 🟩 COMMON (Vert) */
+.rarity-common .rarity-title { color: #2ecc71; }
+.rarity-common .skin-card { border-color: #2ecc7140; } 
+.rarity-common .skin-card .skin-name { color: #2ecc71; } /* Texte Vert */
+.rarity-common .skin-card.clickable:hover { border-color: #2ecc71; box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+
+/* 🟦 RARE (Bleu) */
+.rarity-rare .rarity-title { color: #3498db; }
+.rarity-rare .skin-card { border-color: #3498db40; } 
+.rarity-rare .skin-card .skin-name { color: #3498db; } /* Texte Bleu */
+.rarity-rare .skin-card.clickable:hover { border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.4); }
+
+/* 🟪 EPIC (Violet) */
+.rarity-epic .rarity-title { color: #9b59b6; }
+.rarity-epic .skin-card { border-color: #9b59b640; } 
+.rarity-epic .skin-card .skin-name { color: #9b59b6; } /* Texte Violet */
+.rarity-epic .skin-card.clickable:hover { border-color: #9b59b6; box-shadow: 0 0 25px rgba(155, 89, 182, 0.5); }
+
+/* --- RESPONSIVE MOBILE --- */
+@media (max-height: 500px) {
+    .menu-left { align-items: center; text-align: center; }
+    .menu-title { font-size: 2.5rem; margin-bottom: 15px; }
+    .menu-buttons { width: 280px; gap: 10px; }
+    .greek-btn-primary { padding: 10px; font-size: 1rem; }
+    .greek-btn-secondary { padding: 8px; font-size: 0.8rem; }
+    
+    /* Ajustement Boutique Mobile */
+    .shop-container { padding: 10px; }
+    .skin-card { width: 100px; height: 120px; padding: 10px; }
+    .skin-visual { width: 55px; height: 55px; }
+    .skin-name { font-size: 0.75rem; }
+    .status-icon { font-size: 0.8rem; top: 5px; left: 5px; }
+    
+    /* Coffres */
+    .loot-card { width: 100px; padding: 10px 5px; }
+    .loot-emoji { font-size: 2rem; }
+    .loot-title { font-size: 0.7rem; }
+    .loot-price { font-size: 0.8rem; }
+}

@@ -3,12 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { FaTrash, FaPlus, FaFilePdf, FaImage, FaLink } from 'react-icons/fa'; 
 import '../pages/ContactPage.css'; 
+// IMPORT DU LOGO HERMES
+import logoHermes from '../assets/logo-hermes.png';
 
 const BUCKET_NAME = 'programmes';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const supabaseStorageUrlStart = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/`;
 
-// Helper pour savoir si une URL vient de notre stockage
+// URL du logo Dionysos (on utilise l'amphore du dossier public pour l'instant)
+const LOGO_DIONYSOS = '/src/assets/logo-dionysus.png';
+
 const isStorageFile = (url) => {
   return url && url.startsWith(supabaseStorageUrlStart);
 };
@@ -16,6 +20,7 @@ const isStorageFile = (url) => {
 function ActionForm({ action, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     titre: '',
+    typeEvenement: 'hermes', 
     infoDate: '',
     dateISO: '',
     lieu: '',
@@ -24,9 +29,7 @@ function ActionForm({ action, onSave, onCancel }) {
     status: 'brouillon',
   });
 
-  // State pour les liens modulaires uniquement
   const [extraLinks, setExtraLinks] = useState([]); 
-  
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,20 +38,26 @@ function ActionForm({ action, onSave, onCancel }) {
     if (action.id) {
       const isoDate = action.dateISO ? new Date(action.dateISO).toISOString().split('T')[0] : '';
       
-      // On ne charge plus 'lienProgramme'
-      const baseData = { ...action, dateISO: isoDate };
-      // On nettoie l'objet pour ne pas garder l'ancien champ dans le formData
+      const baseData = { 
+        ...action, 
+        dateISO: isoDate,
+        typeEvenement: action.typeEvenement || 'hermes' 
+      };
       delete baseData.lienProgramme; 
       
       setFormData({ ...baseData });
-
-     
       setExtraLinks(action.extra_links || []);
       
     } else {
       setFormData({
-        titre: '', infoDate: '', dateISO: '', lieu: '',
-        lienLieu: '', description: '', status: 'brouillon',
+        titre: '', 
+        typeEvenement: 'hermes',
+        infoDate: '', 
+        dateISO: '', 
+        lieu: '',
+        lienLieu: '', 
+        description: '', 
+        status: 'brouillon',
       });
       setExtraLinks([]);
     }
@@ -59,42 +68,31 @@ function ActionForm({ action, onSave, onCancel }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  
-  const addLink = () => {
-    setExtraLinks([...extraLinks, { label: '', url: '', file: null }]);
-  };
-
+  // ... (Fonctions addLink, removeLink, updateLink, updateLinkFile, clearLinkFile inchangées) ...
+  const addLink = () => setExtraLinks([...extraLinks, { label: '', url: '', file: null }]);
   const removeLink = (index) => {
     const newLinks = [...extraLinks];
     newLinks.splice(index, 1);
     setExtraLinks(newLinks);
   };
-
   const updateLink = (index, field, value) => {
     const newLinks = [...extraLinks];
     newLinks[index][field] = value;
-    // Si on change l'URL manuellement, on enlève le fichier en attente
-    if (field === 'url' && value) {
-      newLinks[index].file = null;
-    }
+    if (field === 'url' && value) newLinks[index].file = null;
     setExtraLinks(newLinks);
   };
-
   const updateLinkFile = (index, fileObj) => {
     const newLinks = [...extraLinks];
     newLinks[index].file = fileObj;
     newLinks[index].url = ''; 
     setExtraLinks(newLinks);
   };
-
   const clearLinkFile = (index) => {
     const newLinks = [...extraLinks];
     newLinks[index].file = null;
     newLinks[index].url = ''; 
     setExtraLinks(newLinks);
   };
-
-  // --------------------------------------------------
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,20 +102,14 @@ function ActionForm({ action, onSave, onCancel }) {
 
     try {
         const processedExtraLinks = await Promise.all(extraLinks.map(async (link, index) => {
-            // Si un NOUVEAU fichier est sélectionné
             if (link.file) {
                 setUploading(true); 
                 const fileName = `public/${Date.now()}-EXTRA-${index}-${link.file.name}`;
                 const { error: uploadErr } = await supabase.storage.from(BUCKET_NAME).upload(fileName, link.file);
-                
                 if (uploadErr) throw new Error(`Erreur upload lien "${link.label}": ${uploadErr.message}`);
-                
                 const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName);
-                
-                // On retourne l'objet propre
                 return { label: link.label, url: publicUrlData.publicUrl };
             }
-            // Sinon on garde l'existant
             return { label: link.label, url: link.url };
         }));
 
@@ -125,11 +117,9 @@ function ActionForm({ action, onSave, onCancel }) {
             ...formData,
             dateISO: new Date(formData.dateISO).toISOString(),
             extra_links: processedExtraLinks,
-            // On peut explicitement mettre null pour nettoyer la base si la colonne existe encore
             lienProgramme: null 
         };
 
-        // Nettoyage champs techniques
         delete dataToSave.created_by_profile;
         delete dataToSave.modif_by_profile;
         delete dataToSave.created_by;
@@ -138,7 +128,6 @@ function ActionForm({ action, onSave, onCancel }) {
         delete dataToSave.last_modif;
         if (!action.id) delete dataToSave.id;
 
-        // 3. Envoi BDD
         let apiError;
         if (action.id) {
             const { error } = await supabase.from('actions').update(dataToSave).eq('id', action.id);
@@ -147,12 +136,9 @@ function ActionForm({ action, onSave, onCancel }) {
             const { error } = await supabase.from('actions').insert(dataToSave);
             apiError = error;
         }
-
         if (apiError) throw apiError;
-
         setLoading(false);
         onSave();
-
     } catch (err) {
         console.error(err);
         setError(err.message);
@@ -167,6 +153,59 @@ function ActionForm({ action, onSave, onCancel }) {
       
       <form onSubmit={handleSubmit} className="contact-form">
         
+        {/* SÉLECTEUR AVEC LOGOS */}
+        <div className="form-group">
+          <label htmlFor="typeEvenement">Type d'Événement</label>
+          <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+             
+             {/* Option HERMES */}
+             <label style={{
+                 cursor:'pointer', 
+                 display:'flex', 
+                 alignItems:'center', 
+                 gap:'12px', 
+                 padding:'15px', 
+                 border: formData.typeEvenement === 'hermes' ? '2px solid #003366' : '1px solid #ddd', 
+                 borderRadius:'12px', 
+                 background: formData.typeEvenement === 'hermes' ? '#e6f0fa' : 'white',
+                 transition: 'all 0.2s'
+             }}>
+                <input 
+                  type="radio" 
+                  name="typeEvenement" 
+                  value="hermes" 
+                  checked={formData.typeEvenement === 'hermes'} 
+                  onChange={handleChange}
+                />
+                <img src={logoHermes} alt="Hermes" style={{width: '30px', height: '30px', objectFit: 'contain'}} />
+                <span style={{fontWeight: '600', color: '#003366'}}>Hermes</span>
+             </label>
+
+             {/* Option DIONYSOS */}
+             <label style={{
+                 cursor:'pointer', 
+                 display:'flex', 
+                 alignItems:'center', 
+                 gap:'12px', 
+                 padding:'15px', 
+                 border: formData.typeEvenement === 'dionysos' ? '2px solid #b91c1c' : '1px solid #ddd', 
+                 borderRadius:'12px', 
+                 background: formData.typeEvenement === 'dionysos' ? '#fef2f2' : 'white',
+                 transition: 'all 0.2s'
+             }}>
+                <input 
+                  type="radio" 
+                  name="typeEvenement" 
+                  value="dionysos" 
+                  checked={formData.typeEvenement === 'dionysos'} 
+                  onChange={handleChange}
+                />
+                <img src={LOGO_DIONYSOS} alt="Dionysos" style={{width: '30px', height: '30px', objectFit: 'contain'}} />
+                <span style={{fontWeight: '600', color: '#b91c1c'}}>Dionysos</span>
+             </label>
+          </div>
+        </div>
+
         <div className="form-group">
           <label htmlFor="titre">Titre de l'action</label>
           <input type="text" name="titre" value={formData.titre} onChange={handleChange} required />
@@ -198,7 +237,7 @@ function ActionForm({ action, onSave, onCancel }) {
           <input type="url" name="lienLieu" value={formData.lienLieu} onChange={handleChange} />
         </div>
 
-        {/* --- SECTION LIENS MODULAIRES (Unique gestionnaire de liens/fichiers) --- */}
+        {/* --- SECTION LIENS (inchangée dans la logique) --- */}
         <div className="form-group" style={{background: '#f8f9fa', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e0e0e0', marginTop: '1rem'}}>
           <label style={{marginBottom: '1rem', display: 'block', fontWeight: 'bold', color: '#003366'}}>
             <FaLink style={{marginRight:'8px'}}/> 
@@ -211,97 +250,38 @@ function ActionForm({ action, onSave, onCancel }) {
 
             return (
               <div key={index} style={{
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '10px', 
-                  marginBottom: '15px', 
-                  padding: '10px', 
-                  backgroundColor: '#fff', 
-                  borderRadius: '6px',
-                  border: '1px solid #ddd'
+                  display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px', 
+                  padding: '10px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #ddd'
               }}>
-                {/* Ligne 1 : Nom et Boutons */}
                 <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                     <div style={{flex: 1}}>
-                        <input 
-                        type="text" 
-                        placeholder="Nom (ex: Programme, Billetterie...)" 
-                        value={link.label}
-                        onChange={(e) => updateLink(index, 'label', e.target.value)}
-                        style={{marginBottom: 0, fontWeight: '500'}}
-                        />
+                        <input type="text" placeholder="Nom (ex: Programme...)" value={link.label}
+                        onChange={(e) => updateLink(index, 'label', e.target.value)} style={{marginBottom: 0, fontWeight: '500'}} />
                     </div>
-                    <button 
-                        type="button" 
-                        onClick={() => removeLink(index)}
-                        className="admin-btn icon-btn danger"
-                        title="Supprimer ce lien"
-                    >
-                        <FaTrash />
-                    </button>
+                    <button type="button" onClick={() => removeLink(index)} className="admin-btn icon-btn danger"><FaTrash /></button>
                 </div>
-
-                {/* Ligne 2 : Choix Type (URL ou Fichier) */}
                 <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                    {/* Input URL */}
                     <div style={{flex: 1, position: 'relative'}}>
                         {!link.file && !isStorageFile(link.url) ? (
-                            <input 
-                                type="url" 
-                                placeholder="https://..." 
-                                value={link.url}
+                            <input type="url" placeholder="https://..." value={link.url}
                                 onChange={(e) => updateLink(index, 'url', e.target.value)}
-                                style={{marginBottom: 0, width: '100%', boxSizing: 'border-box'}}
-                            />
+                                style={{marginBottom: 0, width: '100%', boxSizing: 'border-box'}} />
                         ) : (
-                            <div style={{
-                                padding: '10px', 
-                                background: '#e6f4ea', 
-                                borderRadius: '5px', 
-                                color: '#1e7e34', 
-                                fontSize: '0.9rem',
-                                display: 'flex', alignItems: 'center', gap: '8px'
-                            }}>
+                            <div style={{padding: '10px', background: '#e6f4ea', borderRadius: '5px', color: '#1e7e34', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px'}}>
                                 {isStorageFile(link.url) ? <FaFilePdf /> : <FaImage />} 
-                                <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth:'200px'}}>
-                                    {displayUrl}
-                                </span>
+                                <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth:'200px'}}>{displayUrl}</span>
                             </div>
                         )}
                     </div>
-
                     <span style={{fontSize:'0.8rem', color:'#777', fontWeight:'bold'}}>OU</span>
-
-                    {/* Input Fichier */}
                     <div style={{flex: 0.5}}>
                         {isFileMode ? (
-                            <button 
-                                type="button" 
-                                className="cta-button secondary"
-                                style={{padding: '8px 12px', fontSize: '0.8rem', width: '100%'}}
-                                onClick={() => clearLinkFile(index)}
-                            >
-                                Retirer Fichier
-                            </button>
+                            <button type="button" className="cta-button secondary" style={{padding: '8px 12px', fontSize: '0.8rem', width: '100%'}} onClick={() => clearLinkFile(index)}>Retirer</button>
                         ) : (
-                            <label className="cta-button secondary" style={{
-                                padding: '8px 12px', 
-                                fontSize: '0.8rem', 
-                                width: '100%', 
-                                display: 'inline-block', 
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                margin: 0
-                            }}>
+                            <label className="cta-button secondary" style={{padding: '8px 12px', fontSize: '0.8rem', width: '100%', display: 'inline-block', textAlign: 'center', cursor: 'pointer', margin: 0}}>
                                 Upload
-                                <input 
-                                    type="file" 
-                                    style={{display: 'none'}} 
-                                    accept="image/*,application/pdf"
-                                    onChange={(e) => {
-                                        if(e.target.files[0]) updateLinkFile(index, e.target.files[0]);
-                                    }}
-                                />
+                                <input type="file" style={{display: 'none'}} accept="image/*,application/pdf"
+                                    onChange={(e) => { if(e.target.files[0]) updateLinkFile(index, e.target.files[0]); }} />
                             </label>
                         )}
                     </div>
@@ -310,17 +290,11 @@ function ActionForm({ action, onSave, onCancel }) {
             );
           })}
 
-          <button 
-            type="button" 
-            onClick={addLink} 
-            className="cta-button"
-            style={{fontSize: '0.9rem', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', margin: '0 auto'}}
-          >
+          <button type="button" onClick={addLink} className="cta-button" style={{fontSize: '0.9rem', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '5px', margin: '0 auto'}}>
             <FaPlus /> Ajouter un élément
           </button>
         </div>
         
-        {/* Statut et Boutons */}
         <div className="form-group">
           <label>Statut</label>
           <select name="status" value={formData.status} onChange={handleChange}>

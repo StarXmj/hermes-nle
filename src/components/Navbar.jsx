@@ -3,16 +3,16 @@ import HermesLogo from '../assets/logo-hermes.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import ThemeToggle from './ThemeToggle';
-import { usePWAInstall } from '../hooks/usePWAInstall'; // ✅ Import du hook
-import { Download } from 'lucide-react'; // ✅ Import de l'icône
+import { usePWAInstall } from '../hooks/usePWAInstall'; 
+import { Download } from 'lucide-react'; 
 
-function Navbar() {
+// ✅ On déstructure bien la prop ici
+function Navbar({ activeTheme }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
-  // ✅ Utilisation du hook PWA
   const { showInstallBtn, handleInstall } = usePWAInstall();
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
@@ -64,26 +64,24 @@ function Navbar() {
             <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
           </ul>
 
+          {/* --- VERSION DESKTOP --- */}
           <div className="hidden lg:flex items-center gap-4">
-            {/* ✅ Bouton d'installation Desktop */}
-            {showInstallBtn && (
-              <button 
-                onClick={handleInstall}
-                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white px-3 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/10"
-              >
-                <Download size={16} />
-                <span>Installer</span>
-              </button>
-            )}
+            {/* Bouton d'installation Desktop */}
             
-            <ThemeToggle />
+            
+            {/* ✅ AJOUT DE L'ID "theme-toggle-desktop" POUR LA FLÈCHE PC */}
+            <ThemeToggle activeTheme={activeTheme} id="theme-toggle-desktop" />            
+            
             <Link to="/contact" state={{ sujetParDefaut: 'rejoindre_association' }} className="px-4 py-2 rounded-xl bg-hermes-primary text-white font-bold text-xs xl:text-sm shadow-lg hover:bg-blue-600 hover:scale-105 transition-all">
               Nous rejoindre
             </Link>
           </div>
 
+          {/* --- VERSION MOBILE --- */}
           <div className="flex items-center gap-3 lg:hidden">
-            <ThemeToggle />
+            {/* ✅ AJOUT DE L'ID "theme-toggle-mobile" POUR LA FLÈCHE MOBILE */}
+            <ThemeToggle activeTheme={activeTheme} id="theme-toggle-mobile" />            
+            
             <button className="text-gray-800 dark:text-white p-2" onClick={toggleDrawer}>
               <FaBars size={22} />
             </button>
@@ -106,7 +104,7 @@ function Navbar() {
             </button>
         </div>
         
-        {/* ✅ Bouton d'installation Mobile (Placé en haut du menu) */}
+        {/* Bouton d'installation Mobile */}
         {showInstallBtn && (
           <button 
             onClick={() => { handleInstall(); toggleDrawer(); }}

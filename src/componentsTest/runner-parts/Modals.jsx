@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { FaTimes, FaEye, FaEyeSlash, FaRedo, FaArrowLeft } from 'react-icons/fa';
+import { FaTimes, FaEye, FaEyeSlash, FaRedo, FaArrowLeft, FaCoins, FaPlus } from 'react-icons/fa';
 import ProgressionGraph from '../ProgressionGraph'; 
 import './Modals.css';
 
 const Modals = ({ 
-    gameStatus, score, player, 
+    gameStatus, score, player, coinsSession, // ✅ On récupère coinsSession ici
     showAuth, authMode, authError, loading,
     showProgression, history, 
-    leaderboardAllTime, leaderboardMonthly, // ✅ On récupère les deux
+    leaderboardAllTime, leaderboardMonthly,
     onCloseAuth, onCloseProgression, onSwitchAuth,
     onRestart, onMenu, onAuthSubmit, onOpenAuth
 }) => {
@@ -23,34 +23,74 @@ const Modals = ({
 
     return (
         <>
-            {/* GAMEOVER */}
+            {/* --- GAMEOVER --- */}
             {gameStatus === 'gameover' && (
                 <div className="gameover-overlay">
                     <div className="gameover-content">
-                        <h1 className="title-death">CHUTE D'ICARE</h1>
+                        <h1 className="title-death">ÉCHEC CRITIQUE</h1>
+                        
                         <div className="result-box">
+                            {/* SCORE */}
                             <div className="score-display">
-                                <span className="lbl">SCORE FINAL</span>
-                                <span className="val">{Math.floor(score)}</span>
+                                <span className="lbl">DISTANCE</span>
+                                <span className="val">{Math.floor(score)} m</span>
                             </div>
+
+                            {/* 💰 SECTION ARGENT (Nouveau) */}
+                            <div className="coins-summary-box">
+                                {/* Gain de la partie */}
+                                <div className="coin-row session-gain">
+                                    <span className="label">Butin :</span>
+                                    <div className="value gain">
+                                        <FaPlus size={10} style={{marginRight:4}}/> 
+                                        {coinsSession || 0} <FaCoins style={{marginLeft:4}}/>
+                                    </div>
+                                </div>
+
+                                <hr className="divider"/>
+
+                                {/* Total Portefeuille */}
+                                {player ? (
+                                    <div className="coin-row total-wallet">
+                                        <span className="label">Trésor Total :</span>
+                                        <div className="value total">
+                                            {player.coins || 0} <FaCoins style={{color:'#FFD700', marginLeft:4}}/>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="guest-message">Connectez-vous pour épargner !</div>
+                                )}
+                            </div>
+
+                            {/* Meilleur Score */}
                             {player && (
-                                <div className="best-display">
+                                <div className="best-display" style={{marginTop:'10px', fontSize:'0.8rem', color:'#aaa'}}>
                                     Record personnel : {player.best_score ? player.best_score.toLocaleString() : 0}
                                 </div>
                             )}
                         </div>
+
+                        {/* ACTIONS */}
                         <div className="go-actions">
-                            <button className="greek-btn-primary" onClick={onRestart}><FaRedo/> REJOUER</button>
+                            <button className="greek-btn-primary pulse" onClick={onRestart}>
+                                <FaRedo style={{marginRight:5}}/> REJOUER
+                            </button>
+                            
                             {!player && (
-                                <button className="greek-btn-secondary" onClick={onOpenAuth}>ENREGISTRER CE SCORE</button>
+                                <button className="greek-btn-secondary" onClick={onOpenAuth}>
+                                    SAUVEGARDER CE SCORE
+                                </button>
                             )}
-                            <button className="greek-btn-text" onClick={onMenu}><FaArrowLeft/> MENU</button>
+                            
+                            <button className="greek-btn-text" onClick={onMenu}>
+                                <FaArrowLeft style={{marginRight:5}}/> MENU
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* AUTH */}
+            {/* --- AUTHENTIFICATION --- */}
             {showAuth && (
                 <div className="auth-modal-overlay" onClick={onCloseAuth}>
                     <div className="auth-modal" onClick={e => e.stopPropagation()}>
@@ -69,7 +109,6 @@ const Modals = ({
                                 <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash/> : <FaEye/>}</span>
                             </div>
                             
-                            {/* Bouton désactivé si chargement */}
                             <button type="submit" className="greek-btn-primary full-width" disabled={loading}>
                                 {loading ? '...' : (authMode === 'login' ? 'GO !' : 'VALIDER')}
                             </button>
@@ -82,17 +121,16 @@ const Modals = ({
                 </div>
             )}
 
-            {/* PROGRESSION */}
+            {/* --- PROGRESSION --- */}
             {showProgression && (
                 <div className="auth-modal-overlay" onClick={onCloseProgression}>
                     <div className="auth-modal wide" onClick={e => e.stopPropagation()}>
                         <FaTimes className="close-btn" onClick={onCloseProgression} />
                         <h2 style={{color: '#DAA520', marginBottom: 10}}>MON ÉVOLUTION</h2>
                         
-                        {/* ✅ On passe tout au composant graphique */}
                         <ProgressionGraph 
                             scores={history} 
-                            playerBestScore={player?.best_score} // Best score global du profil
+                            playerBestScore={player?.best_score} 
                             leaderboardAllTime={leaderboardAllTime}
                             leaderboardMonthly={leaderboardMonthly}
                         />

@@ -2,23 +2,31 @@ import { GAME_CONFIG, ENTITY_TYPES, BIOMES } from './constants';
 
 export class LevelManager {
   constructor() {
-    this.entities = [];
+    this.entities = []; // Obstacles mortels
+    this.platforms = []; // --- NOUVEAU : Plateformes sur lesquelles on marche
+    this.coins = [];     // --- NOUVEAU : Pièces à collecter
+    
     this.lastSpawnX = 0;
     this.minGap = 0;
     this.projectileTimer = 0;
+    
+    // Timer pour faire apparaître des plateformes indépendamment des obstacles au sol
+    this.platformTimer = 0; 
   }
 
   clearAll() {
     this.entities = [];
+    this.platforms = []; // Clear
+    this.coins = [];     // Clear
     this.lastSpawnX = GAME_CONFIG.CANVAS_WIDTH + 500;
     this.projectileTimer = 0;
+    this.platformTimer = 0;
   }
 
   update(speed, biome, canSpawn = true) {
-    // 1. Mise à jour des positions
+    // 1. Mise à jour des positions (OBSTACLES MORTELS)
     for (let i = this.entities.length - 1; i >= 0; i--) {
       let ent = this.entities[i];
-      
       ent.x -= speed;
       
       if (ent.type === 'projectile') {
@@ -29,26 +37,82 @@ export class LevelManager {
         this.entities.splice(i, 1);
       }
     }
+
+    // --- NOUVEAU : Mise à jour des PLATEFORMES ---
+    for (let i = this.platforms.length - 1; i >= 0; i--) {
+        let p = this.platforms[i];
+        p.x -= speed;
+        if (p.x + p.width < 0) this.platforms.splice(i, 1);
+    }
+
+    // --- NOUVEAU : Mise à jour des PIÈCES ---
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+        let c = this.coins[i];
+        c.x -= speed;
+        if (c.x + c.width < 0 || c.collected) this.coins.splice(i, 1);
+    }
     
     this.lastSpawnX -= speed;
 
     // SÉCURITÉ : Si on est dans les 3 premières secondes, on arrête ici
     if (!canSpawn) return;
 
-    // 2. Spawn des obstacles classiques
+    // 2. Spawn des obstacles classiques (VOTRE LOGIQUE EXISTANTE)
     if (this.lastSpawnX < GAME_CONFIG.CANVAS_WIDTH - this.minGap) {
         this.trySpawnObstacle(biome, speed);
     }
 
-    // 3. Spawn des Projectiles (ARES) - Moins fréquent
+    // 3. Spawn des Projectiles (ARES)
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
-        // Augmentation du délai aléatoire pour moins de projectiles (150-300 frames au lieu de 100-200)
         if (this.projectileTimer > Math.random() * 150 + 150) {
             this.spawnProjectile();
             this.projectileTimer = 0;
         }
     }
+
+    // --- NOUVEAU : Spawn des PLATEFORMES et PIÈCES ---
+    // On ne fait pas spawn de plateformes en mode Flappy ou Inverted pour simplifier
+    if (biome !== BIOMES.FLAPPY && biome !== BIOMES.INVERTED) {
+        this.platformTimer += speed;
+        // Toutes les ~2000 unités de distance (ajustable)
+        if (this.platformTimer > 1500 + Math.random() * 1000) {
+            this.spawnPlatform();
+            this.platformTimer = 0;
+        }
+    }
+  }
+
+  // --- NOUVELLE MÉTHODE : Création des plateformes et pièces ---
+  spawnPlatform() {
+      const width = Math.random() * 100 + 120; // Largeur entre 120 et 220
+      const height = 20;
+      // Hauteur accessible pour un saut
+      const y = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - (Math.random() * 120 + 80); 
+      
+      // 30% de chance d'être un "Limiteur" (Rouge)
+      const isLimiter = Math.random() < 0.3;
+      
+      const platform = {
+        x: GAME_CONFIG.CANVAS_WIDTH,
+        y: y,
+        width: width,
+        height: height,
+        type: isLimiter ? 'limiter' : 'normal'
+      };
+      
+      this.platforms.push(platform);
+
+      // 60% de chance d'ajouter une PIÈCE au-dessus
+      if (Math.random() < 0.6) {
+          this.coins.push({
+              x: platform.x + width / 2 - 15, // Centré
+              y: platform.y - 50,             // Au dessus
+              width: 30,
+              height: 30,
+              collected: false
+          });
+      }
   }
 
   spawnProjectile() {
@@ -124,35 +188,29 @@ export class LevelManager {
       }
       // 3. BIOME FLAPPY
       else if (biome === BIOMES.FLAPPY) {
-           if (rand < 0.4) { // Un peu moins de sol, plus de plafond
-               // Obstacles du SOL
+           if (rand < 0.4) { 
                def = ENTITY_TYPES.GROUND;
-               finalHeight = this.randomInt(80, 150); // Plus grands aussi
+               finalHeight = this.randomInt(80, 150); 
                finalType = 'column';
                yPos = GAME_CONFIG.CANVAS_HEIGHT - finalHeight;
            } else {
-               // ✅ PLAFOND : Uniquement CHAÎNE ou COLONNE DES DIEUX
                if (Math.random() < 0.5) {
                    def = ENTITY_TYPES.CHAIN;
-                   // Très longue chaîne pour forcer à descendre
                    finalHeight = this.randomInt(100, 250); 
                    finalType = 'chain';
                } else {
-                   // Colonne divine (remplace la stalactite)
                    def = ENTITY_TYPES.CEILING_COLUMN;
                    finalHeight = this.randomInt(100, 250);
                    finalType = 'column';
                }
-               yPos = 0; // Ancré au plafond
+               yPos = 0; 
            }
       }
 
-      // --- CALCUL DU GAP (Difficulté Simplifiée) ---
-      // Plus "reactionFrames" est grand, plus il y a d'espace entre les obstacles
-      let reactionFrames = (biome === BIOMES.FLAPPY) ? 50 : 65; // Était 35 : 60 (Beaucoup plus d'espace)
+      let reactionFrames = (biome === BIOMES.FLAPPY) ? 50 : 65; 
       
-      if (biome === BIOMES.HADES) reactionFrames = 100; // Était 90
-      if (biome === BIOMES.ARES) reactionFrames = 100;  // Était 80
+      if (biome === BIOMES.HADES) reactionFrames = 100; 
+      if (biome === BIOMES.ARES) reactionFrames = 100;  
 
       this.minGap = (speed * reactionFrames) + (Math.random() * 200); 
 
@@ -172,23 +230,70 @@ export class LevelManager {
   }
 
   draw(ctx) {
+    // 1. DESSINER LES PLATEFORMES (NOUVEAU)
+    this.platforms.forEach(platform => {
+      if (platform.type === 'limiter') {
+          // Style "Limiteur" : Rouge + Bordure + Croix
+          ctx.fillStyle = '#b91c1c'; 
+          ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+          
+          ctx.strokeStyle = '#fca5a5';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+          
+          // Petit symbole "Interdit" au milieu
+          const centerX = platform.x + platform.width/2;
+          const centerY = platform.y + platform.height/2;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+          ctx.moveTo(centerX - 5, centerY - 5);
+          ctx.lineTo(centerX + 5, centerY + 5);
+          ctx.stroke();
+
+      } else {
+          // Style Standard : Vert/Nature
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+          // Petite déco herbe
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(platform.x, platform.y, platform.width, 5);
+      }
+    });
+
+    // 2. DESSINER LES PIÈCES (NOUVEAU)
+    this.coins.forEach(coin => {
+        if (!coin.collected) {
+            // Effet brillant Or
+            ctx.fillStyle = '#FFD700'; 
+            ctx.beginPath();
+            ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#DAA520';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Reflet
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath();
+            ctx.arc(coin.x + coin.width/2 - 5, coin.y + coin.height/2 - 5, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    });
+
+    // 3. DESSINER LES OBSTACLES (VOTRE CODE)
     this.entities.forEach(ent => {
       ctx.fillStyle = ent.color;
       
       if (ent.type === 'projectile') {
-          // ✅ OPTIMISATION : Suppression du shadowBlur (Lueur rouge)
-          // On garde juste la forme géométrique, c'est instantané à dessiner.
           ctx.save();
-          
           ctx.beginPath();
           ctx.moveTo(ent.x, ent.y);
           ctx.lineTo(ent.x + ent.width, ent.y);
           ctx.lineTo(ent.x + ent.width/2, ent.y + ent.height + 15); 
           ctx.fill();
-          
           ctx.restore();
       } else {
-          // Obstacles classiques (Rectangles)
           ctx.fillRect(ent.x, ent.y, ent.width, ent.height);
       }
     });

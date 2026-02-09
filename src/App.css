@@ -321,78 +321,133 @@ main {
 }
 
 /* --- DARK MODE : NOEL --- */
+/* --- 🎄 THÈME NOËL --- */
+
+/* Fond sombre pour le thème Noël */
 .dark .theme-christmas {
     background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+    min-height: 100vh; /* Assure que le fond couvre tout */
 }
 
+/* La Guirlande */
 .theme-christmas .christmas-garland {
-  position: absolute; 
-  top: -25px;
-  left: 0;
-  width: 100%;
-  height: 80px; 
-  z-index: 1000; 
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-  background-position: top center;
-  pointer-events: none; 
-  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.15));
+    position: fixed; /* CHANGÉ: 'fixed' pour rester visible au scroll */
+    top: -42px;          /* CHANGÉ: '0' pour ne pas être coupé en haut */
+    left: 0;
+    width: 100%;
+    height: 100px;   /* Ajusté un peu la hauteur pour être sûr */
+    z-index: 9998;   /* CHANGÉ: Très haut, juste sous le Père Noël */
+    background-repeat: repeat-x;
+    background-size: contain; /* CHANGÉ: 'contain' évite que l'image soit trop zoomée/coupée */
+    background-position: top center;
+    pointer-events: none; 
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
 }
 
+/* Le Conteneur du Père Noël */
 .santa-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 250px;
-  z-index: 9999;
-  pointer-events: none;
-  animation: flySantaRandom 60s linear infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 150px; /* Ajout d'une hauteur fixe pour éviter les collisions */
+    z-index: 9999; /* CHANGÉ: Le plus haut niveau pour être toujours visible */
+    pointer-events: none;
+    /* L'animation est très longue (60s), soyez patient pour le voir passer ! */
+    animation: flySantaRandom 60s linear infinite;
 }
 
 .santa-sleigh {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 20px 20px rgba(0,0,0,0.1));
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 20px 20px rgba(0,0,0,0.2));
 }
 
+/* Animation du Vol */
 @keyframes flySantaRandom {
-  0% { left: -500px; top: 15%; transform: scaleX(-1) rotate(5deg); }
-  10% { top: 5%; transform: scaleX(-1) rotate(0deg); }
-  20% { top: 20%; transform: scaleX(-1) rotate(-2deg); }
-  30% { top: 10%; }
-  40% { left: 110vw; top: 15%; transform: scaleX(-1) rotate(-5deg); }
-  40.01% { transform: scaleX(1); left: 110vw; }
-  49.99% { left: 110vw; top: 60%; }
-  50% { left: 110vw; top: 60%; transform: scaleX(1) rotate(5deg); }
-  60% { top: 75%; transform: scaleX(1) rotate(0deg); }
-  70% { top: 50%; transform: scaleX(1) rotate(-3deg); }
-  80% { top: 65%; }
-  90% { left: -500px; top: 55%; transform: scaleX(1) rotate(-5deg); }
-  90.01% { transform: scaleX(-1); }
-  100% { left: -500px; top: 15%; }
+    0% { left: -500px; top: 15%; transform: scaleX(-1) rotate(5deg); }
+    10% { top: 5%; transform: scaleX(-1) rotate(0deg); }
+    20% { top: 20%; transform: scaleX(-1) rotate(-2deg); }
+    30% { top: 10%; }
+    40% { left: 110vw; top: 15%; transform: scaleX(-1) rotate(-5deg); }
+    /* Pause hors écran */
+    40.01% { transform: scaleX(1); left: 110vw; } 
+    49.99% { left: 110vw; top: 60%; }
+    /* Retour vers la gauche */
+    50% { left: 110vw; top: 60%; transform: scaleX(1) rotate(5deg); }
+    60% { top: 75%; transform: scaleX(1) rotate(0deg); }
+    70% { top: 50%; transform: scaleX(1) rotate(-3deg); }
+    80% { top: 65%; }
+    90% { left: -500px; top: 55%; transform: scaleX(1) rotate(-5deg); }
+    /* Reset */
+    90.01% { transform: scaleX(-1); }
+    100% { left: -500px; top: 15%; }
 }
 
+/* Sapin de Noël (Décoration statique) */
 .christmas-tree-wrapper {
-  display: none; 
-  justify-content: center;
-  margin-top: 1.5rem;
+    display: none; 
+    justify-content: center;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 10; /* Suffisant pour être au-dessus du fond */
+}
+
+.theme-christmas .christmas-tree-wrapper {
+    display: flex; 
 }
 
 .christmas-tree-img {
-  width: 140px; 
-  height: auto;
-  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2)); 
-  animation: floatTree 3s ease-in-out infinite;
-  transition: transform 0.3s;
+    width: 140px; 
+    height: auto;
+    filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2)); 
+    animation: floatTree 3s ease-in-out infinite;
+    transition: transform 0.3s;
 }
 
 .christmas-tree-img:hover { transform: scale(1.1); }
 
 @keyframes floatTree {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
-.theme-christmas .christmas-tree-wrapper {
-  display: flex; 
+/* --- 💘 THÈME SAINT VALENTIN --- */
+
+body.theme-valentine {
+    /* Surcharge des variables globales */
+    --primary-color: #e91e63;      
+    --secondary-color: #ff80ab;    
+    --bg-color: #fce4ec;           
+    --text-color: #880e4f;         
+    
+    /* Background global */
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+    background-attachment: fixed; /* Le fond reste fixe au scroll */
+    color: #880e4f;
+    min-height: 100vh;
+}
+
+/* Le bouton toggle devient un cœur qui bat */
+body.theme-valentine .theme-toggle-btn {
+    background-color: #e91e63 !important;
+    border-color: #ff80ab !important;
+    color: white !important;
+    box-shadow: 0 0 15px rgba(233, 30, 99, 0.6);
+    animation: heartbeat 1.5s infinite;
+    z-index: 50; /* S'assure que le bouton reste cliquable */
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* Les boutons classiques deviennent arrondis et roses */
+body.theme-valentine button {
+    border-radius: 50px;
+    border-color: #e91e63;
 }

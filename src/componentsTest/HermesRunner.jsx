@@ -38,12 +38,13 @@ function HermesRunnerPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('register');
   const [viewMode, setViewMode] = useState('main'); 
-
-  const { player, leaderboardAllTime, leaderboardMonthly, login, register, saveScore, logout, loading, error: authError } = useGameAuth();
-  
+const [coinsSession, setCoinsSession] = useState(0); // ✅ État pour les pièces de la session
+const { player, setPlayer, leaderboardAllTime, leaderboardMonthly, login, register, saveScore, logout, loading, error: authError } = useGameAuth();  
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState(getTimeUntilEndOfMonth());
+const sessionIdRef = useRef(null); // 👈 1. CRÉER CETTE RÉFÉRENCE
+const [isShopOpen, setIsShopOpen] = useState(false);
 
   // ... (Swipe logic inchangée) ...
   const [touchStart, setTouchStart] = useState(null);
@@ -60,42 +61,52 @@ function HermesRunnerPage() {
 
   // ✅ FONCTION 1 : Démarrer une session sécurisée
   const startGameSession = async () => {
-    try {
-        const { data, error } = await supabase.rpc('start_game');
-        if (error) console.error("Erreur start_game:", error);
-        if (data) {
-            console.log("Session démarrée :", data);
-            setSessionId(data);
+        try {
+            console.log("🔄 Démarrage session...");
+            const { data, error } = await supabase.rpc('start_game');
+            
+            if (error) {
+                console.error("❌ Erreur RPC start_game:", error);
+                return;
+            }
+
+            if (data) {
+                console.log("✅ Session ID reçu :", data);
+                setSessionId(data);       // Pour l'affichage (optionnel)
+                sessionIdRef.current = data; // ✅ CRUCIAL : On stocke dans la Ref
+            }
+        } catch (err) {
+            console.error("Erreur fatale session:", err);
         }
-    } catch (err) {
-        console.error("Erreur session:", err);
-    }
-  };
+    };
 
-  // ✅ FONCTION 2 : Envoyer le score sécurisé
-  const saveSecureScore = async (finalScore) => {
-    if (!sessionId) {
-        console.error("Pas de session ID, score ignoré.");
-        return;
-    }
+    // 3. Modifiez saveSecureScore pour LIRE la Ref
+    const saveSecureScore = async (finalScore) => {
+        const currentSid = sessionIdRef.current; // ✅ On lit la Ref, pas le State !
 
-    // On envoie le score (ou la distance) au serveur RPC
-    const { data, error } = await supabase.rpc('submit_run', { 
-        session_id: sessionId,
-        claimed_distance: Math.floor(finalScore) // Assurez-vous que ça correspond à votre logique (Score = Distance ?)
-    });
+        console.log(`📤 Tentative d'envoi du score: ${finalScore} avec Session: ${currentSid}`);
 
-    if (data && data.success) {
-        console.log("✅ Score validé !", data.new_score);
-        // Optionnel : Rafraîchir l'affichage du meilleur score localement si besoin
-        // via une fonction de useGameAuth (ex: refreshUserProfile)
-    } else {
-        console.error("❌ Score rejeté :", data?.message || error);
-    }
-    
-    // On nettoie la session pour éviter de réutiliser la même
-    setSessionId(null);
-  };
+        if (!currentSid) {
+            console.error("⛔ ERREUR : Aucun Session ID trouvé au moment du Game Over.");
+            return;
+        }
+
+        const { data, error } = await supabase.rpc('submit_run', { 
+            session_id: currentSid, // On envoie l'ID de la ref
+            claimed_distance: Math.floor(finalScore)
+        });
+
+        if (error) {
+            console.error("❌ Erreur RPC submit_run:", error);
+        } else if (data && data.success) {
+            console.log("🏆 Score enregistré avec succès en BDD !", data.new_score);
+        } else {
+            console.warn("⚠️ Score rejeté par le serveur :", data?.message);
+        }
+        
+        // Reset pour la prochaine partie
+        sessionIdRef.current = null;
+    };
   // ✅ 1. CHARGEMENT DE LA VERSION DEPUIS LE FICHIER JSON
   useEffect(() => {
     // On ajoute un timestamp pour éviter que le navigateur cache le JSON lui-même
@@ -125,26 +136,52 @@ function HermesRunnerPage() {
     return () => { supabase.removeChannel(channel); };
   }, [player]); 
 
+  // ... (dans HermesRunner.jsx)
+
   useEffect(() => {
     if (gameStatus === 'playing' && canvasRef.current) {
         
-        // ✅ 1. ON DÉMARRE LA SESSION SÉCURISÉE ICI
-        startGameSession();
+        startGameSession(); // Votre logique de session sécurisée
 
-        engineRef.current = new GameEngine(canvasRef.current, {
-            onUpdateUI: (s) => { setScore(s.score); setCurrentBiome(s.biome); },
-            onGameOver: (res) => { 
-                setScore(res.score); 
-                setGameStatus('gameover'); 
-                setIsPaused(false); 
-                
-                // ✅ 2. ON SAUVEGARDE VIA LE NOUVEAU SYSTÈME SÉCURISÉ
-                if(player) {
-                    saveSecureScore(res.score); 
-                    // saveScore(res.score); // ⚠️ Supprimez ou commentez l'ancien saveScore insecure
+        const engineConfig = { skin: player?.current_skin || 'default' };
+
+        engineRef.current = new GameEngine(
+            canvasRef.current, 
+            engineConfig, 
+            {
+                // ✅ Mise à jour de l'UI en temps réel
+                onUpdateUI: (s) => { 
+                    setScore(s.score); 
+                    setCurrentBiome(s.biome);
+                    setCoinsSession(s.coins); // On récupère les pièces du moteur
+                },
+                // ✅ Fin de partie
+                onGameOver: async (res) => { 
+                    setScore(res.score); 
+                    setCoinsSession(res.coins); // S'assurer d'avoir le dernier compte
+                    setGameStatus('gameover'); 
+                    setIsPaused(false); 
+
+                    if(player) {
+                        // 1. Sauvegarde Score (utilise maintenant la Ref, donc ça va marcher)
+                        saveSecureScore(res.score);
+
+                        // 2. Sauvegarde Pièces
+                        if (res.coins > 0) {
+                             const { data: newBalance, error } = await supabase.rpc('add_coins', { 
+                                p_user_id: player.id, 
+                                p_coins_earned: res.coins 
+                            });
+                            
+                            // ✅ 5. UTILISATION DE setPlayer (qui ne crashera plus grâce à l'étape 1)
+                            if (!error && setPlayer) {
+                                setPlayer(prev => ({ ...prev, coins: newBalance }));
+                            }
+                        }
+                    }
                 }
             }
-        });
+        );
         engineRef.current.start();
     }
     return () => { if (engineRef.current) engineRef.current.destroy(); };
@@ -216,7 +253,15 @@ const handleRestart = () => {
 
         <canvas ref={canvasRef} className="game-canvas" />
         
-        {gameStatus === 'playing' && <GameHUD score={score} biome={currentBiome} isPaused={isPaused} onPause={handleTogglePause} />}
+        {gameStatus === 'playing' && (
+            <GameHUD 
+                score={score} 
+                coins={coinsSession}   // Assurez-vous que coinsSession est défini
+                biome={currentBiome} 
+                isPaused={isPaused} 
+                onPause={handleTogglePause} 
+            />
+        )}
         
         {/* ... (Pause Menu inchangé) ... */}
         {isPaused && (
@@ -269,7 +314,7 @@ const handleRestart = () => {
                     <div className="nav-arrow-btn nav-right" onClick={() => setViewMode('extension')}><FaChevronRight /></div>
                     <div className="menu-container">
                         
-                        {/* ✅ ON PASSE LA VARIABLE D'ÉTAT gameVersion ICI */}
+                        {/* 2. MODIFICATION : On passe la fonction de contrôle */}
                         <MainMenu 
                             player={player} 
                             onlinePlayers={onlinePlayers} 
@@ -277,19 +322,33 @@ const handleRestart = () => {
                             onStart={() => {setGameStatus('playing'); setIsPaused(false);}} 
                             onLogout={logout} onLoadHistory={loadHistory}
                             onOpenAuth={() => {setAuthMode('register'); setShowAuthModal(true);}}
+                            
+                            // 👇 C'EST ICI QUE ÇA SE PASSE
+                            onToggleShop={(isOpen) => setIsShopOpen(isOpen)}
                         />
                         
-                        <LeaderboardPanel leaderboardAllTime={leaderboardAllTime} leaderboardMonthly={leaderboardMonthly} timeLeft={timeLeft} player={player}/>
+                        {/* 3. MODIFICATION : On cache le Leaderboard si la boutique est ouverte */}
+                        {!isShopOpen && (
+                            <LeaderboardPanel 
+                                leaderboardAllTime={leaderboardAllTime} 
+                                leaderboardMonthly={leaderboardMonthly} 
+                                timeLeft={timeLeft} 
+                                player={player}
+                            />
+                        )}
+
                     </div>
                 </div>
                 
-                {/* ✅ ET ICI AUSSI */}
-                <ExtensionPanel isActive={viewMode === 'extension'} onClose={() => setViewMode('main')} version={gameVersion} />
+                {/* On cache aussi l'extension panel (droite) si la boutique est ouverte pour être propre */}
+                {!isShopOpen && (
+                    <ExtensionPanel isActive={viewMode === 'extension'} onClose={() => setViewMode('main')} version={gameVersion} />
+                )}
             </div>
         )}
 
         <Modals 
-            gameStatus={gameStatus} score={score} player={player} 
+            gameStatus={gameStatus} score={score} player={player} coinsSession={coinsSession}
             showAuth={showAuthModal} authMode={authMode}
             showProgression={showProgression} history={history}
             leaderboardAllTime={leaderboardAllTime} leaderboardMonthly={leaderboardMonthly}

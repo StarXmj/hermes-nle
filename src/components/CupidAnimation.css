@@ -1,0 +1,72 @@
+.cupid-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 99999;
+}
+
+/* --- ARCHER (Utilise l'angle corrigé) --- */
+.cupid-archer {
+    position: absolute;
+    left: var(--start-x);
+    top: var(--start-y);
+    font-size: 5rem;
+    /* ✅ UTILISATION DE --angle-archer ICI */
+    transform: translate(-50%, -50%) rotate(var(--angle-archer));
+    opacity: 0;
+    transition: opacity 0.5s, transform 1s;
+}
+.cupid-archer.aiming { opacity: 1; }
+/* ✅ ET ICI AUSSI */
+.cupid-archer.shooting { transform: translate(-50%, -50%) rotate(var(--angle-archer)) scale(0.9); opacity: 1; }
+.cupid-archer.impact { opacity: 0; }
+
+/* --- FLÈCHE (Utilise l'angle de trajectoire) --- */
+.cupid-arrow-container {
+    position: absolute;
+    left: 0; top: 0; width: 0; height: 0;
+    animation: flightPath 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* ✅ TRAJECTOIRE AVEC --angle-arrow */
+@keyframes flightPath {
+    0% {
+        transform: translate(var(--start-x), var(--start-y)) rotate(var(--angle-arrow)) scale(0.5);
+    }
+    100% {
+        transform: translate(var(--end-x), var(--end-y)) rotate(var(--angle-arrow)) scale(1);
+    }
+}
+
+/* Reste du CSS inchangé (design de la flèche, particules, etc.) */
+.better-arrow {
+    position: absolute;
+    display: flex; align-items: center; justify-content: center;
+    transform: translate(-50%, -50%); 
+}
+.arrow-shaft {
+    width: 100px; height: 6px;
+    background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
+    box-shadow: 0 0 10px #ffeb3b;
+    border-radius: 3px; z-index: 2;
+}
+.arrow-tip { font-size: 2rem; margin-left: -12px; transform: rotate(45deg); z-index: 3; }
+.arrow-tail { font-size: 2rem; margin-right: -12px; transform: rotate(45deg); z-index: 3; }
+
+.particle-trail { position: absolute; }
+.trail-sparkle {
+    position: absolute; font-size: 10px; color: gold;
+    animation: fadeSpark 0.6s linear forwards;
+}
+@keyframes fadeSpark { to { opacity: 0; transform: scale(0); } }
+
+.impact-hearts {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    animation: bigBoom 0.6s ease-out forwards;
+}
+@keyframes bigBoom {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}

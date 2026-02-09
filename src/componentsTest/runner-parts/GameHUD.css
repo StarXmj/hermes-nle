@@ -1,32 +1,77 @@
+/* --- CONTENEUR PRINCIPAL (Fixé en haut à droite) --- */
 .greek-hud-score {
-    position: fixed; top: 30px; right: 40px; z-index: 100;
-    pointer-events: none; 
-    display: flex; align-items: center; gap: 20px;
+    position: fixed; 
+    top: 30px; 
+    right: 40px; 
+    z-index: 100; /* Passe devant le canvas */
+    pointer-events: none; /* Laisse passer les clics vers le jeu (sauf bouton pause) */
+    display: flex; 
+    align-items: center; 
+    gap: 20px;
 }
 
+/* --- LE SCORE (Gros chiffres) --- */
 .score-simple {
-    font-size: 3.5rem; font-weight: 900; color: #fff;
-    line-height: 1; letter-spacing: -1px; text-shadow: 3px 3px 0 #000;
+    font-size: 3.5rem; 
+    font-weight: 900; 
+    color: #fff;
+    line-height: 1; 
+    letter-spacing: -1px; 
+    text-shadow: 3px 3px 0 #000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Ou ta police grecque */
 }
 
+/* --- LE BIOME (Texte descriptif) --- */
 .biome-simple {
-    font-size: 1.2rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 1px; text-shadow: 2px 2px 0 #000;
+    font-size: 1.2rem; 
+    font-weight: 800; 
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px; 
+    text-shadow: 2px 2px 0 #000;
 }
 
+/* --- NOUVEAU : LES PIÈCES (Style assorti) --- */
+.coin-simple {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #FFD700; /* Or */
+    text-shadow: 2px 2px 0 #000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- BOUTON PAUSE --- */
 .pause-btn {
-    pointer-events: auto !important;
-    background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.5);
-    color: white; width: 50px; height: 50px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; cursor: pointer; transition: 0.2s; backdrop-filter: blur(5px);
+    pointer-events: auto !important; /* Réactive le clic */
+    background: rgba(0,0,0,0.4); 
+    border: 2px solid rgba(255,255,255,0.5);
+    color: white; 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    backdrop-filter: blur(5px);
 }
-.pause-btn:hover { background: #DAA520; border-color: #DAA520; color: black; transform: scale(1.1); }
 
-/* Adaptation mobile */
+.pause-btn:hover { 
+    background: #DAA520; 
+    border-color: #DAA520; 
+    color: black; 
+    transform: scale(1.1); 
+}
+
+/* --- ADAPTATION MOBILE --- */
 @media (max-height: 500px) {
-    .greek-hud-score { top: 10px; right: 15px; gap: 10px; }
-    .score-simple { font-size: 2.5rem; }
-    .biome-simple { font-size: 1rem; }
-    .pause-btn { width: 40px; height: 40px; }
+    .greek-hud-score { top: 10px; right: 15px; gap: 15px; }
+    .score-simple { font-size: 2rem; }
+    .biome-simple { display: none; } /* On cache le nom du biome sur petit écran pour gagner de la place */
+    .coin-simple { font-size: 1.2rem; }
+    .pause-btn { width: 40px; height: 40px; font-size: 1rem; }
 }

@@ -104,3 +104,59 @@
 .dark .action-btn-link.secondary:hover {
   background-color: rgba(59, 130, 246, 0.1);
 }
+
+/* La carte elle-même */
+.action-card.dionysos-card {
+  border: 1px solid #fecaca; /* Rouge très clair */
+  background: linear-gradient(to bottom right, #fff, #fff5f5); /* Léger dégradé rouge */
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.15); /* Aura rouge diffuse */
+}
+
+/* En mode sombre */
+.dark .action-card.dionysos-card {
+  background: linear-gradient(to bottom right, #1e293b, #450a0a); /* Fond sombre vers rouge foncé */
+  border-color: #7f1d1d;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+}
+
+/* Titre et icônes */
+.dionysos-card h3 {
+  color: #b91c1c; /* Rouge intense */
+}
+.dionysos-icon {
+  color: #dc2626;
+}
+.dark .dionysos-card h3 {
+  color: #f87171; /* Rouge plus clair pour le dark mode */
+}
+
+/* Badge "À venir" spécial Dionysos */
+.upcoming-badge.dionysos-badge {
+  background-color: #dc2626; /* Rouge */
+}
+
+/* Boutons Dionysos */
+.action-btn-link.dionysos-btn {
+  background-color: #dc2626;
+}
+.action-btn-link.dionysos-btn:hover {
+  background-color: #b91c1c;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+}
+
+/* Boutons secondaires Dionysos */
+.action-btn-link.secondary.dionysos-btn-sec {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+.action-btn-link.secondary.dionysos-btn-sec:hover {
+  background-color: rgba(220, 38, 38, 0.05);
+}
+
+.dark .action-btn-link.secondary.dionysos-btn-sec {
+  border-color: #f87171;
+  color: #f87171;
+}
+.dark .action-btn-link.secondary.dionysos-btn-sec:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+}

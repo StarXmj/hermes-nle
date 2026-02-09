@@ -1,23 +1,36 @@
 import React from 'react';
-import { FaPause, FaPlay } from 'react-icons/fa';
+import { FaPause, FaCoins } from 'react-icons/fa';
 import './GameHUD.css';
 
-const BIOME_COLORS = {
-    'NORMAL': { color: '#FFD700', label: 'OLYMPE' },
-    'HADES': { color: '#FF4444', label: 'ENFERS' },
-    /* ... autres couleurs ... */
-};
-
-const GameHUD = ({ score, biome, isPaused, onPause }) => {
-    const biomeData = BIOME_COLORS[biome] || BIOME_COLORS['NORMAL'];
+const GameHUD = ({ score, coins, biome, onPause }) => {
     return (
         <div className="greek-hud-score">
-            <span className="score-simple">{Math.floor(score)}</span>
-            <span className="biome-simple" style={{ color: biomeData.color }}>{biomeData.label}</span>
-            <button className="pause-btn" onClick={onPause} onTouchEnd={(e)=>{e.preventDefault(); onPause();}}>
-                {isPaused ? <FaPlay /> : <FaPause />}
+            {/* Nom du biome (ex: HADES) */}
+            <div className="biome-simple">
+                {biome}
+            </div>
+
+            {/* Compteur de Pièces */}
+            <div className="coin-simple">
+                <FaCoins /> {coins || 0}
+            </div>
+
+            {/* Score Principal */}
+            <div className="score-simple">
+                {Math.floor(score)}
+            </div>
+
+            {/* Bouton Pause */}
+            <button 
+                className="pause-btn" 
+                onClick={onPause}
+                // Important pour le tactile : empêche le "tap" de traverser vers le jeu
+                onTouchStart={(e) => e.stopPropagation()} 
+            >
+                <FaPause />
             </button>
         </div>
     );
 };
+
 export default GameHUD;
