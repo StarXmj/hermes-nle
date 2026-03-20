@@ -30,7 +30,7 @@ function Footer() {
       
       {/* 2. Le copyright (partie grise) */}
       <div className="footer-copyright">
-        <p>© 2025 Hermes by NLE - Tous droits réservés.</p>
+        <p>© 2026 Hermes by NLE - Tous droits réservés.</p>
       </div>
       <div className="footer-legal-links">
         <a href="/mentions-legales">Mentions légales</a>

@@ -158,8 +158,8 @@ export const appRoutes = [
   {
     path: '/publication',
     element: <PublicationsPage />,
-    name: 'Pôle Rédaction',
-    category: 'hidden',
+    name: 'Publication',
+    category: 'main',
   },
   
   
@@ -191,7 +191,7 @@ export const appRoutes = [
     path: '/blog/:id',
     element: <ArticleDetailPage />,
     name: 'Article',
-    category: 'hidden', 
+    category: 'main', 
   },
   {
     path: '/partenaires',
@@ -211,7 +211,7 @@ export const appRoutes = [
     path: '/runner',
     element: <RunnerGame />,
     name: 'Hermes Runner',
-    category: 'main',
+    category: 'hidden',
   },
  
   // --- Pages Légales (Footer) ---
