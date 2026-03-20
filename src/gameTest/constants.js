@@ -6,7 +6,7 @@ export const GAME_CONFIG = {
   FLAPPY_JUMP_FORCE: -7,   
   
   // --- VITESSE ---
-  SPEED_START: 5,       // Avant: 6
+  SPEED_START: 4.5,       // Avant: 6
   SPEED_MAX: 20,          // Avant: 20
   SPEED_INCREMENT: 0.0011,// Avant: 0.0015 (Monte beaucoup moins vite)
   
@@ -20,7 +20,7 @@ export const GAME_CONFIG = {
 
 
   PLATFORM_MIN_HEIGHT: 80,  // Hauteur minimale par rapport au sol
-    PLATFORM_MAX_HEIGHT: 200, // Hauteur maximale par rapport au sol
+    PLATFORM_MAX_HEIGHT: 150, // Hauteur maximale par rapport au sol
   GHOST_OFFSET_Y: 120,     
   COIN_SCORE_BONUS: 50     
 };

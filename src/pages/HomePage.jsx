@@ -13,6 +13,7 @@ import SectionPartenaires from '../sections/SectionPartenaires';
 import SectionActus from '../sections/SectionActus';
 import SectionNewsletter from '../sections/SectionNewsletter';
 import SectionBlog from '../sections/SectionBlog';
+import SectionPublications from '../sections/SectionPublications';
 
 function HomePage() {
   const [offsetY, setOffsetY] = useState(0);
@@ -112,7 +113,7 @@ function HomePage() {
                 </a>
 
                 {/* Bouton Jeu */}
-                <Link 
+                {/*<Link 
                   to="/runner"
                   className={`relative w-full sm:w-auto group flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-white rounded-full font-bold text-sm sm:text-base transition-all duration-300 transform hover:scale-105 animate-bounce-slow ${isValentine ? 'bg-red-500 hover:shadow-[0_0_20px_rgba(255,0,0,0.5)]' : 'bg-hermes-secondary hover:shadow-[0_0_20px_rgba(0,255,255,0.5)]'}`}
                 >
@@ -122,12 +123,13 @@ function HomePage() {
                   
                   <div className="flex items-center gap-2 relative z-0">
                     <FaGamepad className="text-xl animate-wiggle" /> 
-                    <span className="uppercase tracking-wider">Hermes Quest</span>
+                    
+                   <span className="uppercase tracking-wider">Hermes Quest</span> 
                     <FaHandPointer className="text-lg animate-pulse absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" /> 
                   </div>
                   
                   <div className="absolute inset-0 rounded-full border-2 border-white/50 opacity-0 group-hover:opacity-100 animate-ping-slow"></div>
-                </Link>
+                </Link>*/}
 
             </div>
         </div>
@@ -166,6 +168,7 @@ function HomePage() {
       <div className="space-y-12 sm:space-y-16 md:space-y-24 pb-16 pt-0 relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <div id="actions" className="scroll-mt-20"><SectionActions /></div>
         <SectionBlog />
+        <SectionPublications />
         <SectionPartenaires />
         <SectionActus />
         <SectionNewsletter />

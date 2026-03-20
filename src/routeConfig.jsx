@@ -11,6 +11,7 @@ const CreditsPage = lazy(() => import('./pages/CreditsPage'));
 const SitemapPage = lazy(() => import('./pages/SitemapPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const PartenairesPage = lazy(() => import('./pages/PartenairesPage'));
+import PublicationsPage from './pages/PublicationsPage';
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
 const ActusPage = lazy(() => import('./pages/ActusPage'));
@@ -155,6 +156,14 @@ export const appRoutes = [
     category: 'hidden',
   },
   {
+    path: '/publication',
+    element: <PublicationsPage />,
+    name: 'Pôle Rédaction',
+    category: 'hidden',
+  },
+  
+  
+  {
     path: '/evenementiel',
     element: <PoleEvenementielPage />,
     name: 'Pôle Événementiel',
@@ -200,7 +209,7 @@ export const appRoutes = [
   
   {
     path: '/runner',
-    element: <MaintenancePage />,
+    element: <RunnerGame />,
     name: 'Hermes Runner',
     category: 'main',
   },

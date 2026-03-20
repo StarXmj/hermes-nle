@@ -28,7 +28,7 @@ export class GameEngine {
     // 3. Gestion Pause & Score
     this.isPaused = false;
     this.coinsCollected = 0;
-    this.lastCoinScore = 0; // Pour espacer les pièces
+    this.lastCoinScore = 0; 
 
     this.resizeHandler = () => this.resize();
     window.addEventListener('resize', this.resizeHandler);
@@ -125,7 +125,6 @@ export class GameEngine {
 
     this.draw(); 
     
-    // UI Update (Throttle pour perf)
     if (this.score % 10 < 1) {
         this.callbacks.onUpdateUI({
             score: Math.floor(this.score),
@@ -152,7 +151,6 @@ export class GameEngine {
     this.speed += GAME_CONFIG.SPEED_INCREMENT;
     this.score += worldSpeed * 0.1;
 
-    // Effet de vitesse visuel
     if (this.speed > 16) {
         if (Math.random() < 0.1 + (this.speed - 16) * 0.02) {
              particleManager.createSpeedLine(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -164,53 +162,64 @@ export class GameEngine {
     this.background.update(worldSpeed, this.currentBiome);
     this.level.update(worldSpeed, this.currentBiome, !isSafeMode);
     
-    // ✅ GESTION DU SPAWN INTELLIGENT DES PIÈCES
+    // ✅ GESTION DES PIÈCES (Règles mises à jour)
     this.spawnCoin(); 
 
     this.player.update(this.input, this.currentBiome);
     particleManager.update(); 
 
+    // ✅ GESTION DES COLLISIONS (Solides)
     this.checkCollisions();
   }
 
-  // ✅ NOUVELLE MÉTHODE : SPAWN LOGIQUE DES PIÈCES
-  // ✅ MÉTHODE MISE À JOUR : SPAWN PLUS NATUREL
-  // ✅ GESTION DES PIÈCES (Règles : > 600m, Rare sur obstacle)
+  // ✅ NOUVELLE LOGIQUE DE SPAWN DE PIÈCES
   spawnCoin() {
-    // RÈGLE 1 : Pas de pièces avant 600 mètres
-    if (this.score < 600) return;
-
-    // RÈGLE 2 : Espacement minimum (pour ne pas spammer)
-    if (this.score - this.lastCoinScore < 40) return;
-
+    // Zone de spawn (à droite de l'écran)
     const spawnZoneX = GAME_CONFIG.CANVAS_WIDTH; 
-    const margin = 100;
+    const margin = 50; // Marge de détection
 
-    // Chercher support
+    // 1. Chercher les supports potentiels dans la zone de spawn
     const platform = this.level.platforms.find(p => p.x > spawnZoneX - margin && p.x < spawnZoneX + margin);
     const obstacle = this.level.entities.find(o => o.x > spawnZoneX - margin && o.x < spawnZoneX + margin && o.type !== 'projectile');
 
+    // Vérifier si une pièce existe déjà dans cette zone pour ne pas doubler
+    const existingCoin = this.level.coins.find(c => c.x > spawnZoneX - margin && c.x < spawnZoneX + margin);
+    if (existingCoin) return;
+
     let coinX = 0;
     let coinY = 0;
-    let found = false;
+    let shouldSpawn = false;
+    const isInverted = this.currentBiome === BIOMES.INVERTED;
 
+    // RÈGLE 1 : Plateforme = 100% de chance (Jamais vide)
     if (platform) {
-        // SUR PLATEFORME : On garde une bonne probabilité (c'est une récompense pour être monté)
         coinX = platform.x + (platform.width / 2) - 15; 
-        coinY = platform.y - 45; 
-        found = true;
+        
+        if (isInverted) {
+            // En inversé, SOUS la plateforme
+            coinY = platform.y + platform.height + 15;
+        } else {
+            // Normal, SUR la plateforme
+            coinY = platform.y - 45; 
+        }
+        shouldSpawn = true;
     } 
+    // RÈGLE 2 : Obstacle = 20% de chance (1 sur 5)
     else if (obstacle) {
-        // SUR OBSTACLE : RÈGLE 3 -> 1 chance sur 5 (20%)
-        // Et seulement si l'obstacle n'est pas trop haut
-        if (obstacle.height < 100 && Math.random() < 0.2) {
+        // Uniquement si l'obstacle n'est pas trop haut pour être atteint
+        if (obstacle.height < 150 && Math.random() < 0.2) {
             coinX = obstacle.x + (obstacle.width / 2) - 15;
-            coinY = obstacle.y - 40; // Juste au-dessus
-            found = true;
+            
+            if (isInverted) {
+                coinY = obstacle.y + obstacle.height + 10;
+            } else {
+                coinY = obstacle.y - 40; 
+            }
+            shouldSpawn = true;
         }
     }
 
-    if (found) {
+    if (shouldSpawn) {
         this.level.coins.push({
             x: coinX,
             y: coinY,
@@ -240,6 +249,7 @@ export class GameEngine {
 
   checkCollisions() {
     const pBox = this.player.getHitbox();
+    const isInverted = this.currentBiome === BIOMES.INVERTED;
     
     // 1. GAME OVER FLAPPY
     if (this.currentBiome === BIOMES.FLAPPY) {
@@ -249,7 +259,7 @@ export class GameEngine {
         }
     }
     
-    // 2. OBSTACLES & FANTÔMES
+    // 2. OBSTACLES (Mortels)
     let ghostBox = null;
     if (this.currentBiome === BIOMES.PHILOTES) {
         ghostBox = this.player.getGhostHitbox ? this.player.getGhostHitbox() : null;
@@ -264,27 +274,10 @@ export class GameEngine {
         }
     }
 
-    // 3. ✅ PLATEFORMES (TOUS TYPES) - ONE WAY (TRAVERSABLES)
+    // 3. ✅ PLATEFORMES SOLIDES (Collision dans tous les sens)
     if (this.level.platforms) {
         for (let plat of this.level.platforms) {
-            // Logique précise pour atterrir dessus sans se cogner la tête
-            // A. Le joueur doit tomber (vy >= 0)
-            const isFalling = this.player.vy >= 0;
-            
-            // B. Les pieds du joueur doivent être proches du haut de la plateforme
-            const feetY = this.player.y + this.player.height;
-            const platformTop = plat.y;
-            
-            // C. On autorise une marge égale à la vitesse de chute pour ne pas "passer au travers" d'une frame à l'autre
-            const margin = this.player.vy + 10; 
-
-            // D. Vérification Horizontale (Le joueur est bien au-dessus de la plateforme)
-            const isAlignedX = (this.player.x + this.player.width > plat.x + 10) && 
-                               (this.player.x < plat.x + plat.width - 10);
-
-            if (isFalling && isAlignedX && feetY >= platformTop && feetY <= platformTop + margin) {
-                this.player.setOnPlatform(plat);
-            }
+            this.resolvePlatformCollision(this.player, plat, isInverted);
         }
     }
 
@@ -298,6 +291,79 @@ export class GameEngine {
             }
         }
     }
+  }
+
+  // ✅ Logique de collision AABB solide (Sol, Plafond, Murs)
+  resolvePlatformCollision(player, platform, isInverted) {
+      // Calcul des centres et des demi-tailles
+      const playerHalfW = player.width / 2;
+      const playerHalfH = player.height / 2;
+      const platHalfW = platform.width / 2;
+      const platHalfH = platform.height / 2;
+
+      const playerCenterX = player.x + playerHalfW;
+      const playerCenterY = player.y + playerHalfH;
+      const platCenterX = platform.x + platHalfW;
+      const platCenterY = platform.y + platHalfH;
+
+      // Distance entre les centres
+      const dx = playerCenterX - platCenterX;
+      const dy = playerCenterY - platCenterY;
+
+      // Distance minimale avant collision
+      const minDistX = playerHalfW + platHalfW;
+      const minDistY = playerHalfH + platHalfH;
+
+      // Si collision détectée (overlap sur les deux axes)
+      if (Math.abs(dx) < minDistX && Math.abs(dy) < minDistY) {
+          
+          const overlapX = minDistX - Math.abs(dx);
+          const overlapY = minDistY - Math.abs(dy);
+
+          // Résoudre sur l'axe le moins profond (le plus facile à sortir)
+          if (overlapX < overlapY) {
+              // --- COLLISION HORIZONTALE (CÔTÉ) ---
+              // Si on tape le côté, dans un runner, on est bloqué -> Le scroll nous pousse -> Mort
+              // On ajuste la position X pour ne pas entrer dans le bloc
+              if (dx > 0) {
+                  player.x += overlapX; // Poussé vers la droite
+              } else {
+                  player.x -= overlapX; // Poussé vers la gauche (Mort probable si hors écran)
+              }
+              // On peut éventuellement arrêter la vitesse X si le joueur en a une propre
+          } else {
+              // --- COLLISION VERTICALE (HAUT / BAS) ---
+              if (dy > 0) {
+                  // Le joueur est EN DESSOUS de la plateforme (Collision Plafond)
+                  player.y += overlapY;
+                  
+                  if (isInverted) {
+                      // MODE INVERSÉ : Le "Plafond" visuel est le SOL physique
+                      player.vy = 0;
+                      player.isGrounded = true;
+                      // Optionnel : permettre un saut immédiat
+                  } else {
+                      // MODE NORMAL : On se cogne la tête
+                      if (player.vy < 0) player.vy = 0; // Arrête l'ascension
+                  }
+
+              } else {
+                  // Le joueur est AU-DESSUS de la plateforme (Collision Sol)
+                  player.y -= overlapY;
+
+                  if (isInverted) {
+                      // MODE INVERSÉ : On se cogne la tête (le joueur est "debout" au plafond)
+                      // Si la gravité inversée fait "tomber" vers le haut, ceci est un obstacle
+                      // player.vy = 0; 
+                  } else {
+                      // MODE NORMAL : Atterrissage
+                      player.vy = 0;
+                      player.isGrounded = true;
+                      player.jumpCount = 0; // Reset sauts
+                  }
+              }
+          }
+      }
   }
 
   isColliding(rect1, rect2) {
@@ -352,14 +418,12 @@ export class GameEngine {
     // --- DESSIN DES PLATEFORMES ---
     if (this.level.platforms) {
         this.level.platforms.forEach(plat => {
-             // On garde votre logique de style
              if (plat.type === 'limiter') {
                   this.ctx.fillStyle = '#b91c1c'; 
                   this.ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
                   this.ctx.strokeStyle = '#fca5a5';
                   this.ctx.lineWidth = 2;
                   this.ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
-                  // Croix
                   const cx = plat.x + plat.width/2;
                   const cy = plat.y + plat.height/2;
                   this.ctx.beginPath();
@@ -374,11 +438,10 @@ export class GameEngine {
         });
     }
 
-    // --- ✅ DESSIN DES PIÈCES VIA SPRITE MANAGER ---
+    // --- DESSIN DES PIÈCES ---
     if (this.level.coins) {
         this.level.coins.forEach(coin => {
              if (!coin.collected) {
-                // Utilise le nouveau système de sprite
                 spriteManager.drawCoin(this.ctx, coin);
              }
         });
@@ -399,7 +462,6 @@ export class GameEngine {
         const ghostY = this.player.y - (GAME_CONFIG.GHOST_OFFSET_Y || 120);
         this.ctx.save();
         this.ctx.globalAlpha = 0.5; 
-        // Copie des propriétés joueur pour dessiner le fantôme
         const ghostPlayer = { ...this.player, y: ghostY }; 
         spriteManager.drawPlayer(this.ctx, ghostPlayer, this.currentBiome);
         this.ctx.restore();
@@ -407,7 +469,7 @@ export class GameEngine {
 
     particleManager.draw(this.ctx);
 
-    // Effets d'ambiance et tutoriels (inchangés)
+    // Effets d'ambiance
     if (this.currentBiome === BIOMES.ARES) {
         this.ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; 
         this.ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);

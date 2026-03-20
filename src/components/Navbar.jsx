@@ -60,6 +60,7 @@ function Navbar({ activeTheme }) {
             <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
             <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
             <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
+             <li><Link to="/publication" className={navLinkClass('/publication')}>Publications</Link></li>
             <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
             <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
           </ul>
@@ -121,6 +122,7 @@ function Navbar({ activeTheme }) {
           <li><Link to="/actions" className={navLinkClass('/actions')}>Évènements</Link></li> 
           <li><Link to="/actualites" className={navLinkClass('/actualites')}>Actualités</Link></li>
           <li><Link to="/partenaires" className={navLinkClass('/partenaires')}>Partenaires</Link></li>
+          <li><Link to="/publication" className={navLinkClass('/publication')}>Publications</Link></li>
           <li><Link to="/blog" className={navLinkClass('/blog')}>Blog</Link></li>
           <li><Link to="/contact" className={navLinkClass('/contact')}>Contact</Link></li>
         </ul>

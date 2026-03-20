@@ -1,0 +1,160 @@
+/* src/pages/PublicationsPage.css */
+
+.publications-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+}
+
+.publications-page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.publications-page-header h1 {
+  font-size: 2.5rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.publications-page-header p {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+}
+
+/* --- FILTRES --- */
+.publications-filters {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: #e2e8f0;
+}
+
+.filter-btn.active {
+  background: #003366;
+  color: white;
+  border-color: #003366;
+  box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2);
+}
+
+/* --- GRILLE CSS MODERNE --- */
+.publications-grid {
+  display: grid;
+  /* La magie du responsive : crée autant de colonnes de 300px que possible, sinon s'adapte */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.pub-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+}
+
+.pub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+  border-color: #cbd5e1;
+}
+
+.pub-preview {
+  height: 200px;
+  background: #f8fafc;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pub-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdf-icon {
+  font-size: 4rem;
+  color: #d32f2f;
+}
+
+.pub-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #003366;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.pub-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.pub-content h3 {
+  color: #1a202c;
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.pub-date {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.pub-read-more {
+  margin-top: auto;
+  color: #0056b3;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-container, .empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  color: #64748b;
+}
+
+/* DARK MODE */
+.dark .publications-page-header h1 { color: #f8fafc; }
+.dark .filter-btn { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+.dark .filter-btn.active { background: #60a5fa; color: #0f172a; }
+.dark .pub-card { background: #1e293b; border-color: #334155; }
+.dark .pub-preview { background: #0f172a; }
+.dark .pub-content h3 { color: #f8fafc; }
+.dark .pub-read-more { color: #60a5fa; }

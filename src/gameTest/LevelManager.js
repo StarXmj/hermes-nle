@@ -4,7 +4,7 @@ export class LevelManager {
   constructor() {
     this.entities = []; 
     this.platforms = []; 
-    this.coins = [];     
+    this.coins = [];      
     
     this.lastSpawnX = 0;
     this.minGap = 0;
@@ -27,6 +27,7 @@ export class LevelManager {
       let ent = this.entities[i];
       ent.x -= speed;
       if (ent.type === 'projectile') ent.y += ent.speedY;
+      
       if (ent.x + ent.width < 0 || ent.y > GAME_CONFIG.CANVAS_HEIGHT || ent.markedForDeletion) {
         this.entities.splice(i, 1);
       }
@@ -48,10 +49,12 @@ export class LevelManager {
 
     if (!canSpawn) return;
 
+    // Spawn Obstacles (Colonnes, Harpies, etc.)
     if (this.lastSpawnX < GAME_CONFIG.CANVAS_WIDTH - this.minGap) {
         this.trySpawnObstacle(biome, speed);
     }
 
+    // Spawn Projectiles (Ares)
     if (biome === BIOMES.ARES) {
         this.projectileTimer++;
         if (this.projectileTimer > Math.random() * 150 + 150) {
@@ -63,6 +66,7 @@ export class LevelManager {
     // Spawn Plateformes
     if (biome !== BIOMES.FLAPPY) {
         this.platformTimer += speed;
+        // Délai de spawn un peu aléatoire
         if (this.platformTimer > 1500 + Math.random() * 1000) {
             this.spawnPlatform(distance, biome); 
             this.platformTimer = 0;
@@ -70,17 +74,18 @@ export class LevelManager {
     }
   }
 
-  // ✅ CORRECTION LOGIQUE PIÈCE & PLATEFORME
   spawnPlatform(currentDistance, biome) {
       const width = Math.random() * 100 + 120; 
       const height = 20;
       
-      // ✅ 1. Hauteur aléatoire basée sur les constantes
+      // Hauteur aléatoire par rapport au "sol" relatif
       const randomHeight = Math.random() * (GAME_CONFIG.PLATFORM_MAX_HEIGHT - GAME_CONFIG.PLATFORM_MIN_HEIGHT) + GAME_CONFIG.PLATFORM_MIN_HEIGHT;
       
       let y;
-      if (biome === BIOMES.INVERTED) {
-          // En inversé, on part du haut (GROUND_HEIGHT) et on descend vers le centre
+      const isInverted = (biome === BIOMES.INVERTED);
+
+      if (isInverted) {
+          // En inversé, on part du haut (GROUND_HEIGHT) et on descend
           y = GAME_CONFIG.GROUND_HEIGHT + randomHeight;
       } else {
           // En normal, on part du bas et on monte
@@ -99,15 +104,23 @@ export class LevelManager {
       
       this.platforms.push(platform);
 
-      // ✅ 2. Règle Pièce : Si > 600m, pièce GARANTIE (100% de chance) si plateforme spawn
+      // --- LOGIQUE PIÈCES ---
+      // Si > 600m, pièce possible sur la plateforme
       if (currentDistance >= 600) {
-          // ✅ CORRECTION : La pièce est toujours placée "visuellement au-dessus" (y - 50)
-          // Même en inversé, cela la place du côté "intérieur" du jeu, donc sur la plateforme pour le joueur
-          const coinY = platform.y - 50;
+          let coinY;
+
+          if (isInverted) {
+            // MODE INVERSÉ : La pièce doit être SOUS la plateforme (y + height + marge)
+            // car le joueur a la tête en bas sous la plateforme.
+            coinY = platform.y + platform.height + 15;
+          } else {
+            // MODE NORMAL : La pièce doit être SUR la plateforme (y - marge)
+            coinY = platform.y - 40;
+          }
 
           this.coins.push({
               x: platform.x + width / 2 - 15, 
-              y: coinY,             
+              y: coinY,              
               width: 30,
               height: 30,
               collected: false
@@ -144,6 +157,7 @@ export class LevelManager {
       let finalHeight = 0;
       let finalType = 'obstacle'; 
 
+      // --- BIOMES CLASSIQUES ---
       if (biome === BIOMES.NORMAL || biome === BIOMES.HADES || biome === BIOMES.DIONYSOS || biome === BIOMES.ARES || biome === BIOMES.PHILOTES) {
           
           if (rand < 0.65) { 
@@ -164,6 +178,7 @@ export class LevelManager {
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - finalHeight;
 
           } else {
+              // Ennemis volants (Harpies)
               def = ENTITY_TYPES.HIGH;
               finalHeight = 40; 
               finalType = 'harpy';
@@ -171,19 +186,23 @@ export class LevelManager {
               yPos = GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.GROUND_HEIGHT - heightFromGround;
           }
       }
+      // --- BIOME INVERSÉ ---
       else if (biome === BIOMES.INVERTED) {
           if (rand < 0.6) {
+              // Stalactites au plafond (sol inversé)
               def = ENTITY_TYPES.GROUND; 
               finalHeight = this.randomInt(50, 80);
               finalType = 'stalactite';
               yPos = GAME_CONFIG.GROUND_HEIGHT; 
           } else {
+              // Harpies inversées (plus bas que le plafond)
               def = ENTITY_TYPES.HIGH;
               finalHeight = 40;
               finalType = 'harpy';
               yPos = GAME_CONFIG.GROUND_HEIGHT + this.randomInt(50, 70);
           }
       }
+      // --- BIOME FLAPPY ---
       else if (biome === BIOMES.FLAPPY) {
            if (rand < 0.4) { 
                def = ENTITY_TYPES.GROUND;
@@ -195,15 +214,17 @@ export class LevelManager {
                    def = ENTITY_TYPES.CHAIN;
                    finalHeight = this.randomInt(100, 250); 
                    finalType = 'chain';
+                   yPos = 0; 
                } else {
                    def = ENTITY_TYPES.CEILING_COLUMN;
                    finalHeight = this.randomInt(100, 250);
                    finalType = 'column';
+                   yPos = 0; 
                }
-               yPos = 0; 
            }
       }
 
+      // Calcul du délai avant prochain spawn (gap)
       let reactionFrames = (biome === BIOMES.FLAPPY) ? 50 : 65; 
       if (biome === BIOMES.HADES) reactionFrames = 100; 
       if (biome === BIOMES.ARES) reactionFrames = 100;  
@@ -226,6 +247,7 @@ export class LevelManager {
   }
 
   draw(ctx) {
+    // Dessin Plateformes
     this.platforms.forEach(platform => {
       if (platform.type === 'limiter') {
           ctx.fillStyle = '#b91c1c'; 
@@ -249,6 +271,7 @@ export class LevelManager {
       }
     });
 
+    // Dessin Pièces
     this.coins.forEach(coin => {
         if (!coin.collected) {
             ctx.fillStyle = '#FFD700'; 
@@ -265,6 +288,7 @@ export class LevelManager {
         }
     });
 
+    // Dessin Entités (Obstacles)
     this.entities.forEach(ent => {
       ctx.fillStyle = ent.color;
       if (ent.type === 'projectile') {
