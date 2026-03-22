@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+ 
     <ErrorBoundary> {/* On enveloppe tout ici */}
       <HelmetProvider>
 
@@ -52,5 +52,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>
-  </React.StrictMode>,
+ ,
 )

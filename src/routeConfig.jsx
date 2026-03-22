@@ -41,6 +41,8 @@ const AdminFaqPage = lazy(() => import('./pages/AdminFaqPage'));
 const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
 const AdminNewsletterPage = lazy(() => import('./pages/AdminNewsletterPage'));
 const AdminDecorsPage = lazy(() => import('./pages/AdminDecorsPage'));
+
+const AdminKnowledgePage = lazy(() => import('./pages/AdminKnowledgePage'));
 import AdminAssoPage from './pages/AdminAssoPage';
 import MaintenancePage from './componentsTest/MaintenancePage';
 
@@ -119,7 +121,11 @@ export const appRoutes = [
       {
         element: <PermissionRoute permission="can_admin_asso" />,
         children: [{ path: '/admin/assos', element: <AdminAssoPage />, category: 'admin' }]
-      }
+      },
+      {
+  element: <PermissionRoute permission="can_edit_knowledge" />,
+  children: [{ path: '/admin/knowledge', element: <AdminKnowledgePage />, category: 'admin' }]
+},
     ]
   },
 

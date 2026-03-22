@@ -19,6 +19,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import MobileGameManager from './components/MobileGameManager';
 import HeartRain from './components/HeartRain';
 import CupidAnimation from './components/CupidAnimation';
+import AssistantIA from './components/AssistantIA';
 
 const createRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -166,7 +167,7 @@ function App() {
       </main>
 
       <InstallPWA />
-      
+      <AssistantIA />
       {!isGameMode && <Footer />}
       
       <CookieConsent />

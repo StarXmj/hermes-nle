@@ -1,0 +1,353 @@
+/* src/components/AssistantIA.css */
+
+/* --- LE CONTENEUR GLOBAL --- */
+.ai-widget-container,
+.pythia-trigger-wrapper {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.pythia-trigger-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- LA BULLE D'EXEMPLE (Tooltip) --- */
+.pythia-tooltip {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  font-size: 0.85rem;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  line-height: 1.4;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Le petit triangle pointant vers le bouton */
+.pythia-tooltip::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px 0 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent white;
+}
+
+/* --- LE BOUTON PYTHIA (Blanc + Rebond) --- */
+.ai-trigger-btn {
+  background: #ffffff; /* FOND BLANC */
+  border: 2px solid #9333ea; /* Bordure violette */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  animation: hop 4s infinite; /* Animation de rebond */
+  transition: transform 0.3s;
+}
+
+.ai-trigger-btn:hover {
+  transform: scale(1.1);
+  animation: none; /* Stoppe le rebond au survol */
+}
+
+/* --- STYLES DES LOGOS PYTHIA --- */
+.pythia-logo-trigger {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Contain pour ne pas couper dans le rond blanc */
+  padding: 5px;
+}
+
+.pythia-logo-header {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.pythia-logo-msg {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+/* ANIMATIONS */
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  5% { transform: translateY(-10px); }
+  10% { transform: translateY(0); }
+  15% { transform: translateY(-5px); }
+  20% { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* --- LA NOUVELLE GRANDE FENÊTRE --- */
+.ai-chat-window-large {
+  width: 800px;
+  max-width: 90vw;
+  height: 80vh; 
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.ai-chat-header {
+  background: #f9fafb;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 5px;
+}
+
+.close-btn:hover { color: #111827; }
+
+.ai-chat-messages-large {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 40px;
+  background: #ffffff;
+}
+
+/* LIGNES DE MESSAGE */
+.message-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.message-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent; 
+}
+
+.message-row.user .message-avatar { 
+  background: #e5e7eb; 
+  border-radius: 50%; 
+}
+
+.message-content {
+  flex: 1;
+  font-size: 16px;
+  color: #374151;
+}
+
+/* Style de l'utilisateur */
+.message-content.user p {
+  background: #f3f4f6;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 0;
+  max-width: 80%;
+}
+
+/* LE STYLE DU TEXTE DE L'IA (Markdown) */
+.markdown-body {
+  color: #111827;
+}
+
+.markdown-body p { margin-top: 0; margin-bottom: 15px; }
+
+.markdown-body ul, .markdown-body ol {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-left: 20px;
+}
+
+.markdown-body li {
+  margin-bottom: 8px;
+}
+
+.markdown-body a {
+  color: #9333ea;
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.markdown-body a:hover {
+  border-bottom: 1px solid #9333ea;
+}
+
+.markdown-body strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* --- LE PIED DE PAGE (Footer + Input + Disclaimer) --- */
+.ai-chat-footer {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-chat-input-large {
+  display: flex;
+  padding: 15px 20px 10px 20px;
+  align-items: center;
+  gap: 15px;
+}
+
+.ai-chat-input-large textarea {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+  background: white;
+}
+
+.ai-chat-input-large textarea:focus {
+  border-color: #9333ea;
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+}
+
+.ai-chat-input-large button {
+  background: #9333ea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.ai-chat-input-large button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.ai-chat-input-large button:hover:not(:disabled) {
+  background: #7e22ce;
+}
+
+/* Le petit texte d'avertissement RGPD */
+.ai-disclaimer {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 0 20px 15px 20px;
+  line-height: 1.4;
+}
+
+/* ========================================================= */
+/* 📱 OPTIMISATION MOBILE EXTRÊME (Comme Messenger/WhatsApp) */
+/* ========================================================= */
+@media (max-width: 768px) {
+  .ai-widget-container,
+  .pythia-trigger-wrapper {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .ai-trigger-btn {
+    width: 55px;
+    height: 55px;
+  }
+  
+  /* Masquer la bulle d'exemple sur petit écran pour ne pas encombrer */
+  .pythia-tooltip {
+    display: none;
+  }
+
+  .ai-chat-window-large {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh; 
+    border-radius: 0;
+    border: none;
+    z-index: 99999;
+  }
+
+  .ai-chat-messages-large {
+    padding: 15px;
+  }
+
+  .message-row {
+    gap: 12px;
+  }
+
+  .message-content.user p {
+    max-width: 95%;
+  }
+
+  .ai-chat-input-large {
+    padding: 10px 15px 5px 15px;
+  }
+  
+  .ai-chat-input-large button {
+    width: 45px;
+    height: 45px;
+  }
+
+  .ai-disclaimer {
+    margin-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
